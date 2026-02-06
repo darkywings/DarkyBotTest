@@ -10,6 +10,7 @@ from twilight_vk.framework.rules import (
     TwiMLRule,
     IsInvitedRule
 )
+from twilight_vk.utils.types.response import Response
 
 from modules.database import DarkyDatabase
 from custom_rules import *
@@ -44,7 +45,10 @@ async def bot_greets(event: dict):
     '''
     Приветствие бота при добавлении в чат
     '''
-    return "Привет :>"
+    return Response(
+        peer_ids=event["object"]["message"]["peer_id"],
+        message="Привет, я бот :>"
+    )
 
 @bot.on_event.message_new(FromChat() and TextRule(value=["$darky reg"], ignore_case=True))
 async def reg_chat(event: dict):
