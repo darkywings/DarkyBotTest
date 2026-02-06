@@ -6,11 +6,12 @@ class FromChat(BaseRule):
     '''
     async def check(self, event: dict):
 
-        if event["object"]["message"]["peer_id"] > 2000000000:
-            return True
+        _peer_id = event["object"]["message"]["peer_id"]
 
-        _peer_id = 0
-        _conversation_message_id = 0
+        if _peer_id > 2000000000:
+            return True
+        
+        _conversation_message_id = event["object"]["message"]["conversation_message_id"]
         await self.methods.messages.send(peer_id = _peer_id,
                                          forward={
                                              "is_reply": True,
@@ -26,8 +27,8 @@ class Disabled(BaseRule):
     '''
     async def check(self, event: dict):
 
-        _peer_id = 0
-        _conversation_message_id = 0
+        _peer_id = event["object"]["message"]["peer_id"]
+        _conversation_message_id = event["object"]["message"]["conversation_message_id"]
         await self.methods.messages.send(peer_id = _peer_id,
                                          forward={
                                              "is_reply": True,

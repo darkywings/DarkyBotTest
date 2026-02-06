@@ -25,7 +25,7 @@ class DarkyDatabase:
         Проверка регистрации пользователя или чата в базе данных
         Возвращает найденный объект при наличии иначе False
         '''
-        if type not in ["user", "chat"]:
+        if obj_type not in ["user", "chat"]:
             raise ValueError("type should be only have values \"user\" or \"chat\"")
         
         logger.debug(f"Checking registration for {obj_id}...")
