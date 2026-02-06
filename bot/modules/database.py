@@ -2,7 +2,7 @@ import os
 import logging
 from dotenv import load_dotenv
 
-from ..utils.db_client import AsyncPGClient
+from utils.db_client import AsyncPGClient
 
 logger = logging.getLogger("db-client")
 
