@@ -42,7 +42,7 @@ class DarkyDatabase:
         if only_bool:
             return True
         
-        _record_dict: dict = None
+        _record_dict: dict = {}
         for key, value in record.items():
             _record_dict.setdefault(key, value)
         
