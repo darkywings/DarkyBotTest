@@ -45,8 +45,10 @@ async def bot_greets(event: dict):
     '''
     Приветствие бота при добавлении в чат
     '''
+    _peer_id = event["object"]["message"]["peer_id"]
+    bot.logger.info(f"Bot has been added to the chat {_peer_id}")
     return Response(
-        peer_ids=event["object"]["message"]["peer_id"],
+        peer_ids=_peer_id,
         message="Привет, я бот :>"
     )
 
