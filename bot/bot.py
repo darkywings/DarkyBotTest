@@ -7,7 +7,8 @@ import twilight_vk
 from twilight_vk.framework.rules import (
     TextRule,
     TrueRule,
-    TwiMLRule
+    TwiMLRule,
+    IsInvitedRule
 )
 
 from modules.database import DarkyDatabase
@@ -37,6 +38,13 @@ async def reg_user(event: dict):
     await bot_db.register_user(_user_id)
 
     bot.logger.info(f"User {_user_id} was successfully registered!")
+
+@bot.on_event.message_new(FromChat() and IsInvitedRule())
+async def bot_greets(event: dict):
+    '''
+    Приветствие бота при добавлении в чат
+    '''
+    return "Привет :>"
 
 @bot.on_event.message_new(FromChat() and TextRule(value=["$darky reg"], ignore_case=True))
 async def reg_chat(event: dict):
@@ -91,7 +99,7 @@ async def show_reg(event: dict, obj_type: str):
     except Exception as e:
         return f"❌ Ошибка: {str(e)[:100]}"
     
-@bot.on_event.message_new(TextRule(value=["hello world"]))
+@bot.on_event.message_new(Disabled() and TextRule(value=["hello world"]))
 async def test(event: dict):
     return "Hello world"
 
