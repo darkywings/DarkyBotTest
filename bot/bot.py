@@ -38,7 +38,7 @@ async def reg_user(event: dict):
 
     bot.logger.info(f"User {_user_id} was successfully registered!")
 
-@bot.on_event.message_new(FromChat(), TextRule(value=["$darky reg"], ignore_case=True))
+@bot.on_event.message_new(FromChat() and TextRule(value=["$darky reg"], ignore_case=True))
 async def reg_chat(event: dict):
     '''
     Регистрация чата
