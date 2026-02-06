@@ -73,5 +73,5 @@ class DarkyDatabase:
     
     async def close(self):
         logger.debug(f"Disconnecting the database...")
-        self._db_client.disconnect()
+        await self._db_client.disconnect()
         logger.debug(f"Database was disconnected")
