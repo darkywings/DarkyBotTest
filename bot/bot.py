@@ -126,8 +126,12 @@ async def dork_trigger(event: dict):
 async def bot_try(event: dict, action: str):
     return await SimpleCommands.try_command(action)
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:list>"], ignore_case=True))
-async def bot_try(event: dict, variables: list):
+@bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
+async def bot_try(event: dict, variables: str):
+    for sep in ["или", "or"]:
+        if sep in variables:
+            variables = variables.split(sep)
+            break
     return await SimpleCommands.choice_command(variables)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))

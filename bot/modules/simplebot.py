@@ -16,7 +16,7 @@ class SimpleCommands:
         return f"🤔Я выбираю {random.choices(
             population = variables,
             weights = [random.random() for _ in [1] * len(variables)]
-        )}"
+        )[0]}"
 
     async def guess_command(msg: str) -> str:
         return f"🔮Вероятность \"{msg}\" составляет {random.randint(0, 100)}%"
