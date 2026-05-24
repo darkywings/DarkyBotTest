@@ -128,7 +128,7 @@ async def bot_try(event: dict, action: str):
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
 async def bot_try(event: dict, variables: str):
-    for sep in ["или", "or"]:
+    for sep in [" или ", " or "]:
         if sep in variables:
             variables = variables.split(sep)
             break
