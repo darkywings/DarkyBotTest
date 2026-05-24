@@ -13,6 +13,8 @@ from twilight_vk.framework.rules import (
 from twilight_vk.utils.types.response import Response
 
 from modules.database import DarkyDatabase
+from modules.triggers import Triggers
+from modules.simplebot import SimpleCommands
 from custom_rules import *
 
 load_dotenv()
@@ -22,6 +24,7 @@ bot = twilight_vk.TwilightVK(
     ACCESS_TOKEN=os.getenv("ACCESS_TOKEN")
 )
 bot_db = DarkyDatabase()
+
 
 @bot.on_event.message_new(TrueRule())
 async def reg_user(event: dict):
@@ -108,6 +111,28 @@ async def show_reg(event: dict, obj_type: str):
 @bot.on_event.message_new(Disabled() and TextRule(value=["hello world"]))
 async def test(event: dict):
     return "Hello world"
+
+@bot.on_event.message_new()
+async def dork_trigger(event: dict):
+    _dorky_words = [
+            "дурки",
+            "дорки"
+        ]
+    for _word in _dorky_words:
+        if _word in event["object"]["message"]["text"]:
+            return await Triggers.dorky()
+        
+@bot.on_event.message_new(TwiMLRule(value=["$darky try <action>"], ignore_case=True))
+async def bot_try(event: dict, action: str):
+    return await SimpleCommands.try_command(action)
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:list>"], ignore_case=True))
+async def bot_try(event: dict, variables: list):
+    return await SimpleCommands.choice_command(variables)
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))
+async def bot_try(event: dict, user_event: str):
+    return await SimpleCommands.guess_command(user_event)
 
 @bot.on_event.message_new(TextRule(value=["$darky stop", "дарки стоп"], ignore_case=True))
 async def stop(event: dict):

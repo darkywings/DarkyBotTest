@@ -42,6 +42,8 @@ services:
     networks:
       - twi-network
     attach: true
+    depends_on:
+      - postgres
 
 networks:
   twi-network:
