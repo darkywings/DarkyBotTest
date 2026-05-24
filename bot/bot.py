@@ -13,7 +13,7 @@ from twilight_vk.framework.rules import (
 from twilight_vk.utils.types.response import Response
 
 from modules.database import DarkyDatabase
-from modules.triggers import Triggers
+from modules.triggers import TriggerReplies
 from modules.simplebot import SimpleCommands
 from custom_rules import *
 
@@ -112,31 +112,25 @@ async def show_reg(event: dict, obj_type: str):
 async def test(event: dict):
     return "Hello world"
 
-@bot.on_event.message_new()
+@bot.on_event.message_new(DorkyTrigger())
 async def dork_trigger(event: dict):
-    _dorky_words = [
-            "дурки",
-            "дорки"
-        ]
-    for _word in _dorky_words:
-        if _word in event["object"]["message"]["text"]:
-            return await Triggers.dorky()
+    return TriggerReplies.dorky()
         
 @bot.on_event.message_new(TwiMLRule(value=["$darky try <action>"], ignore_case=True))
 async def bot_try(event: dict, action: str):
-    return await SimpleCommands.try_command(action)
+    return SimpleCommands.try_command(action)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
 async def bot_try(event: dict, variables: str):
-    for sep in [" или ", " or "]:
-        if sep in variables:
-            variables = variables.split(sep)
-            break
-    return await SimpleCommands.choice_command(variables)
+    return SimpleCommands.choice_command(variables)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))
 async def bot_try(event: dict, user_event: str):
-    return await SimpleCommands.guess_command(user_event)
+    return SimpleCommands.guess_command(user_event)
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky roll <rolls:int>", "$darky roll"], ignore_case=True))
+async def roll(event: dict, rolls: int = 1):
+    return SimpleCommands.roll(rolls)
 
 @bot.on_event.message_new(TextRule(value=["$darky stop", "дарки стоп"], ignore_case=True))
 async def stop(event: dict):

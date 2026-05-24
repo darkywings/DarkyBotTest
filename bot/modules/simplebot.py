@@ -1,22 +1,56 @@
 import random
 
+from utils.random import RandomUtils
+
 class SimpleCommands:
 
-    async def try_command(msg: str) -> str:
-        _results = [
-            f"✅Попытка {msg} - оказалась удачной!",
-            f"❌Попытка {msg} - оказалась неудачной!"
-        ]
-        return random.choices(
-            population = _results,
-            weights = [random.random() for _ in [1] * len(_results)]
-        )[0]
-    
-    async def choice_command(variables: list[str]) -> str:
-        return f"🤔Я выбираю {random.choices(
-            population = variables,
-            weights = [random.random() for _ in [1] * len(variables)]
-        )[0]}"
+    def try_command(action: str) -> str:
+        '''
+        Возвращает случайный исход (удачный/неудачный) для указанной попытки в action
 
-    async def guess_command(msg: str) -> str:
-        return f"🔮Вероятность \"{msg}\" составляет {random.randint(0, 100)}%"
+        :param action: Описание действия для которой нужно сделать /roll
+        :type action: str
+        '''
+        _results = [
+            f"✅Попытка {action} - оказалась удачной!",
+            f"❌Попытка {action} - оказалась неудачной!"
+        ]
+        return RandomUtils.choice(_results)
+    
+    def choice_command(variables: str) -> str:
+        '''
+        Возвращает случайно выбранный вариант из предложенных
+
+        :param variables: строка с вариантами выбора через разделитель (или/or)
+        :type variables: str
+        '''
+        for _sep in [" или ", " or "]:
+            if _sep in variables:
+                variables = variables.split(_sep)
+                break
+        return f"🤔Я выбираю {RandomUtils.choice(variables)}"
+
+    def guess_command(user_event: str) -> str:
+        '''
+        Возвращает случайную вероятность указанного пользователем
+
+        :param user_event: Пользовательское событие
+        :type user_event: str 
+        '''
+        return f"🔮Вероятность \"{user_event}\" составляет {random.randint(0, 100)}%"
+    
+    def roll(roll_count: int = 1) -> str:
+        '''
+        Кидает игральную кость в количестве roll_count
+
+        :param roll_count: Количество игральных костей для броска (1-5) (По умолчанию: 1)
+        :type roll_count: int
+        '''
+        if roll_count not in range(1, 6): 
+            return "⚠️Количество кубиков должно быть в диапазоне от 1 до 5 включительно (По умолчанию: 1)"
+
+        rolls = [random.randint(1, 6) for _ in range(0, roll_count, 1)]
+
+        return \
+        f"{"\n".join([f"🎲На кубике {i+1} выпало: {rolls[i]}" for i in range(0, roll_count, 1)])}\n" \
+        f"📊Итого выпало - {sum(rolls)}"
