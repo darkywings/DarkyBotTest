@@ -1,8 +1,8 @@
-import random
+from utils.random import RandomUtils
 
-class Triggers:
+class TriggerReplies:
 
-    async def dorky() -> str:
+    def dorky() -> str:
 
         _results = [
             'ДАРКИ!',
@@ -16,7 +16,4 @@ class Triggers:
             'Не называйте меня так'
         ]
 
-        return random.choices(
-            population = _results,
-            weights = [random.random() for _ in [1] * len(_results)]
-        )[0]
+        return RandomUtils.choice(_results)
