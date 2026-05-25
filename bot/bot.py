@@ -20,8 +20,8 @@ from custom_rules import *
 load_dotenv()
 
 bot = twilight_vk.TwilightVK(
-    BOT_NAME="DarkyBot",
-    ACCESS_TOKEN=os.getenv("ACCESS_TOKEN")
+    bot_name="DarkyBot",
+    token=os.getenv("ACCESS_TOKEN")
 )
 bot_db = DarkyDatabase()
 
