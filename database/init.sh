@@ -80,7 +80,7 @@ EOSQL
 
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS chat_settings (
-        id SERIAL PRIMARY KEY
+        id SERIAL PRIMARY KEY,
         update_notifications BOOLEAN DEFAULT TRUE,
         mention_in_greetings BOOLEAN DEFAULT TRUE,
         lvlups BOOLEAN DEFAULT TRUE,
