@@ -47,7 +47,7 @@ async def bot_greets(event: dict):
 @bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))
 async def show_reg(event: dict, obj_type: str, id: int):
     try:
-        result = await bot_db.check_registration(obj_type, id)
+        result = await bot_db.check_registration(obj_type, id, False)
         return f"Запись в базе данных\n{result}"
     except ValueError as e:
         return f"❌ Ошибка: {str(e)[:100]}"
