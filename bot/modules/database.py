@@ -76,7 +76,7 @@ class DarkyDatabase:
             f"""
             INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
             ($1, $2, $3, $4);
-            CREATE DATABASE IF NOT EXISTS notes_{_id} (
+            CREATE TABLE IF NOT EXISTS notes_{_id} (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL
