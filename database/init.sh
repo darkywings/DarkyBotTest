@@ -17,7 +17,7 @@ psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$POSTGRES_BOT_DB')\gexec
 EOSQL
 
-psql --username "$POSTGRES_USER --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_BOT_DB TO $POSTGRES_BOT_USER;
 EOSQL
 
