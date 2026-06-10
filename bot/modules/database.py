@@ -38,7 +38,7 @@ class DarkyDatabase:
             raise ValueError("type arg should be \"user\" or \"chat\"")
         
         logger.debug(f"Searching records for {_type} with ID {_id}...")
-        result: dict = await self._db_client.fetchrow("SELECT * FROM $1s WHERE $1_id = $2", _type, _id)
+        result: dict = await self._db_client.fetchrow(f"SELECT * FROM {_type}s WHERE {_type}_id = $1", _id)
 
         if not result:
             logger.debug(f"Record of {_type} with ID {_id} was not found")
@@ -73,10 +73,10 @@ class DarkyDatabase:
         '''
         logger.debug(f"Adding user {_id} into the database...")
         await self._db_client.execute(
-            """
+            f"""
             INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
             ($1, $2, $3, $4);
-            CREATE DATABASE IF NOT EXISTS notes_$1 (
+            CREATE DATABASE IF NOT EXISTS notes_{_id} (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL
