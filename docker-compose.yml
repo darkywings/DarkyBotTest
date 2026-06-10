@@ -11,6 +11,7 @@ services:
       - POSTGRES_BOT_USER=${DB_USER}
       - POSTGRES_BOT_PASSWORD=${DB_PASSWORD}
       - POSTGRES_BOT_DB=${DB_NAME}
+      - BOT_ADMIN_ID=${ADMIN_VK_ID}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:

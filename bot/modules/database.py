@@ -18,46 +18,73 @@ class DarkyDatabase:
         logger.debug("Database is connected")
 
     async def check_registration(self,
-                                 obj_type: str,
-                                 obj_id: int,
+                                 _type: str,
+                                 _id: int,
                                  only_bool: bool = True) -> dict | bool:
         '''
         Проверка регистрации пользователя или чата в базе данных
         Возвращает найденный объект при наличии иначе False
+
+        :param _type: тип объекта (user/chat)
+        :type _type: str
+
+        :param _id: идентификатор объекта
+        :type _id: int
+
+        :param only_bool: возврат только булева переменной, или найденного объекта
+        :type only_bool: bool
         '''
-        if obj_type not in ["user", "chat"]:
-            raise ValueError("type should be only have values \"user\" or \"chat\"")
+        if _type not in ["user", "chat"]:
+            raise ValueError("type arg should be \"user\" or \"chat\"")
         
-        logger.debug(f"Checking registration for {obj_id}...")
+        logger.debug(f"Searching records for {_type} with ID {_id}...")
+        result: dict = await self._db_client.fetchrow("SELECT * FROM $1s WHERE $1_id = $2", _type, _id)
 
-        query = f"SELECT * FROM {obj_type}s WHERE {obj_type}_id = $1"
-        record: dict = await self._db_client.fetchrow(query, obj_id)
-
-        if not record:
-            logger.debug(f"{obj_id} not found")
+        if not result:
+            logger.debug(f"Record of {_type} with ID {_id} was not found")
             return False
-        
-        logger.debug(f"{obj_id} was found in database!")
         
         if only_bool:
             return True
         
-        _record_dict: dict = {}
-        for key, value in record.items():
-            _record_dict.setdefault(key, value)
-        
-        return _record_dict
+        logger.debug(f"Record was found: {result}")
+        return result
     
     async def register_user(self,
-                            user_id: int):
+                            _id: int,
+                            _first_name: str,
+                            _last_name: str,
+                            _screen_name: str):
         '''
         Регистрация пользователя в базе данных
         Происходит автоматически при каждом новом сообщении от этого пользователя
+
+        :param _id: идентификатор пользователя в ВК
+        :type _id: int
+
+        :param _first_name: имя пользователя в ВК
+        :type _first_name: str
+
+        :param _last_name: фамилия пользователя в ВК
+        :type _last_name: str
+
+        :param _screen_name: короткое имя пользователя в ВК
+        :type _screen_name
         '''
-        logger.debug(f"Registering user {user_id} in database table USERS...")
-        await self._db_client.execute("""INSERT INTO users (user_id) VALUES ($1);""",
-                               user_id)
-        logger.debug(f"User {user_id} was added to the database")
+        logger.debug(f"Adding user {_id} into the database...")
+        await self._db_client.execute(
+            """
+            INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
+            ($1, $2, $3, $4);
+            CREATE DATABASE IF NOT EXISTS notes_$1 (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL
+            );
+            """,
+            _id, _first_name, _last_name, _screen_name
+        )
+        logger.debug(f"User {_id} was added into the database")
     
     async def register_chat(self,
                             peer_id: int,
@@ -66,10 +93,7 @@ class DarkyDatabase:
         Регистрация чата в базе данных
         Происходит только после вызова определенной команды
         '''
-        logger.debug(f"Registering chat {peer_id} in database table CHATS...")
-        await self._db_client.execute("""INSERT INTO chats (chat_id, chat_title) VALUES ($1, $2);""",
-                                      peer_id, title)
-        logger.debug(f"Chat {peer_id} was added to the database")
+        pass
     
     async def close(self):
         logger.debug(f"Disconnecting the database...")
