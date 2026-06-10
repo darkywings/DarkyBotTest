@@ -3,15 +3,15 @@ import logging
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
-    from bot.modules.database import DarkyDatabase
+    from modules.database import DarkyDatabase
 
 logger = logging.getLogger("bot-users")
 
 class Users:
 
     def __init__(self,
-                 db_client: DarkyDatabase,
-                 methods: VkMethods
+                 db_client: 'DarkyDatabase',
+                 methods: 'VkMethods'
                  ):
         self._db = db_client
         self._methods = methods
