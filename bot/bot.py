@@ -44,7 +44,7 @@ async def bot_greets(event: dict):
         message="Привет, я бот :>"
     )
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word>, <id:int>"], ignore_case=True))
+@bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))
 async def show_reg(event: dict, obj_type: str, id: int):
     try:
         result = await bot_db.check_registration(obj_type, id)
