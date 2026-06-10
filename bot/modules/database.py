@@ -76,13 +76,17 @@ class DarkyDatabase:
             f"""
             INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
             ($1, $2, $3, $4);
+            """,
+            _id, _first_name, _last_name, _screen_name
+        )
+        await self._db_client.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS notes_{_id} (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL
             );
-            """,
-            _id, _first_name, _last_name, _screen_name
+            """
         )
         logger.debug(f"User {_id} was added into the database")
     
