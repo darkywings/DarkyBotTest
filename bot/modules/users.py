@@ -31,7 +31,8 @@ class Users:
         user = await self._methods.users.get(
             user_ids = _user_id,
             fields = "screen_name"
-        )["response"][0]
+        )
+        user = user["response"][0]
         await self._db.register_user(_user_id, user["first_name"], user["last_name"], user["screen_name"])
 
         logger.info(f"User {_user_id} was registered")
