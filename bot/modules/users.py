@@ -3,7 +3,7 @@ import logging
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
-    from modules.database import DarkyDatabase
+    from bot.modules.database import DarkyDatabase
 
 logger = logging.getLogger("bot-users")
 
