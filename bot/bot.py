@@ -32,7 +32,7 @@ bot_users = Users(bot_db, bot.methods)
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(FromChat() and IsInvitedRule())
+@bot.on_event.message_new(FromChat() & IsInvitedRule())
 async def bot_greets(event: dict):
     '''
     Приветствие бота при добавлении в чат
@@ -52,7 +52,7 @@ async def show_reg(event: dict, obj_type: str, id: int):
     except ValueError as e:
         return f"❌ Ошибка: {str(e)[:100]}"
     
-@bot.on_event.message_new(Disabled() and TextRule(value=["hello world"]))
+@bot.on_event.message_new(TextRule(value=["hello world"]) & Disabled())
 async def test(event: dict):
     return "Hello world"
 
