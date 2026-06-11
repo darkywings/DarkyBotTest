@@ -32,7 +32,7 @@ bot_users = Users(bot_db, bot.methods)
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(FromChat() & IsInvitedRule())
+@bot.on_event.message_new(IsInvitedRule() & FromChat())
 async def bot_greets(event: dict):
     '''
     Приветствие бота при добавлении в чат

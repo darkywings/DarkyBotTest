@@ -16,7 +16,7 @@ class FromChat(BaseRule):
                                          forward={
                                              "is_reply": True,
                                              "peer_id": _peer_id,
-                                             "conversation_message_id": _conversation_message_id
+                                             "conversation_message_ids": _conversation_message_id
                                          },
                                          message = "⚠️ Эта команда здесь не работает")
         return False
@@ -33,7 +33,7 @@ class Disabled(BaseRule):
                                          forward={
                                              "is_reply": True,
                                              "peer_id": _peer_id,
-                                             "conversation_message_id": _conversation_message_id
+                                             "conversation_message_ids": _conversation_message_id
                                          },
                                          message = "❌ Данная команда была выключена разработчиком")
         return False
