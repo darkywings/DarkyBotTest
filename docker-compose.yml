@@ -26,10 +26,12 @@ services:
     
   darky-bot:
     container_name: darky-bot
+    tty: true
     build:
       context: ./bot
       dockerfile: Dockerfile
     environment:
+      - COLORTERM=truecolor
       - ACCESS_TOKEN=${BOT_TOKEN}
       - GROUP_ID=${BOT_ID}
       - DB_HOST=postgres-database
