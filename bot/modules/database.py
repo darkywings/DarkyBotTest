@@ -102,12 +102,16 @@ class DarkyDatabase:
         logger.debug(f"Adding chat {_id} into the database...")
         await self._db_client.execute(
             f"""
-            WITH settings AS (INSERT INTO chat_settings () VALUES () RETURNING id)
-            WITH verify AS (INSERT INTO verify_settings () VALUES () RETURNING id)
-            WITH greeting AS (INSERT INTO chat_greetings () VALUES () RETURNING id)
-            WITH rules AS (INSERT INTO chat_rules () VALUES () RETURNING id)
-            INSERT INTO chats (chat_id, chat_title, settings_id, verify_settings_id, greeting_id, rules_id) VALUES
-            ($1, $2, settings, verify, greeting, rules);
+            WITH 
+                settings AS (INSERT INTO chat_settings () VALUES () RETURNING id),
+                verify AS (INSERT INTO verify_settings () VALUES () RETURNING id),
+                greeting AS (INSERT INTO chat_greetings () VALUES () RETURNING id),
+                rules AS (INSERT INTO chat_rules () VALUES () RETURNING id)
+            INSERT INTO chats (
+                chat_id, chat_title, settings_id, verify_settings_id, greeting_id, rules_id
+            ) VALUES (
+                $1, $2, settings, verify, greeting, rules
+            );
             """,
             _id, _title
         )
