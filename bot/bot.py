@@ -36,17 +36,17 @@ bot_chats = Chats(bot_db, bot.methods)
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(FromChat())
-async def reg_chat_member(event: dict):
-    await bot_chats.reg_chat_member(event)
+# @bot.on_event.message_new(FromChat())
+# async def reg_chat_member(event: dict):
+#     await bot_chats.reg_chat_member(event)
 
 @bot.on_event.message_new((TextRule(value=["$darky reg"]) & AdminRule()) & FromChat())
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
-@bot.on_event.message_new((TextRule(value=["$darky reg"]) & (not AdminRule())) & FromChat())
-async def reg_chat_non_admin(event: dict):
-    return "❌Вы не являетесь администратором беседы для выполнения этого действия"
+# @bot.on_event.message_new((TextRule(value=["$darky reg"]) & AdminRule()) & FromChat())
+# async def reg_chat_non_admin(event: dict):
+#     return "❌Вы не являетесь администратором беседы для выполнения этого действия"
 
 @bot.on_event.message_new(IsInvitedRule() & FromChat())
 async def bot_greets(event: dict):
