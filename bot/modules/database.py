@@ -77,14 +77,17 @@ class DarkyDatabase:
             f"""
             INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
             ($1, $2, $3, $4);
-
+            """,
+            _id, _first_name, _last_name, _screen_name
+        )
+        await self._db_client.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS notes_{_id} (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL
             );
-            """,
-            _id, _first_name, _last_name, _screen_name
+            """
         )
         logger.debug(f"User {_id} was added into the database")
     
@@ -105,7 +108,11 @@ class DarkyDatabase:
             WITH rules AS (INSERT INTO chat_rules () VALUES () RETURNING id)
             INSERT INTO chats (chat_id, chat_title, settings_id, verify_settings_id, greeting_id, rules_id) VALUES
             ($1, $2, settings, verify, greeting, rules);
-
+            """,
+            _id, _title
+        )
+        await self._db_client.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS members_{_id} (
                 id SERIAL PRIMARY KEY,
                 user_id INT NOT NULL UNIQUE,
@@ -122,20 +129,29 @@ class DarkyDatabase:
                 docs INT DEFAULT 0,
                 audio_messages INT DEFAULT 0
             );
-
+            """
+        )
+        await self._db_client.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS assocs_{_id} (
                 id SERIAL PRIMARY KEY,
                 command TEXT NOT NULL UNIQUE,
                 assocs TEXT[]
             );
-
+            """
+        )
+        await self._db_client.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS rp_{_id} (
                 id SERIAL PRIMARY KEY,
                 trigger TEXT NOT NULL UNIQUE,
                 f_reply TEXT NOT NULL,
                 m_reply TEXT NOT NULL
             );
-
+            """
+        )
+        await self._db_client.execute(
+            f"""
             INSERT INTO rp_{_id} (trigger, f_reply, m_reply) VALUES
             ('буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
             ('кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
@@ -143,8 +159,7 @@ class DarkyDatabase:
             ('обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
             ('поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
             ('ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
-            """,
-            _id, _title
+            """
         )
         await self.reg_chat_members(_id, _members)
         logger.debug(f"Chat {_id} was added to the database")
