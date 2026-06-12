@@ -4,7 +4,7 @@ services:
 
   postgres:
     image: postgres:17.6-alpine
-    container_name: postgres-database
+    container_name: postgresql
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,6 +23,22 @@ services:
       - twi-network
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     attach: false
+
+  pgadmin:
+    image: dpage/pgadmin4:9.15.0
+    container_name: pgadmin4
+    restart: on-failure
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - twi-network
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgadmin/data:/var/lib/pgadmin
     
   darky-bot:
     container_name: darky-bot

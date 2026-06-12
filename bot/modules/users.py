@@ -12,7 +12,7 @@ class Users:
     def __init__(self,
                  db_client: 'DarkyDatabase',
                  methods: 'VkMethods'
-                 ):
+                 ) -> None:
         self._db = db_client
         self._methods = methods
 

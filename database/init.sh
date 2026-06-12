@@ -65,20 +65,6 @@ EOSQL
 # --- chats ---
 
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
-    CREATE TABLE IF NOT EXISTS chats (
-        id SERIAL PRIMARY KEY,
-        chat_id INT UNIQUE NOT NULL,
-        chat_title TEXT,
-        settings_id INT NOT NULL UNIQUE,
-        verify_settings_id INT NOT NULL UNIQUE,
-        greeting_id INT NOT NULL UNIQUE,
-        rules_id INT NOT NULL UNIQUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-EOSQL
-
-psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS chat_settings (
         id SERIAL PRIMARY KEY,
         update_notifications BOOLEAN DEFAULT TRUE,
@@ -112,15 +98,29 @@ EOSQL
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS chat_greetings (
         id SERIAL PRIMARY KEY,
-        content TEXT,
-        attachment TEXT
+        content TEXT DEFAULT NULL,
+        attachment TEXT DEFAULT NULL
     );
 EOSQL
 
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS chat_rules (
         id SERIAL PRIMARY KEY,
-        content TEXT,
-        attachment TEXT
+        content TEXT DEFAULT NULL,
+        attachment TEXT DEFAULT NULL
+    );
+EOSQL
+
+psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+    CREATE TABLE IF NOT EXISTS chats (
+        id SERIAL PRIMARY KEY,
+        chat_id INT UNIQUE NOT NULL,
+        chat_title TEXT,
+        settings_id INT REFERENCES chat_settings (id),
+        verify_settings_id INT REFERENCES verify_settings (id),
+        greeting_id INT REFERENCES chat_greetings (id),
+        rules_id INT REFERENCES chat_rules (id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 EOSQL

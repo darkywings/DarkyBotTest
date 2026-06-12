@@ -8,15 +8,18 @@ from twilight_vk.framework.rules import (
     TextRule,
     TrueRule,
     TwiMLRule,
-    IsInvitedRule
+    IsInvitedRule,
+    AdminRule
 )
 from twilight_vk.utils.types.response import Response
 
 from modules.database import DarkyDatabase
 from modules.users import Users
+from modules.chats import Chats
 from modules.triggers import TriggerReplies
 from modules.simplebot import SimpleCommands
 from custom_rules import *
+from utils.replies import Replies
 
 load_dotenv()
 
@@ -24,13 +27,26 @@ bot = twilight_vk.TwilightVK(
     bot_name="DarkyBot",
     token=os.getenv("ACCESS_TOKEN")
 )
-bot_db = DarkyDatabase()
 
+bot_db = DarkyDatabase()
 bot_users = Users(bot_db, bot.methods)
+bot_chats = Chats(bot_db, bot.methods)
 
 @bot.on_event.message_new(TrueRule())
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
+
+@bot.on_event.message_new(FromChat())
+async def reg_chat_member(event: dict):
+    await bot_chats.reg_chat_member(event)
+
+@bot.on_event.message_new((TextRule(value=["$darky reg"]) & AdminRule()) & FromChat())
+async def reg_chat(event: dict):
+    return await bot_chats.reg_chat(event)
+
+@bot.on_event.message_new((TextRule(value=["$darky reg"]) & ~AdminRule()) & FromChat())
+async def reg_chat_non_admin(event: dict):
+    return "❌Вы не являетесь администратором беседы для выполнения этого действия"
 
 @bot.on_event.message_new(IsInvitedRule() & FromChat())
 async def bot_greets(event: dict):
@@ -41,7 +57,9 @@ async def bot_greets(event: dict):
     bot.logger.info(f"Bot has been added to the chat {_peer_id}")
     return Response(
         peer_ids=_peer_id,
-        message="Привет, я бот :>"
+        message = Replies.BOT_GREETING[0],
+        attachment = Replies.BOT_GREETING[1],
+        keyboard = Replies.BOT_GREETING[2]
     )
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))

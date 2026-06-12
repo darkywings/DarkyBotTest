@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 import asyncpg
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("asyncpg")
 
 class AsyncPGClient:
 
@@ -34,6 +34,7 @@ class AsyncPGClient:
             "max_inactive_connection_lifetime": connection_timeout,
             **kwargs
         }
+        logger.debug("AsyncPG is ready")
     
     async def connect(self) -> None:
         '''
@@ -80,47 +81,67 @@ class AsyncPGClient:
 
     async def execute(self, query: str, *args) -> str:
         '''
-        Выполнение SQL команды
+        Выполнение SQL команды с возвратом статуса
         
         :param query: SQL запрос
         :type query: str
         '''
-
+        conn: asyncpg.Connection
         try:
             async with self.get_connection() as conn:
                 result = await conn.execute(query, *args)
+                logger.debug(f'EXECUTE: {query} == {result}')
                 return result
         except Exception as e:
             logger.error(f"Error executing query: {query}", exc_info=True)
             raise
     
-    async def fetch(self, query: str, *args) -> str:
+    async def fetch(self, query: str, *args) -> list[asyncpg.Record]:
         '''
-        Выполнение SELECT запроса
+        Выполнение запроса с возвратом записей
         
         :param query: SQL запрос
         :type query: str
         '''
-
+        conn: asyncpg.Connection
         try:
             async with self.get_connection() as conn:
                 result = await conn.fetch(query, *args)
+                logger.debug(f'FETCH: {query} == {result}')
                 return result
         except Exception as e:
             logger.error(f"Error executing query: {query}", exc_info=True)
             raise
     
-    async def fetchrow(self, query: str, *args) -> str:
+    async def fetchrow(self, query: str, *args) -> asyncpg.Record:
         '''
-        Выполнение SELECT запроса для одной строки
+        Выполнение запроса для одной строки с возвратом значений/записи
         
         :param query: SQL запрос
         :type query: str
         '''
-
+        conn: asyncpg.Connection
         try:
             async with self.get_connection() as conn:
                 result = await conn.fetchrow(query, *args)
+                logger.debug(f'FETCHROW: {query} == {result}')
+                return result
+        except Exception as e:
+            logger.error(f"Error executing query: {query}", exc_info=True)
+            raise
+    
+    async def fetchval(self, query: str, *args):
+        '''
+        Выполнение запроса для одной строки с возвратом значения
+        
+        :param query: SQL запрос
+        :type query: str
+        '''
+        conn: asyncpg.Connection
+        try:
+            async with self.get_connection() as conn:
+                result = await conn.fetchval(query, *args)
+                logger.debug(f'FETCHVAL: {query} == {result}')
                 return result
         except Exception as e:
             logger.error(f"Error executing query: {query}", exc_info=True)
