@@ -51,7 +51,7 @@ services:
       - COLORTERM=truecolor
       - ACCESS_TOKEN=${BOT_TOKEN}
       - GROUP_ID=${BOT_ID}
-      - DB_HOST=postgres-database
+      - DB_HOST=postgres
       - DB_PORT=${DB_PORT:-5432}
       - POSTGRES_BOT_USER=${DB_USER}
       - POSTGRES_BOT_PASSWORD=${DB_PASSWORD}
