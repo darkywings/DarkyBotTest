@@ -44,7 +44,7 @@ async def reg_chat_member(event: dict):
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
-@bot.on_event.message_new((TextRule(value=["$darky reg"]) & ~~AdminRule()) & FromChat())
+@bot.on_event.message_new((TextRule(value=["$darky reg"]) & AdminRule().not_()) & FromChat())
 async def reg_chat_non_admin(event: dict):
     return "❌Вы не являетесь администратором беседы для выполнения этого действия"
 
