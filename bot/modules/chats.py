@@ -25,7 +25,7 @@ class Chats:
         logger.debug(f"Checking registration for chat {_peer_id}...")
         if await self._db.check_registration("chat", _peer_id):
             logger.debug(f"Chat {_peer_id} is already registered")
-            return
+            return f"⚠️Ваш чат уже был ранее зарегистрирован"
         
         logger.debug(f"Registering chat {_peer_id}...")
         _chat = await self._methods.messages.getConversationById(
