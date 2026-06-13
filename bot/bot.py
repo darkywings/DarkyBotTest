@@ -32,6 +32,10 @@ bot = twilight_vk.TwilightVK(
 bot_db = DarkyDatabase()
 bot_users = Users(bot_db, bot.methods)
 bot_chats = Chats(bot_db, bot.methods)
+dorky_trigger = DorkyTrigger()
+hello_trigger = HelloTrigger()
+morning_trigger = MorningTrigger()
+sleep_trigger = SleepTrigger()
 
 ''' ---------ADMIN PANEL--------- '''
 
@@ -88,19 +92,19 @@ async def bot_greets(event: dict):
 
 @bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя"], ignore_case = True, need_list = False))
 async def dork_trigger(event: dict):
-    return DorkyTrigger.react()
+    return dorky_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'ку', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False))
 async def dork_trigger(event: dict):
-    return HelloTrigger.react()
+    return hello_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False))
 async def dork_trigger(event: dict):
-    return MorningTrigger.react()
+    return morning_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False))
 async def dork_trigger(event: dict):
-    return SleepTrigger.react()
+    return sleep_trigger.react()
 
 
 ''' ---------SIMPLE COMMANDS--------- '''
