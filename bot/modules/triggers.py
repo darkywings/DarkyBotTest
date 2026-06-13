@@ -1,15 +1,13 @@
 from datetime import datetime
 
-from modules.triggers.base import BaseTrigger
 from utils.random import RandomUtils
 
-class DorkyTrigger(BaseTrigger):
+class DorkyTrigger:
     '''
     Реакция на дурки/дорки и т.д.
     '''
     def __init__(self) -> None:
-        super().__init__(
-            _replies = [
+        self._replies = [
                 'ДАРКИ!',
                 'ДАРКИ Я!', 
                 'Я - ДАРКИ!', 
@@ -20,28 +18,30 @@ class DorkyTrigger(BaseTrigger):
                 'РРР!',
                 'Не называйте меня так'
             ]
-        )
+    
+    def react(self):
+        return RandomUtils.choice(self._replies)
 
-class HelloTrigger(BaseTrigger):
+class HelloTrigger:
     '''
     Реакция на привет и т.д.
     '''
     def __init__(self) -> None:
-        super().__init__(
-            _replies = [
+        self._replies = [
                 "Привет",
                 "Приветствую",
                 "Рада видеть вас здесь"
             ]
-        )
+        
+    def react(self):
+        return RandomUtils.choice(self._replies)
     
-class MorningTrigger(BaseTrigger):
+class MorningTrigger:
     '''
     Реакция на доброе утро
     '''
     def __init__(self) -> None:
-        super().__init__(
-            _replies = [
+        self._replies = [
                 'Утра',
                 'Привет',
                 'Доброе утро',
@@ -51,7 +51,6 @@ class MorningTrigger(BaseTrigger):
                 'Что снилось?',
                 'С пробуждением'
             ]
-        )
     
     def react(self):
 
@@ -60,13 +59,12 @@ class MorningTrigger(BaseTrigger):
         if _hour > 3 and _hour < 13:
             return RandomUtils.choice(self._replies)
 
-class SleepTrigger(BaseTrigger):
+class SleepTrigger:
     '''
     Реакция на спокойной ночи
     '''
     def __init__(self) -> None:
-        super().__init__(
-            _replies = [
+        self._replies = [
                 'Спокойной',
                 'Спокойной ночи',
                 'Споки',
@@ -79,7 +77,6 @@ class SleepTrigger(BaseTrigger):
                 'Приятных снов',
                 'Желаю приятных сновидений'
             ]
-        )
 
     def react(self):
 
