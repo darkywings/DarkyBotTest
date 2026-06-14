@@ -53,9 +53,9 @@ async def reg_chat_member(event: dict):
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
-# @bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True) & AdminRule()) & FromChat())
-# async def reg_chat_non_admin(event: dict):
-#     return "❌Вы не являетесь администратором беседы для выполнения этого действия"
+@bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True) & ~AdminRule()) & FromChat())
+async def reg_chat_non_admin(event: dict):
+    return "❌Вы не являетесь администратором беседы для выполнения этого действия"
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))
 async def show_reg(event: dict, obj_type: str, id: int):
