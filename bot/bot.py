@@ -22,6 +22,7 @@ from modules.simplebot import SimpleCommands
 from custom_rules import *
 from utils.replies import Replies
 
+logger = logging.getLogger("darky-bot")
 load_dotenv()
 
 bot = twilight_vk.TwilightVK(
@@ -72,7 +73,7 @@ async def get_help(event: dict):
     '''
     Запрос руководства по использованию бота
     '''
-    return "Блб"
+    return Replies.HELP[0]
 
 @bot.on_event.message_new(IsInvitedRule() & FromChat())
 async def bot_greets(event: dict):
@@ -80,7 +81,7 @@ async def bot_greets(event: dict):
     Приветствие бота при добавлении в чат
     '''
     _peer_id = event["object"]["message"]["peer_id"]
-    bot.logger.info(f"Bot has been added to the chat {_peer_id}")
+    logger.info(f"Bot has been added to the chat {_peer_id}")
     return Response(
         peer_ids=_peer_id,
         message = Replies.BOT_GREETING[0],
@@ -94,7 +95,7 @@ async def bot_greets(event: dict):
 async def dork_trigger(event: dict):
     return dorky_trigger.react()
 
-@bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'ку', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False))
+@bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False))
 async def dork_trigger(event: dict):
     return hello_trigger.react()
 
@@ -124,6 +125,14 @@ async def bot_try(event: dict, user_event: str):
 @bot.on_event.message_new(TwiMLRule(value=["$darky roll <rolls:int>", "$darky roll"], ignore_case=True))
 async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
+
+@bot.on_event.message_new(LayoutRule() | (LayoutRule() & TwiMLRule(value=["$darky layout <text>"])))
+async def autocorrection_layout(event: dict, changed_layout: str):
+    return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас: {changed_layout}"
+
+@bot.on_event.message_new(~LayoutRule() & TwiMLRule(value=["$darky layout <text>"]))
+async def change_layout(event: dict):
+    return f"😥 Я не распознала текст с неправильной раскладкой, который необходимо исправить"
 
 
 ''' ---------TEST COMMANDS--------- '''

@@ -7,7 +7,8 @@ from twilight_vk.utils.types.keyboard_colors import KeyboardColor
 
 class Links:
 
-    GET_STARTED = None
+    HELP_LINK = None
+    GET_STARTED_LINK = None
 
 class Replies:
 
@@ -46,4 +47,10 @@ class Replies:
                 ]
             ]
         )
+    )
+
+    HELP = (
+        f"❔ Руководство по использованию бота вы можете прочитать здесь: {Links.HELP_LINK}",
+        None,
+        None
     )

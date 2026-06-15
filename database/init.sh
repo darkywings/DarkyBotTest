@@ -75,6 +75,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         manage_rp TEXT DEFAULT 'admins',
         manage_nicknames TEXT DEFAULT 'admins',
         triggers BOOLEAN DEFAULT TRUE,
+        layout BOOLEAN DEFAULT TRUE,
         kick_access TEXT DEFAULT 'admins',
         warn_access TEXT DEFAULT 'admins',
         ban_access TEXT DEFAULT 'admins',
