@@ -44,7 +44,7 @@ class LayoutRule(BaseRule):
         '''
         Вычисление по биграммам(парам букв)
         '''
-        _text_clean = re.sub(r'[a-zа-яё]', '', text.lower())
+        _text_clean = re.sub(r'[^a-zа-яё]', '', text.lower())
         
         if len(_text_clean) < 2:
             return 0.0
@@ -72,7 +72,7 @@ class LayoutRule(BaseRule):
         '''
         Вычисление частоты встреченных гласных в тексте, отсутствие которых, свидетельствует о том, что текст некорректный
         '''
-        _text_clean = re.sub(r'[a-zа-яё]', '', text.lower())
+        _text_clean = re.sub(r'[^a-zа-яё]', '', text.lower())
 
         if len(_text_clean) < 3:
             return 0.0
