@@ -127,11 +127,11 @@ async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
 @bot.on_event.message_new(LayoutRule() | (LayoutRule() & TwiMLRule(value=["$darky layout <text>"])))
-async def autocorrection_layout(event: dict, changed_layout: str):
+async def autocorrection_layout(event: dict, changed_layout: str, text: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас: {changed_layout}"
 
 @bot.on_event.message_new(~LayoutRule() & TwiMLRule(value=["$darky layout <text>"]))
-async def change_layout(event: dict):
+async def change_layout(event: dict, text: str = None):
     return f"😥 Я не распознала текст с неправильной раскладкой, который необходимо исправить"
 
 
