@@ -10,7 +10,9 @@ from twilight_vk.framework.rules import (
     TwiMLRule,
     IsInvitedRule,
     AdminRule,
-    ContainsRule
+    ContainsRule,
+    ReplyRule,
+    ForwardRule
 )
 from twilight_vk.utils.types.response import Response
 
@@ -27,7 +29,7 @@ load_dotenv()
 
 bot = twilight_vk.TwilightVK(
     bot_name="DarkyBot",
-    token=os.getenv("ACCESS_TOKEN")
+    token=os.getenv("BOT_TOKEN")
 )
 
 bot_db = DarkyDatabase()
@@ -128,10 +130,15 @@ async def roll(event: dict, rolls: int = 1):
 
 @bot.on_event.message_new(LayoutRule())
 async def autocorrection_layout(event: dict, changed_layout: str = None):
-    '''
-    Автоматическое смена раскладки сообщения
-    '''
-    return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас: {changed_layout}"
+    return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
+
+@bot.on_event.message_new(TextRule(value=["$darky test"]) & (ReplyRule() | ForwardRule()))
+@bot.on_event.message_new(TwiMLRule(value=["$darky test <text>"]))
+async def change_layout_text(event: dict, text: str = None, have_reply: bool = None, have_forward: bool = None):
+    if text is None:
+        if have_reply: return f"TEXT EXTRACTED FROM REPLY: {event["object"]["message"]["reply_message"]["text"]}"
+        elif have_forward: return f"TEXT EXTRACTED FROM FORWARD: {event["object"]["message"]["fwd_messages"][0]["text"]}"
+    return f"EXTRACTED TEXT: {text}"
 
 
 ''' ---------TEST COMMANDS--------- '''
