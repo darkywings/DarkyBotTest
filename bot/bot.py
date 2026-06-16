@@ -29,7 +29,7 @@ load_dotenv()
 
 bot = twilight_vk.TwilightVK(
     bot_name="DarkyBot",
-    token=os.getenv("BOT_TOKEN")
+    token=os.getenv("ACCESS_TOKEN")
 )
 
 bot_db = DarkyDatabase()
