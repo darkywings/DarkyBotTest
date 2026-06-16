@@ -23,6 +23,8 @@ from modules.triggers import *
 from modules.simplebot import SimpleCommands
 from custom_rules import *
 from utils.replies import Replies
+from utils.layout import LayoutChanger
+from utils import extractor
 
 logger = logging.getLogger("darky-bot")
 load_dotenv()
@@ -132,13 +134,10 @@ async def roll(event: dict, rolls: int = 1):
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
-@bot.on_event.message_new(TextRule(value=["$darky test"]) & (ReplyRule() | ForwardRule()))
-@bot.on_event.message_new(TwiMLRule(value=["$darky test <text>"]))
+@bot.on_event.message_new(TextRule(value=["$darky layout"]) & (ReplyRule() | ForwardRule()))
+@bot.on_event.message_new(TwiMLRule(value=["$darky layout <text>"]))
 async def change_layout_text(event: dict, text: str = None, have_reply: bool = None, have_forward: bool = None):
-    if text is None:
-        if have_reply: return f"TEXT EXTRACTED FROM REPLY: {event["object"]["message"]["reply_message"]["text"]}"
-        elif have_forward: return f"TEXT EXTRACTED FROM FORWARD: {event["object"]["message"]["fwd_messages"][0]["text"]}"
-    return f"EXTRACTED TEXT: {text}"
+    return await SimpleCommands.layout(text or extractor.extract_text_from_reply(event, have_reply, have_forward))
 
 
 ''' ---------TEST COMMANDS--------- '''
