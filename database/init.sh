@@ -54,7 +54,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         screen_name TEXT NOT NULL UNIQUE,
         update_notifications BOOLEAN DEFAULT TRUE,
         mentions BOOLEAN DEFAULT TRUE,
-        who_can_rp TEXT DEFAULT 'all',
+        who_can_rp_me TEXT CHECK (who_can_rp_me IN ( 'all', 'only_users', 'only_bot', 'nobody' )) DEFAULT 'all',
         darky_verify_warns INT DEFAULT 0,
         is_banned BOOLEAN DEFAULT FALSE
     );
@@ -72,15 +72,16 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         lvlups BOOLEAN DEFAULT TRUE,
         rp BOOLEAN DEFAULT TRUE,
         nicknames BOOLEAN DEFAULT TRUE,
-        manage_rp TEXT DEFAULT 'admins',
-        manage_nicknames TEXT DEFAULT 'admins',
+        manage_rp TEXT CHECK (manage_rp IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        manage_nicknames TEXT CHECK (manage_nicknames IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
         triggers BOOLEAN DEFAULT TRUE,
-        layout BOOLEAN DEFAULT TRUE,
-        kick_access TEXT DEFAULT 'admins',
-        warn_access TEXT DEFAULT 'admins',
-        ban_access TEXT DEFAULT 'admins',
+        layout_autodetect BOOLEAN DEFAULT TRUE,
+        who_can_mute TEXT CHECK (who_can_mute IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        who_can_kick TEXT CHECK (who_can_kick IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        who_can_warn TEXT CHECK (who_can_warn IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        who_can_ban TEXT CHECK (who_can_ban IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
         warn_limit INT DEFAULT 5,
-        warn_punishment TEXT DEFAULT 'ban',
+        warn_punishment TEXT CHECK (warn_punishment IN ( 'ban', 'kick', 'mute', 'none' )) DEFAULT 'ban',
         autokick BOOLEAN DEFAULT FALSE
     );
 EOSQL
@@ -89,7 +90,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS verify_settings (
         id SERIAL PRIMARY KEY,
         enabled BOOLEAN DEFAULT TRUE,
-        punishment TEXT DEFAULT 'ban',
+        punishment TEXT CHECK (punishment IN ( 'ban', 'kick' )) DEFAULT 'ban',
         days_from_signup INT DEFAULT 3,
         should_follow_groups BOOLEAN DEFAULT FALSE,
         spam_detection BOOLEAN DEFAULT TRUE
