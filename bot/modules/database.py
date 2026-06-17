@@ -177,7 +177,7 @@ class DarkyDatabase:
         Регистрация нескольких участников в базе данных в таблице участников чата
         '''
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
-        _query = f"INSERT INTO members_{_chat_id} (user_id) VALUES {", ".join([f"({_user_id["member_id"]})" for _user_id in _user_ids if _user_id["member_id"] > 0])};"
+        _query = f"INSERT INTO members_{_chat_id} (user_id) VALUES {", ".join([f"({_user_id["id"]})" for _user_id in _user_ids])};"
 
         logger.debug(f"Registering members for {_chat_id}...")
         await self._db_client.execute(_query)
