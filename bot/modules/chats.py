@@ -36,7 +36,7 @@ class Chats:
         _chat_members = await self._methods.messages.getConversationMembers(
             peer_id = _peer_id
         )
-        _chat_members = _chat_members["response"]["items"]
+        _chat_members = _chat_members["response"]["profiles"]
 
         _chat_id = _chat["peer"]["id"]
         _chat_title = _chat["chat_settings"]["title"]
@@ -53,6 +53,10 @@ class Chats:
         '''
         _user_id = event["object"]["message"]["from_id"]
         _peer_id = event["object"]["message"]["peer_id"]
+
+        if _user_id < 0:
+            logger.warning(f"{_user_id} is not user")
+            return
 
         logger.debug(f"Checking registration for chat member {_user_id} in {_peer_id}...")
         if await self._db.check_registration_chat_member(_peer_id, _user_id):

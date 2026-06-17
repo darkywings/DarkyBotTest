@@ -22,6 +22,10 @@ class Users:
         '''
         _user_id = event["object"]["message"]["from_id"]
 
+        if _user_id < 0:
+            logger.warning(f"{_user_id} is not user")
+            return
+
         logger.debug(f"Checking registration for user {_user_id}...")
         if await self._db.check_registration("user", _user_id):
             logger.debug(f"User {_user_id} is already registered")
