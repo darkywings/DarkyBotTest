@@ -181,7 +181,7 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
 @bot.on_event.message_new(TwiMLRule(value=["$darky reg", 
                                            "$darky layout", 
                                            "$darky layout <text>"], ignore_case=True) & 
-                           FromChat(silent=True) & ~AdminRule() & ~IsBotAdmin(_db))
+                           FromChat(silent=True) & IsAdminRule() & ~AdminRule() & ~IsBotAdmin(_db))
 async def access_denied_reply(event: dict, **kwargs):
     return Replies.ACCESS_DENIED[0]
 
