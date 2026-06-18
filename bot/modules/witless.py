@@ -129,7 +129,8 @@ class Witless:
 
         response = await self.http.get(
             url = f"http://witless-api:{WITLESS_PORT}/count",
-            params = {"peer_id": _peer_id}
+            params = {"peer_id": _peer_id},
+            raw = False
         )
 
         if response["success"]:
@@ -154,7 +155,8 @@ class Witless:
 
         response = await self.http.get(
             url = f"http://witless-api:{WITLESS_PORT}/wipe",
-            params = {"peer_id": peer_id}
+            params = {"peer_id": peer_id},
+            raw = False
         )
 
         if response["success"]:
