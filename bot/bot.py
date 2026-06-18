@@ -151,7 +151,8 @@ async def speak_handler_push(event: dict):
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky speak <size:word>", "$darky speak"], ignore_case=True))
 async def speak_handler(event: dict, size: str = "any"):
-    return await witless.generate(event, size=size, on_self = False)
+    if size in ["small", "medium", "large", "any"]:
+        return await witless.generate(event, size=size, on_self = False)
 
 @bot.on_event.message_new(TextRule(value=["$darky bugurt"], ignore_case=True))
 async def bugurt_handler(event: dict):
