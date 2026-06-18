@@ -21,6 +21,7 @@ from modules.users import Users
 from modules.chats import Chats
 from modules.triggers import *
 from modules.simplebot import SimpleCommands
+from modules.witless import Witless
 from custom_rules import *
 from utils.replies import Replies
 from utils.layout import LayoutChanger
@@ -37,6 +38,7 @@ bot = twilight_vk.TwilightVK(
 bot_db = DarkyDatabase()
 bot_users = Users(bot_db, bot.methods)
 bot_chats = Chats(bot_db, bot.methods)
+witless = Witless()
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
 morning_trigger = MorningTrigger()
@@ -139,6 +141,34 @@ async def autocorrection_layout(event: dict, changed_layout: str = None):
 async def change_layout_text(event: dict, text: str = None, have_reply: bool = None, have_forward: bool = None):
     return await SimpleCommands.layout(text or extractor.extract_text_from_reply(event, have_reply, have_forward))
 
+
+''' ---------DARKY-SPEAK--------- '''
+
+@bot.on_event.message_new(TrueRule())
+async def speak_handler_push(event: dict):
+    await witless.push(event)
+    return await witless.generate(event)
+
+@bot.on_event.message_new(TextRule(value=["$darky speak"], ignore_case=True))
+async def speak_handler(event: dict):
+    return await witless.generate(event, on_self = False)
+
+@bot.on_event.message_new(TextRule(value=["$darky bugurt"], ignore_case=True))
+async def bugurt_handler(event: dict):
+    return await witless.bugurt(event)
+
+@bot.on_event.message_new(TextRule(value=["$darky speak data"], ignore_case=True))
+async def speak_data_handler(event: dict):
+    return await witless.info(event)
+
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & AdminRule() & FromChat(silent=True) )
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat(silent=True))
+async def wipe_speak_data(event: dict):
+    return await witless.wipe(event["object"]["message"]["peer_id"])
+
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~AdminRule() & FromChat(silent=True))
+async def wipe_speak_data_restricted(event: dict):
+    return await Replies.ACCESS_DENIED[0]
 
 ''' ---------TEST COMMANDS--------- '''
 
