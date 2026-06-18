@@ -42,20 +42,10 @@ class Witless:
             if on_self: 
                 return Response(
                     peer_ids = _peer_id,
-                    message = _result,
-                    keyboard = Replies.WITLESS_GENERATE_SUCCESS[2]
+                    message = _result
                 )
             
-            return Response(
-                peer_ids = _peer_id,
-                forward = {
-                    "is_reply": True,
-                    "peer_id": _peer_id,
-                    "conversation_message_ids": _conversation_message_id
-                },
-                message = _result,
-                keyboard = Replies.WITLESS_GENERATE_SUCCESS[2]
-            )
+            return _result
         
         logger.debug(f"Failed to generate message on peer_id: {_peer_id}")
 
@@ -101,22 +91,13 @@ class Witless:
                     "peer_id": _peer_id,
                     "conversation_message_ids": _conversation_message_id
                 },
-                message = Replies.WITLESS_BUGURT_FAIL[0],
+                message = Replies.WITLESS_GENERATE_FAIL[0],
                 keyboard = Replies.WITLESS_BUGURT_FAIL[2]
             )
         
         _result = "\n@\n".join(_parts)
         logger.debug(f"Generated bugurt on peer_id: {_peer_id} = {_result}")
-        return Response(
-            peer_ids = _peer_id,
-            forward = {
-                "is_reply": True,
-                "peer_id": _peer_id,
-                "conversation_message_ids": _conversation_message_id
-            },
-            message = _result,
-            keyboard = Replies.WITLESS_BUGURT_SUCCESS[2]
-        )
+        return _result
 
     async def info(self, event: dict) -> str:
         '''
