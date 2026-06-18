@@ -15,13 +15,12 @@ class FromChat(BaseRule):
 
     async def check(self, event: dict):
 
+        _peer_id = event["object"]["message"]["peer_id"]
+
+        if _peer_id > 2000000000:
+            return True
+
         if not self.silent:
-
-            _peer_id = event["object"]["message"]["peer_id"]
-
-            if _peer_id > 2000000000:
-                return True
-            
             _conversation_message_id = event["object"]["message"]["conversation_message_id"]
             await self.methods.messages.send(peer_id = _peer_id,
                                             forward={

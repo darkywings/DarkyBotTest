@@ -10,6 +10,7 @@ from twilight_vk.framework.rules import (
     TwiMLRule,
     IsInvitedRule,
     AdminRule,
+    IsAdminRule,
     ContainsRule,
     ReplyRule,
     ForwardRule
@@ -35,9 +36,9 @@ bot = twilight_vk.TwilightVK(
     token=os.getenv("ACCESS_TOKEN")
 )
 
-bot_db = DarkyDatabase()
-bot_users = Users(bot_db, bot.methods)
-bot_chats = Chats(bot_db, bot.methods)
+_db = DarkyDatabase()
+bot_users = Users(_db, bot.methods)
+bot_chats = Chats(_db, bot.methods)
 witless = Witless()
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
@@ -54,20 +55,17 @@ async def reg_user(event: dict):
 
 @bot.on_event.message_new(FromChat(silent = True))
 async def reg_chat_member(event: dict):
+    await bot_chats.update_timestamp(event)
     await bot_chats.reg_chat_member(event)
 
-@bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True) & AdminRule()) & FromChat())
+@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & FromChat() & (AdminRule() | IsBotAdmin()))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
-
-@bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True) & ~AdminRule()) & FromChat())
-async def reg_chat_non_admin(event: dict):
-    return "❌Вы не являетесь администратором беседы для выполнения этого действия"
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))
 async def show_reg(event: dict, obj_type: str, id: int):
     try:
-        result = await bot_db.check_registration(obj_type, id, False)
+        result = await _db.check_registration(obj_type, id, False)
         return f"Запись в базе данных\n{result}"
     except ValueError as e:
         return f"❌ Ошибка: {str(e)[:100]}"
@@ -162,19 +160,29 @@ async def bugurt_handler(event: dict):
 async def speak_data_handler(event: dict):
     return await witless.info(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & AdminRule() & FromChat(silent=True) )
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin()) & FromChat(silent=True))
 @bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat(silent=True))
 async def wipe_speak_data(event: dict):
     return await witless.wipe(event["object"]["message"]["peer_id"])
-
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~AdminRule() & FromChat(silent=True))
-async def wipe_speak_data_restricted(event: dict):
-    return await Replies.ACCESS_DENIED[0]
 
 ''' ---------TEST COMMANDS--------- '''
 
 @bot.on_event.message_new(TextRule(value=["hello world"]) & Disabled())
 async def test(event: dict):
     return "Hello world"
+
+
+''' ---------WRONG USE COMMANDS--------- '''
+@bot.on_event.message_new(TwiMLRule(value=["$darky reg"], ignore_case=True) & 
+                          FromChat(silent=True) & ~IsAdminRule())
+async def bot_is_not_admin_reply(event: dict, **kwargs):
+    return Replies.BOT_IS_NOT_ADMIN[0]
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky reg", 
+                                           "$darky layout", 
+                                           "$darky layout <text>"], ignore_case=True) & 
+                           FromChat(silent=True) & ~AdminRule() & ~IsBotAdmin())
+async def access_denied_reply(event: dict, **kwargs):
+    return Replies.ACCESS_DENIED[0]
 
 bot.start()

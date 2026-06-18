@@ -98,6 +98,15 @@ class DarkyDatabase:
         '''
         Регистрация чата в базе данных
         Происходит только после вызова определенной команды
+
+        :param _id: Идентификатор чата
+        :type _id: int
+
+        :param _title: Название чата
+        :type _title: str
+
+        :param _members: Список участников чата
+        :type _members: list[dict]
         '''
         logger.debug(f"Adding chat {_id} into the database...")
         await self._db_client.execute(
@@ -200,7 +209,6 @@ class DarkyDatabase:
         logger.debug(f"Record was found: {result}")
         return result
         
-    
     async def reg_chat_member(self, _chat_id, _user_id):
         '''
         Регистрация участника в базе данных в таблице участников чата
@@ -218,3 +226,29 @@ class DarkyDatabase:
         logger.debug(f"Disconnecting the database...")
         await self._db_client.disconnect()
         logger.debug(f"Database was disconnected")
+    
+    async def update_chat_timestamp(self, _chat_id):
+        '''
+        Обновление временной метки чата в базе данных
+        '''
+        logger.debug(f"Updating timestamp for {_chat_id}...")
+        await self._db_client.execute(
+            f"""
+            UPDATE chats
+            SET updated_at = CURRENT_TIMESTAMP
+            WHERE chat_id = $1;
+            """,
+            _chat_id
+        )
+        logger.debug(f"Timestamp for {_chat_id} updated")
+    
+    async def is_user_bot_admin(self, _user_id):
+
+        logger.debug(f"Searching records for admins with ID {_user_id}...")
+        result = await self._db_client.fetchrow(f"SELECT * FROM admins WHERE user_id = $1", _user_id)
+
+        if not result:
+            logger.debug(f"Record of admins with ID {_user_id} was not found")
+            return False
+        
+        return True

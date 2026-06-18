@@ -141,3 +141,40 @@ class Replies:
         None,
         None
     )
+
+    CHAT_IS_NOT_REGISTERED = (
+        "❗️ Для полного функционала Ваш чат необходимо зарегистрировать - "
+        "для этого сделайте меня администратором этой беседы и напишите команду \"$darky reg\", "
+        "либо же нажмите яркую кнопочку снизу с надписью \"Зарегистрировать чат\", а дальше я все сделаю сама.\n"
+        "\n"
+        f"❕ Подробную инструкцию по регистрации беседы вы можете посмотреть здесь {Links.GET_STARTED_LINK}\n"
+        "\n"
+        "❕ Помощь по использованию бота можно получить введя команду \"$darky help\", либо нажав на кнопочку ниже с названием \"Руководство бота\"\n",
+        None,
+        KeyboardMarkup(
+            inline = True,
+            buttons = [
+                [
+                    CallbackActionKeyboardButton(
+                        label = "Зарегистрировать чат",
+                        payload = "{\"darky_button\":\"reg_chat\"}",
+                        color = KeyboardColor.PRIMARY
+                    )
+                ],
+                [
+                    CallbackActionKeyboardButton(
+                        label = "Руководство бота",
+                        payload = "{\"darky_button\":\"help\"}",
+                        color = KeyboardColor.SECONDARY
+                    )
+                ]
+            ]
+        )
+    )
+
+    BOT_IS_NOT_ADMIN = (
+        "⚠️ Я не могу выполнить эту команду без прав администратора.\n"
+        "Пожалуйста, выдайте их мне и повторите попытку",
+        None,
+        None
+    )
