@@ -35,7 +35,7 @@ class Witless:
             raw = False
         )
         
-        if response["success"]:
+        if "success" in response.keys() and response["success"]:
             _result = response["result"]
             logger.debug(f"Generated message on peer_id: {_peer_id} = {_result}")
 
@@ -89,7 +89,7 @@ class Witless:
                 params = {"peer_id": _peer_id, "size": "md"},
                 raw = False
             )
-            if response["success"]:
+            if "success" in response.keys() and response["success"]:
                 _parts.append(response["result"].upper())
                 continue
             
@@ -133,7 +133,7 @@ class Witless:
             raw = False
         )
 
-        if response["success"]:
+        if "success" in response.keys() and response["success"]:
             return Response(
                 peer_ids = _peer_id,
                 forward = {
@@ -159,7 +159,7 @@ class Witless:
             raw = False
         )
 
-        if response["success"]:
+        if "success" in response.keys() and response["success"]:
             logger.debug(f"All data for {peer_id} was wiped")
             return "❕ Данные для обучения в этой беседе были сброшены"
         
