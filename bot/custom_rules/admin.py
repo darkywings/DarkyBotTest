@@ -19,11 +19,13 @@ class IsBotAdmin(BaseRule):
         )
         self.db: "DarkyDatabase"
 
+    async def _getAdmins(self, event: dict):
+        
+        if event.setdefault("darkybot_admin", None) is None:
+            _user_id = event["object"]["message"]["from_id"]
+            event["darkybot_admin"] = await self.db.is_user_bot_admin(_user_id)
+
     async def check(self, event: dict) -> bool:
         
-        _user_id = event["object"]["message"]["from_id"]
-
-        if await self.db.is_user_bot_admin(_user_id):
-            return True
-        
-        return False
+        await self._getAdmins(event)       
+        return event.get("darkybot_admin")

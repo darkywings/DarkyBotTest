@@ -58,7 +58,7 @@ async def reg_chat_member(event: dict):
     await bot_chats.update_timestamp(event)
     await bot_chats.reg_chat_member(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & FromChat() & (AdminRule() | IsBotAdmin()))
+@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & FromChat() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
@@ -160,7 +160,7 @@ async def bugurt_handler(event: dict):
 async def speak_data_handler(event: dict):
     return await witless.info(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin()) & FromChat(silent=True))
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat(silent=True))
 @bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat(silent=True))
 async def wipe_speak_data(event: dict):
     return await witless.wipe(event["object"]["message"]["peer_id"])
@@ -181,7 +181,7 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
 @bot.on_event.message_new(TwiMLRule(value=["$darky reg", 
                                            "$darky layout", 
                                            "$darky layout <text>"], ignore_case=True) & 
-                           FromChat(silent=True) & ~AdminRule() & ~IsBotAdmin())
+                           FromChat(silent=True) & ~AdminRule() & ~IsBotAdmin(_db))
 async def access_denied_reply(event: dict, **kwargs):
     return Replies.ACCESS_DENIED[0]
 
