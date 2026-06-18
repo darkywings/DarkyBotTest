@@ -15,7 +15,7 @@ WITLESS_PORT = os.getenv("WITLESS_PORT", 8000)
 
 class Witless:
 
-    async def __init__(self):
+    def __init__(self):
         self.http = Http()
 
     async def generate(self, event: dict, size: str = "any", on_self: bool = True) -> str:
