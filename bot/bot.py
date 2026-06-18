@@ -147,11 +147,11 @@ async def change_layout_text(event: dict, text: str = None, have_reply: bool = N
 @bot.on_event.message_new(TrueRule())
 async def speak_handler_push(event: dict):
     await witless.push(event)
-    return await witless.generate(event)
+    return await witless.generate(event, size="small")
 
-@bot.on_event.message_new(TextRule(value=["$darky speak"], ignore_case=True))
-async def speak_handler(event: dict):
-    return await witless.generate(event, on_self = False)
+@bot.on_event.message_new(TwiMLRule(value=["$darky speak <size:word>", "$darky speak"], ignore_case=True))
+async def speak_handler(event: dict, size: str = "any"):
+    return await witless.generate(event, size=size, on_self = False)
 
 @bot.on_event.message_new(TextRule(value=["$darky bugurt"], ignore_case=True))
 async def bugurt_handler(event: dict):
