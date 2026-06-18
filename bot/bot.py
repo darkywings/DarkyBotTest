@@ -53,16 +53,16 @@ sleep_trigger = SleepTrigger()
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(FromChat(silent = True))
+@bot.on_event.message_new(FromChat(silent = True) & IsAdminRule())
 async def reg_chat_member(event: dict):
     await bot_chats.update_timestamp(event)
     await bot_chats.reg_chat_member(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & FromChat() & (AdminRule() | IsBotAdmin(_db)))
+@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True))
+@bot.on_event.message_new(TwiMLRule(value=["$darky show reg <obj_type:word> <id:int>"], ignore_case=True) & IsBotAdmin(_db))
 async def show_reg(event: dict, obj_type: str, id: int):
     try:
         result = await _db.check_registration(obj_type, id, False)
@@ -72,7 +72,7 @@ async def show_reg(event: dict, obj_type: str, id: int):
 
 ''' ---------MAIN--------- '''
 
-@bot.on_event.message_new(TextRule(value=["$darky help"], ignore_case=True) & UnderDevelopment())
+@bot.on_event.message_new(TextRule(value=["$darky help"], ignore_case=True))
 async def get_help(event: dict):
     '''
     Запрос руководства по использованию бота
@@ -134,8 +134,8 @@ async def roll(event: dict, rolls: int = 1):
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
-@bot.on_event.message_new(TextRule(value=["$darky layout"]) & (ReplyRule() | ForwardRule()))
-@bot.on_event.message_new(TwiMLRule(value=["$darky layout <text>"]))
+@bot.on_event.message_new(TextRule(value=["$darky layout"], ignore_case = True) & (ReplyRule() | ForwardRule()))
+@bot.on_event.message_new(TwiMLRule(value=["$darky layout <text>"], ignore_case = True))
 async def change_layout_text(event: dict, text: str = None, have_reply: bool = None, have_forward: bool = None):
     return await SimpleCommands.layout(text or extractor.extract_text_from_reply(event, have_reply, have_forward))
 
