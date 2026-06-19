@@ -3,6 +3,10 @@ set -e
 
 echo "--- DATABASE INITIALIZATION ---"
 
+psql --username "$POSTGRES_USER" <<-EOSQL
+    ALTER USER $POSTGRES_USER WITH PASSWORD $POSTGRES_PASSWORD;
+EOSQL
+
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     DO \$\$
     BEGIN
