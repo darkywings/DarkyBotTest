@@ -12,8 +12,6 @@ services:
       - POSTGRES_BOT_PASSWORD=${DB_PASSWORD}
       - POSTGRES_BOT_DB=${DB_NAME}
       - BOT_ADMIN_ID=${ADMIN_VK_ID}
-    ports:
-      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
