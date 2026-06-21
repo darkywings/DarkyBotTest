@@ -45,7 +45,9 @@ hello_trigger = HelloTrigger()
 morning_trigger = MorningTrigger()
 sleep_trigger = SleepTrigger()
 
+
 ''' ---------ADMIN PANEL--------- '''
+
 
 ''' ---------DATABASE MAIN--------- '''
 
@@ -53,7 +55,11 @@ sleep_trigger = SleepTrigger()
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(FromChat(silent = True) & IsAdminRule())
+@bot.on_event.message_new(TextRule(value=["$darky user settings"], ignore_case=True))
+async def show_user_settings(event: dict):
+    return await bot_users.get_user(event)
+
+@bot.on_event.message_new(FromChat() & IsAdminRule() & IsRegistered(_db))
 async def reg_chat_member(event: dict):
     await bot_chats.update_timestamp(event)
     await bot_chats.reg_chat_member(event)
@@ -69,6 +75,7 @@ async def show_reg(event: dict, obj_type: str, id: int):
         return f"Запись в базе данных\n{result}"
     except ValueError as e:
         return f"❌ Ошибка: {str(e)[:100]}"
+
 
 ''' ---------MAIN--------- '''
 
@@ -92,6 +99,7 @@ async def bot_greets(event: dict):
         attachment = Replies.BOT_GREETING[1],
         keyboard = Replies.BOT_GREETING[2]
     )
+
 
 ''' ---------TRIGGERS--------- '''
 
@@ -160,10 +168,11 @@ async def bugurt_handler(event: dict):
 async def speak_data_handler(event: dict):
     return await witless.info(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat(silent=True))
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat(silent=True))
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat())
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat())
 async def wipe_speak_data(event: dict):
     return await witless.wipe(event["object"]["message"]["peer_id"])
+
 
 ''' ---------TEST COMMANDS--------- '''
 
@@ -172,17 +181,94 @@ async def test(event: dict):
     return "Hello world"
 
 
+''' ---------BUTTONS HANDLING--------- '''
+
+''' HERE '''
+
+
 ''' ---------WRONG USE COMMANDS--------- '''
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky try",
+                                           "$darky choose",
+                                           "$darky guess"], ignore_case=True))
+async def wrong_usage_handle(event: dict, **kwargs):
+    _peer_id = event["object"]["message"]["peer_id"]
+    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
+    return Response(
+        peer_id = _peer_id,
+        forward={
+            "is_reply": True,
+            "peer_id": _peer_id,
+            "conversation_message_ids": _conversation_message_id
+        },
+        message = Replies.WRONG_USAGE[0],
+        keyboard = Replies.WRONG_USAGE[2]
+    )
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky reg"], ignore_case=True) &
+                          ~FromChat())
+async def not_from_chat_handle(event: dict, **kwargs):
+    _peer_id = event["object"]["message"]["peer_id"]
+    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
+    return Response(
+        peer_id = _peer_id,
+        forward={
+            "is_reply": True,
+            "peer_id": _peer_id,
+            "conversation_message_ids": _conversation_message_id
+        },
+        message = Replies.NOT_WORK_HERE[0],
+        keyboard = Replies.NOT_WORK_HERE[2]
+    )
+
+@bot.on_event.message_new(TwiMLRule(value=[], ignore_case=True) &
+                          FromChat() & ~IsRegistered(_db) & UnderDevelopment())
+async def not_registered_chat_handle(event: dict, **kwargs):
+    _peer_id = event["object"]["message"]["peer_id"]
+    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
+    return Response(
+        peer_id = _peer_id,
+        forward={
+            "is_reply": True,
+            "peer_id": _peer_id,
+            "conversation_message_ids": _conversation_message_id
+        },
+        message = Replies.CHAT_IS_NOT_REGISTERED[0],
+        keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
+    )
+
 @bot.on_event.message_new(TwiMLRule(value=["$darky reg"], ignore_case=True) & 
-                          FromChat(silent=True) & ~IsAdminRule())
+                          FromChat() & ~IsAdminRule())
 async def bot_is_not_admin_reply(event: dict, **kwargs):
-    return Replies.BOT_IS_NOT_ADMIN[0]
+    _peer_id = event["object"]["message"]["peer_id"]
+    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
+    return Response(
+        peer_id = _peer_id,
+        forward={
+            "is_reply": True,
+            "peer_id": _peer_id,
+            "conversation_message_ids": _conversation_message_id
+        },
+        message = Replies.BOT_IS_NOT_ADMIN[0],
+        keyboard = Replies.BOT_IS_NOT_ADMIN[2]
+    )
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky reg", 
                                            "$darky layout", 
                                            "$darky layout <text>"], ignore_case=True) & 
-                           FromChat(silent=True) & IsAdminRule() & ~AdminRule() & ~IsBotAdmin(_db))
+                           FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
 async def access_denied_reply(event: dict, **kwargs):
-    return Replies.ACCESS_DENIED[0]
+    _peer_id = event["object"]["message"]["peer_id"]
+    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
+    return Response(
+        peer_id = _peer_id,
+        forward={
+            "is_reply": True,
+            "peer_id": _peer_id,
+            "conversation_message_ids": _conversation_message_id
+        },
+        message = Replies.ACCESS_DENIED[0],
+        keyboard = Replies.ACCESS_DENIED[2]
+    )
 
 bot.start()

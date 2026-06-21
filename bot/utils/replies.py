@@ -10,6 +10,26 @@ class Links:
     HELP_LINK = None
     GET_STARTED_LINK = None
 
+class Buttons:
+
+    REG_CHAT = CallbackActionKeyboardButton(
+        label = "Зарегистрировать чат",
+        payload = "{\"darky_button\":\"reg_chat\"}",
+        color = KeyboardColor.PRIMARY
+    )
+
+    GET_HELP = CallbackActionKeyboardButton(
+        label = "Руководство бота",
+        payload = "{\"darky_button\":\"help\"}",
+        color = KeyboardColor.SECONDARY
+    )
+
+    SPEAK_HELP = CallbackActionKeyboardButton(
+        label = "Как пользоваться DarkySpeak?",
+        payload = "{\"darky_button\":\"speak_help\"}",
+        color = KeyboardColor.SECONDARY
+    )
+
 class Replies:
 
     BOT_GREETING = (
@@ -31,20 +51,8 @@ class Replies:
         KeyboardMarkup(
             inline = True,
             buttons = [
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Зарегистрировать чат",
-                        payload = "{\"darky_button\":\"reg_chat\"}",
-                        color = KeyboardColor.PRIMARY
-                    )
-                ],
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Руководство бота",
-                        payload = "{\"darky_button\":\"help\"}",
-                        color = KeyboardColor.SECONDARY
-                    )
-                ]
+                [Buttons.REG_CHAT],
+                [Buttons.GET_HELP]
             ]
         )
     )
@@ -63,44 +71,7 @@ class Replies:
         KeyboardMarkup(
             inline = True,
             buttons = [
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Повторить попытку",
-                        payload = "{\"darky_button\":\"speak_again\"}",
-                        color = KeyboardColor.PRIMARY
-                    )
-                ],
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Помощь по команде",
-                        payload = "{\"darky_button\":\"speak_help\"}",
-                        color = KeyboardColor.SECONDARY
-                    )
-                ]
-            ]
-        )
-    )
-
-    WITLESS_BUGURT_FAIL = (
-        None,
-        None,
-        KeyboardMarkup(
-            inline = True,
-            buttons = [
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Повторить попытку",
-                        payload = "{\"darky_button\":\"bugurt_again\"}",
-                        color = KeyboardColor.PRIMARY
-                    )
-                ],
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Помощь по команде",
-                        payload = "{\"darky_button\":\"speak_help\"}",
-                        color = KeyboardColor.SECONDARY
-                    )
-                ]
+                [Buttons.SPEAK_HELP]
             ]
         )
     )
@@ -118,13 +89,7 @@ class Replies:
                         color = KeyboardColor.PRIMARY
                     )
                 ],
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Помощь по команде",
-                        payload = "{\"darky_button\":\"speak_help\"}",
-                        color = KeyboardColor.SECONDARY
-                    )
-                ]
+                [Buttons.SPEAK_HELP]
             ]
         )
     )
@@ -135,11 +100,73 @@ class Replies:
         None
     )
 
+    NOT_WORK_HERE = (
+        "⚠️ Эта команда здесь не работает",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
+
+    DISABLED = (
+        "❌ Данная команда была выключена разработчиком",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
+
+    UNDER_DEVELOPMENT = (
+        "⚠️ Данная команда находится в разработке",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
+
     ACCESS_DENIED = (
         "⛔ В доступе отказано.\n" \
         "Вы не являетесь администратором беседы или бота",
         None,
-        None
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
+
+    BOT_IS_NOT_ADMIN = (
+        "⚠️ Я не могу выполнить эту команду без прав администратора.\n"
+        "Пожалуйста, выдайте их мне и повторите попытку",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
+
+    WRONG_USAGE = (
+        "⚠️ Некорректное использование команды.\n"
+        "Убедитесь, что вы правильно ввели команду, её аргументы и повторите попытку",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
     )
 
     CHAT_IS_NOT_REGISTERED = (
@@ -154,27 +181,8 @@ class Replies:
         KeyboardMarkup(
             inline = True,
             buttons = [
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Зарегистрировать чат",
-                        payload = "{\"darky_button\":\"reg_chat\"}",
-                        color = KeyboardColor.PRIMARY
-                    )
-                ],
-                [
-                    CallbackActionKeyboardButton(
-                        label = "Руководство бота",
-                        payload = "{\"darky_button\":\"help\"}",
-                        color = KeyboardColor.SECONDARY
-                    )
-                ]
+                [Buttons.REG_CHAT],
+                [Buttons.GET_HELP]
             ]
         )
-    )
-
-    BOT_IS_NOT_ADMIN = (
-        "⚠️ Я не могу выполнить эту команду без прав администратора.\n"
-        "Пожалуйста, выдайте их мне и повторите попытку",
-        None,
-        None
     )

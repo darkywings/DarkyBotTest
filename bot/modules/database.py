@@ -252,3 +252,20 @@ class DarkyDatabase:
             return False
         
         return True
+    
+    async def get_user(self, _user_id):
+
+        logger.debug(f"Searching user {_user_id}...")
+        result = await self._db_client.fetchrow(f"SELECT * FROM users WHERE user_id = $1", _user_id)
+
+        if not result:
+            logger.debug(f"Record of user {_user_id} was not found")
+            return False
+        
+        return result
+    
+    async def update_user(self, _user_id, _key, _value):
+
+        logger.debug(f"Updating user {_user_id}...")
+        await self._db_client.execute("UPDATE users SET $2 = $3 WHERE user_id = $1", _user_id, _key, _value)
+        logger.debug(f"User {_user_id} is updated")

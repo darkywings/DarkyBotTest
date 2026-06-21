@@ -99,3 +99,27 @@ class Chats:
         await self._db.reg_chat_member(_peer_id, _user_id)
 
         logger.info(f"Chat member {_user_id} was registered in chat {_peer_id}")
+    
+    async def show_chat(self, event: dict):
+        '''
+        Отображает данные беседы и ее настройки
+        '''
+        pass
+
+    async def show_chat_member(self, event: dict, member_id: int):
+        '''
+        Отображает данные участника беседы
+        '''
+        pass
+    
+    async def update_member(self, event: dict, key: str, value: str):
+        '''
+        Обновляет данные участника беседы
+        '''
+        pass
+
+    async def update_chat(self, event: dict, key: str, value: str):
+        '''
+        Обновляет данные чата
+        '''
+        pass

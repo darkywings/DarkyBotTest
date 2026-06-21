@@ -40,3 +40,48 @@ class Users:
         await self._db.register_user(_user_id, user["first_name"], user["last_name"], user["screen_name"])
 
         logger.info(f"User {_user_id} was registered")
+    
+    async def get_user(self, event: dict) -> str:
+        '''
+        Отображение информации о пользователе и его настройках
+        '''
+        _user_id = event["object"]["message"]["from_id"]
+        
+        logger.debug(f"Getting the user {_user_id}...")
+        _user = await self._db.get_user(_user_id)
+
+        if _user == False:
+            return f"⚠️ Я не нашла данные о вашей регистрации"
+
+        return (
+            "🧾 Информация о вас:\n" \
+            " 🔹 ID: {_user.user_id}\n" \
+            " 🔹 ID в боте: {_user.id}\n" \
+            " 🔹 Имя: {_user.first_name} {_user.last_name}\n" \
+            " 🔹 Короткое имя: {_user.screen_name}\n"
+            "⚙️ Ваши настройки:\n"
+            " 🔹 Оповещения об обновлениях: {_user.update_notifications}\n" \
+            " 🔹 Упоминания ботом: {_user.mentions}\n" \
+            " 🔹 РП: {_user.who_can_rp_me}\n" \
+            " 🔹 Предупреждения DarkyVerify: {_user.darky_verify_warns}\n" \
+            " 🔹 Забанен DarkyVerify: {_user.is_banned}"
+        )
+
+    async def update_user(self, event: dict, key: str, value: str) -> None:
+        '''
+        Изменение настройки пользователя
+        '''
+
+        if key in [
+            "update_notifications",
+            "mentions",
+            "who_can_rp_me"
+        ]:
+            if (key in ["update_notifications", "mentions"] and not isinstance(value, bool) or 
+                key in ["who_can_rp_me"] and value not in ["all", "only_bot", "only_users", "nobody"]):
+                return "⚠️ Неверное значение для параметра, убедитесь в правильности значения"
+            
+            await self._db.update_user(event["object"]["message"]["from_id"], key, value)
+            return f"✅ Параметр {key} установлен на - {value}"
+
+        return "❌ Такого параметра не существует, либо он меняется не этим путем"

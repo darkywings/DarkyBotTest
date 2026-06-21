@@ -92,7 +92,7 @@ class Witless:
                     "conversation_message_ids": _conversation_message_id
                 },
                 message = Replies.WITLESS_GENERATE_FAIL[0],
-                keyboard = Replies.WITLESS_BUGURT_FAIL[2]
+                keyboard = Replies.WITLESS_GENERATE_FAIL[2]
             )
         
         _result = "\n@\n".join(_parts)
