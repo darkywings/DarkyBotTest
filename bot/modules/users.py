@@ -62,9 +62,9 @@ class Users:
             f"⚙️ Ваши настройки:\n"
             f" 🔹 Оповещения об обновлениях: {_user["update_notifications"]}\n" \
             f" 🔹 Упоминания ботом: {_user["mentions"]}\n" \
-            f" 🔹 РП: {_user["who_can_rp_me"]}\n" \
-            f" 🔹 Предупреждения DarkyVerify: {_user["darky_verify_warns"]}\n" \
-            f" 🔹 Забанен DarkyVerify: {_user["is_banned"]}"
+            f" 🔹 РП: ❕ {_user["who_can_rp_me"]}\n" \
+            f" 🔹 Предупреждения DarkyVerify: ❕ {_user["darky_verify_warns"]}\n" \
+            f" 🔹 Забанен DarkyVerify: {_user["is_banned"]}".relpace("True", "✅").replace("False", "❌")
         )
 
     async def update_user(self, event: dict, key: str, value: str) -> None:

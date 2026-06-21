@@ -59,7 +59,7 @@ async def reg_user(event: dict):
 async def show_user_settings(event: dict):
     return await bot_users.get_user(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky user set <key:word> <value:word>"], ignore_case=True) & FromUser())
+@bot.on_event.message_new(TwiMLRule(value=["$darky user set <key:word> <value:word>"], ignore_case=True) & FromUser())
 async def update_user_settings(event: dict, key: str = None, value: str = None):
     return await bot_users.update_user(event, key, value)
 
