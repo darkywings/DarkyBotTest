@@ -64,7 +64,13 @@ class Users:
             f" 🔹 Упоминания ботом: {_user["mentions"]}\n" \
             f" 🔹 РП: {_user["who_can_rp_me"]}\n" \
             f" 🔹 Предупреждения DarkyVerify: {_user["darky_verify_warns"]}\n" \
-            f" 🔹 Забанен DarkyVerify: {_user["is_banned"]}".replace("True", "✅").replace("False", "❌")
+            f" 🔹 Забанен DarkyVerify: {_user["is_banned"]}"
+            .replace("True", "✅")
+            .replace("False", "❌")
+            .replace("all", "❕ Все ❕")
+            .replace("nobody", "❌ Никто ❌")
+            .replace("only_users", "❗️ Только пользователи ❗️")
+            .replace("only_bot", "❗️ Только бот ❗️")
         )
 
     async def update_user(self, event: dict, key: str, value: str) -> None:
@@ -79,7 +85,7 @@ class Users:
         ]:
             if value in ["true", "false"]:
                 value = True if value == "true" else False
-                
+
             elif value.isdigit():
                 value = int(value)
 
