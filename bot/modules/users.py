@@ -78,7 +78,8 @@ class Users:
             "who_can_rp_me"
         ]:
             if value in ["true", "false"]:
-                value = bool(value)
+                value = True if value == "true" else False
+                
             elif value.isdigit():
                 value = int(value)
 
