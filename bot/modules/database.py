@@ -267,5 +267,5 @@ class DarkyDatabase:
     async def update_user(self, _user_id, _key, _value):
 
         logger.debug(f"Updating user {_user_id}...")
-        await self._db_client.execute("UPDATE users SET $2 = $3 WHERE user_id = $1", _user_id, _key, _value)
+        await self._db_client.execute(f"UPDATE users SET {_key} = $2 WHERE user_id = $1", _user_id, _value)
         logger.debug(f"User {_user_id} is updated")

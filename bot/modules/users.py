@@ -77,11 +77,16 @@ class Users:
             "mentions",
             "who_can_rp_me"
         ]:
+            if value in ["true", "false"]:
+                value = bool(value)
+            elif value.isdigit():
+                value = int(value)
+
             if (key in ["update_notifications", "mentions"] and not isinstance(value, bool) or 
                 key in ["who_can_rp_me"] and value not in ["all", "only_bot", "only_users", "nobody"]):
-                return "⚠️ Неверное значение для параметра, убедитесь в правильности значения"
-            
+                return f"⚠️ Неверное значение \"{value}\" для параметра \"{key}\", убедитесь в его правильности и повторите попытку"
+
             await self._db.update_user(event["object"]["message"]["from_id"], key, value)
-            return f"✅ Параметр {key} установлен на - {value}"
+            return f"✅ Значение параметра \"{key}\" установлено на \"{value}\""
 
         return "❌ Такого параметра не существует, либо он меняется не этим путем"
