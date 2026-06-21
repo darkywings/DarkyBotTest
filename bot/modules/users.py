@@ -54,17 +54,17 @@ class Users:
             return f"⚠️ Я не нашла данные о вашей регистрации"
 
         return (
-            "🧾 Информация о вас:\n" \
-            " 🔹 ID: {_user.user_id}\n" \
-            " 🔹 ID в боте: {_user.id}\n" \
-            " 🔹 Имя: {_user.first_name} {_user.last_name}\n" \
-            " 🔹 Короткое имя: {_user.screen_name}\n"
-            "⚙️ Ваши настройки:\n"
-            " 🔹 Оповещения об обновлениях: {_user.update_notifications}\n" \
-            " 🔹 Упоминания ботом: {_user.mentions}\n" \
-            " 🔹 РП: {_user.who_can_rp_me}\n" \
-            " 🔹 Предупреждения DarkyVerify: {_user.darky_verify_warns}\n" \
-            " 🔹 Забанен DarkyVerify: {_user.is_banned}"
+            f"🧾 Информация о вас:\n" \
+            f" 🔹 ID: {_user.user_id}\n" \
+            f" 🔹 ID в боте: {_user.id}\n" \
+            f" 🔹 Имя: {_user.first_name} {_user.last_name}\n" \
+            f" 🔹 Короткое имя: {_user.screen_name}\n"
+            f"⚙️ Ваши настройки:\n"
+            f" 🔹 Оповещения об обновлениях: {_user.update_notifications}\n" \
+            f" 🔹 Упоминания ботом: {_user.mentions}\n" \
+            f" 🔹 РП: {_user.who_can_rp_me}\n" \
+            f" 🔹 Предупреждения DarkyVerify: {_user.darky_verify_warns}\n" \
+            f" 🔹 Забанен DarkyVerify: {_user.is_banned}"
         )
 
     async def update_user(self, event: dict, key: str, value: str) -> None:

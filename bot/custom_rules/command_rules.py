@@ -7,6 +7,19 @@ from utils.replies import Replies
 if TYPE_CHECKING:
     from modules.database import DarkyDatabase
 
+class FromUser(BaseRule):
+    '''
+    Проверка что сообщение пришло от пользователя (не бота)
+    '''
+    async def check(self, event: dict):
+
+        _user_id = event["object"]["message"]["from_id"]
+
+        if _user_id > 0:
+            return True
+        
+        return False
+
 class FromChat(BaseRule):
     '''
     Проверка что сообщение пришло из беседы, а не из личных сообщений

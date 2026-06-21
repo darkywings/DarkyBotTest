@@ -51,13 +51,17 @@ sleep_trigger = SleepTrigger()
 
 ''' ---------DATABASE MAIN--------- '''
 
-@bot.on_event.message_new(TrueRule())
+@bot.on_event.message_new(FromUser())
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky user settings"], ignore_case=True))
+@bot.on_event.message_new(TextRule(value=["$darky user settings"], ignore_case=True) & FromUser())
 async def show_user_settings(event: dict):
     return await bot_users.get_user(event)
+
+@bot.on_event.message_new(TextRule(value=["$darky user set <key> <value>"]) & FromUser())
+async def update_user_settings(event: dict, key: str = None, value: str = None):
+    return await bot_users.update_user(event, key, value)
 
 @bot.on_event.message_new(FromChat() & IsAdminRule() & IsRegistered(_db))
 async def reg_chat_member(event: dict):

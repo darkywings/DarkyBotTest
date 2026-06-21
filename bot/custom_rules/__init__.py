@@ -1,4 +1,5 @@
 from .command_rules import (
+    FromUser,
     FromChat,
     Disabled,
     UnderDevelopment,
