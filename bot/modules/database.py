@@ -250,7 +250,7 @@ class DarkyDatabase:
         return True
     
     async def get_user(self,
-                       _user_id: int) -> "Record" | "bool":
+                       _user_id: int) -> "Record":
         '''
         Проверка регистрации пользователя
 
@@ -287,7 +287,7 @@ class DarkyDatabase:
         logger.debug(f"User {_user_id} is updated")
     
     async def get_chat(self,
-                       _chat_id: int) -> "Record" | "bool":
+                       _chat_id: int) -> "Record":
         '''
         Проверка регистрации чата и возврат всех его данных одной записью
 
