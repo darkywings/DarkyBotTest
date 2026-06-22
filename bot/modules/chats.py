@@ -114,7 +114,7 @@ class Chats:
             f" 🔹 Доступ к kick: {_chat["who_can_kick"]}\n" \
             f" 🔹 Доступ к предупреждениям: {_chat["who_can_warn"]}\n" \
             f" 🔹 Доступ к банам: {_chat["who_can_ban"]}\n" \
-            f" 🔹 Лимит предупреждений: {_chat["warns_limit"]}\n" \
+            f" 🔹 Лимит предупреждений: {_chat["warn_limit"]}\n" \
             f" 🔹 Наказание за лимит предупреждений: {_chat["warn_punishment"]}\n" \
             f" 🔹 Автокик: {_chat["autokick"]}\n" \
             "🛡 Настройки системы DarkyVerify:\n" \
