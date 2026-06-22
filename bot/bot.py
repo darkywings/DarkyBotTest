@@ -198,7 +198,7 @@ async def wrong_usage_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
     return Response(
-        peer_id = _peer_id,
+        peer_ids = _peer_id,
         forward={
             "is_reply": True,
             "peer_id": _peer_id,
@@ -215,7 +215,7 @@ async def not_from_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
     return Response(
-        peer_id = _peer_id,
+        peer_ids = _peer_id,
         forward={
             "is_reply": True,
             "peer_id": _peer_id,
@@ -231,7 +231,7 @@ async def not_registered_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
     return Response(
-        peer_id = _peer_id,
+        peer_ids = _peer_id,
         forward={
             "is_reply": True,
             "peer_id": _peer_id,
@@ -247,7 +247,7 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
     return Response(
-        peer_id = _peer_id,
+        peer_ids = _peer_id,
         forward={
             "is_reply": True,
             "peer_id": _peer_id,
@@ -266,7 +266,7 @@ async def access_denied_reply(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
     return Response(
-        peer_id = _peer_id,
+        peer_ids = _peer_id,
         forward={
             "is_reply": True,
             "peer_id": _peer_id,
