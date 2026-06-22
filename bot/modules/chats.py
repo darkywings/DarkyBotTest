@@ -73,7 +73,7 @@ class Chats:
             return
 
         logger.debug(f"Checking registration for chat member {_user_id} in {_peer_id}...")
-        if await self._db.check_registration_chat_member(_peer_id, _user_id):
+        if await self._db.get_chat_member(_peer_id, _user_id):
             logger.debug(f"Chat member {_user_id} is already registered in chat {_peer_id}")
             return
         
