@@ -50,6 +50,15 @@ EOSQL
 # --- users ----
 
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+    CREATE TABLE IF NOT EXISTS notes (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL
+    );
+EOSQL
+
+psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         user_id INT NOT NULL UNIQUE,
@@ -76,14 +85,14 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         lvlups BOOLEAN DEFAULT TRUE,
         rp BOOLEAN DEFAULT TRUE,
         nicknames BOOLEAN DEFAULT TRUE,
-        manage_rp TEXT CHECK (manage_rp IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
-        manage_nicknames TEXT CHECK (manage_nicknames IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        manage_rp TEXT CHECK (manage_rp IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
+        manage_nicknames TEXT CHECK (manage_nicknames IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
         triggers BOOLEAN DEFAULT TRUE,
         layout_autodetect BOOLEAN DEFAULT TRUE,
-        who_can_mute TEXT CHECK (who_can_mute IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
-        who_can_kick TEXT CHECK (who_can_kick IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
-        who_can_warn TEXT CHECK (who_can_warn IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
-        who_can_ban TEXT CHECK (who_can_ban IN ( 'all', 'admins', 'none' )) DEFAULT 'admins',
+        who_can_mute TEXT CHECK (who_can_mute IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
+        who_can_kick TEXT CHECK (who_can_kick IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
+        who_can_warn TEXT CHECK (who_can_warn IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
+        who_can_ban TEXT CHECK (who_can_ban IN ( 'all', 'admins', 'nobody' )) DEFAULT 'admins',
         warn_limit INT DEFAULT 5,
         warn_punishment TEXT CHECK (warn_punishment IN ( 'ban', 'kick', 'mute', 'none' )) DEFAULT 'ban',
         autokick BOOLEAN DEFAULT FALSE
@@ -114,6 +123,45 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         id SERIAL PRIMARY KEY,
         content TEXT DEFAULT NULL,
         attachment TEXT DEFAULT NULL
+    );
+EOSQL
+
+psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+    CREATE TABLE IF NOT EXISTS chat_assocs (
+        id SERIAL PRIMARY KEY,
+        chat_id INT NOT NULL,
+        command TEXT NOT NULL,
+        assocs TEXT[]
+    );
+EOSQL
+
+psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+    CREATE TABLE IF NOT EXISTS rp (
+        id SERIAL PRIMARY KEY,
+        chat_id INT NOT NULL,
+        trigger TEXT NOT NULL,
+        reply_male TEXT NOT NULL,
+        reply_female TEXT NOT NULL
+    );
+EOSQL
+
+psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
+    CREATE TABLE IF NOT EXISTS chat_members (
+        id SERIAL PRIMARY KEY,
+        chat_id INT NOT NULL,
+        user_id INT NOT NULL UNIQUE,
+        nickname TEXT DEFAULT NULL,
+        warns INT DEFAULT 0,
+        is_banned BOOLEAN DEFAULT FALSE,
+        level INT DEFAULT 0,
+        level_xp INT DEFAULT 0,
+        messages INT DEFAULT 0,
+        bad_words INT DEFAULT 0,
+        photo INT DEFAULT 0,
+        video INT DEFAULT 0,
+        audio INT DEFAULT 0,
+        docs INT DEFAULT 0,
+        audio_messages INT DEFAULT 0
     );
 EOSQL
 

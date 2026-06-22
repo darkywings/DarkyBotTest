@@ -101,28 +101,37 @@ class Chats:
             f" 🔹 Количество зарегистрированных участников: {_chat["members_count"]}\n" \
             f" 🔹 Дата регистрации в боте: {_chat["created_at"]}\n" \
             "⚙️ Настройки чата:\n" \
-            " 🔹 Оповещения бота: {_chat.update_notifications}\n" \
-            " 🔹 Упоминания в приветствиях: {_chat.mention_in_greetings}\n" \
-            " 🔹 Оповещения о новых уровнях: {_chat.lvlups}\n" \
-            " 🔹 РП-команды: {_chat.rp}\n" \
-            " 🔹 Никнеймы: {_chat.nicknames}\n" \
-            " 🔹 Управление РП-командами: {_chat.manage_rp}\n" \
-            " 🔹 Управление никнеймами: {_chat.manage_nicknames}\n" \
-            " 🔹 Триггеры: {_chat.triggers}\n" \
-            " 🔹 Автоисправление раскладки: {_chat.layout_autodetect}\n" \
-            " 🔹 Доступ к mute: {_chat.who_can_mute}\n" \
-            " 🔹 Доступ к kick: {_chat.who_can_kick}\n" \
-            " 🔹 Доступ к предупреждениям: {_chat.who_can_warn}\n" \
-            " 🔹 Доступ к банам: {_chat.who_can_ban}\n" \
-            " 🔹 Лимит предупреждений: {_chat.warns_limit}\n" \
-            " 🔹 Наказание за лимит предупреждений: {_chat.warn_punishment}\n" \
-            " 🔹 Автокик: {_chat.autokick}\n" \
+            f" 🔹 Оповещения бота: {_chat["update_notifications"]}\n" \
+            f" 🔹 Упоминания в приветствиях: {_chat["mention_in_greetings"]}\n" \
+            f" 🔹 Оповещения о новых уровнях: {_chat["lvlups"]}\n" \
+            f" 🔹 РП-команды: {_chat["rp"]}\n" \
+            f" 🔹 Никнеймы: {_chat["nicknames"]}\n" \
+            f" 🔹 Управление РП-командами: {_chat["manage_rp"]}\n" \
+            f" 🔹 Управление никнеймами: {_chat["manage_nicknames"]}\n" \
+            f" 🔹 Триггеры: {_chat["triggers"]}\n" \
+            f" 🔹 Автоисправление раскладки: {_chat["layout_autodetect"]}\n" \
+            f" 🔹 Доступ к mute: {_chat["who_can_mute"]}\n" \
+            f" 🔹 Доступ к kick: {_chat["who_can_kick"]}\n" \
+            f" 🔹 Доступ к предупреждениям: {_chat["who_can_warn"]}\n" \
+            f" 🔹 Доступ к банам: {_chat["who_can_ban"]}\n" \
+            f" 🔹 Лимит предупреждений: {_chat["warns_limit"]}\n" \
+            f" 🔹 Наказание за лимит предупреждений: {_chat["warn_punishment"]}\n" \
+            f" 🔹 Автокик: {_chat["autokick"]}\n" \
             "🛡 Настройки системы DarkyVerify:\n" \
-            " 🔹 Статус: {_chat.verify_enabled}\n" \
-            " 🔹 Наказание: {_chat.verify_punishment}\n" \
-            " 🔹 Дней с регистрации должно пройти: {_chat.days_from_signup}\n" \
-            " 🔹 Должны быть подписаны на группы: {_chat.should_follow_groups}\n" \
-            " 🔹 Спам-защита: {_chat.spam_detection}"
+            f" 🔹 Статус: {_chat["verify_enabled"]}\n" \
+            f" 🔹 Наказание: {_chat["verify_punishment"]}\n" \
+            f" 🔹 Дней с регистрации должно пройти: {_chat["days_from_signup"]}\n" \
+            f" 🔹 Должны быть подписаны на группы: {_chat["should_follow_groups"]}\n" \
+            f" 🔹 Спам-защита: {_chat["spam_detection"]}"
+            .replace("True", "✅")
+            .replace("False", "❌")
+            .replace("all", "❕ Все пользователи ❕")
+            .replace("nobody", "❌ Никто ❌")
+            .replace("only_users", "❗️ Только администраторы ❗️")
+            .replace("none", "❌ Не установлено ❌")
+            .replace("mute", "❕ Запрет на сообщения ❕")
+            .replace("kick", "❕ Исключение ❕")
+            .replace("ban", "❗️ Бан ❗️")
         )
 
 

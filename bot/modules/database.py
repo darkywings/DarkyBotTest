@@ -55,15 +55,6 @@ class DarkyDatabase:
             """,
             _id, _first_name, _last_name, _screen_name
         )
-        await self._db_client.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS notes_{_id} (
-                id SERIAL PRIMARY KEY,
-                title TEXT NOT NULL,
-                content TEXT NOT NULL
-            );
-            """
-        )
         logger.debug(f"User {_id} was added into the database")
     
     async def register_chat(self,
@@ -105,53 +96,15 @@ class DarkyDatabase:
         )
         await self._db_client.execute(
             f"""
-            CREATE TABLE IF NOT EXISTS members_{_id} (
-                id SERIAL PRIMARY KEY,
-                user_id INT NOT NULL UNIQUE,
-                nickname TEXT DEFAULT NULL,
-                warns INT DEFAULT 0,
-                is_banned BOOLEAN DEFAULT FALSE,
-                level INT DEFAULT 0,
-                level_xp INT DEFAULT 0,
-                messages INT DEFAULT 0,
-                bad_words INT DEFAULT 0,
-                photo INT DEFAULT 0,
-                video INT DEFAULT 0,
-                audio INT DEFAULT 0,
-                docs INT DEFAULT 0,
-                audio_messages INT DEFAULT 0
-            );
-            """
-        )
-        await self._db_client.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS assocs_{_id} (
-                id SERIAL PRIMARY KEY,
-                command TEXT NOT NULL UNIQUE,
-                assocs TEXT[]
-            );
-            """
-        )
-        await self._db_client.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS rp_{_id} (
-                id SERIAL PRIMARY KEY,
-                trigger TEXT NOT NULL UNIQUE,
-                f_reply TEXT NOT NULL,
-                m_reply TEXT NOT NULL
-            );
-            """
-        )
-        await self._db_client.execute(
-            f"""
-            INSERT INTO rp_{_id} (trigger, f_reply, m_reply) VALUES
-            ('буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
-            ('кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
-            ('лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
-            ('обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
-            ('поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
-            ('ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
-            """
+            INSERT INTO rp (chat_id, trigger, reply_male, reply_female) VALUES
+            ($1, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
+            ($1, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
+            ($1, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
+            ($1, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
+            ($1, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
+            ($1, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+            """,
+            _id
         )
         await self.reg_chat_members(_id, _members)
         logger.debug(f"Chat {_id} was added to the database")
@@ -169,25 +122,31 @@ class DarkyDatabase:
         :type _users: list[dict]
         '''
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
-        _query = f"INSERT INTO members_{_chat_id} (user_id) VALUES {", ".join([f"({_user["id"]})" for _user in _users])};"
+        _query = f"INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"($1, {_user["id"]})" for _user in _users])};"
 
         logger.debug(f"Registering members for {_chat_id}...")
-        await self._db_client.execute(_query)
+        await self._db_client.execute(_query, _chat_id)
         logger.debug(f"Chat members for {_chat_id} was registered")
     
-    async def check_registration_chat_member(self,
-                                             _chat_id: int,
-                                             _user_id: int,
-                                             only_bool: bool = True) -> dict | bool:
+    async def get_chat_member(self,
+                              _chat_id: int,
+                              _user_id: int) -> dict | bool:
+        '''
+        Получить участника чата
+
+        :param _chat_id: Идентификатор чата в котором надо зарегистрировать участников
+        :type _chat_id: int
+
+        :param _user_id: Идентификатор участника
+        :type _user_id: int
+        '''
         logger.debug(f"Searching records for chat member with ID: {_user_id} in chat {_chat_id}...")
-        result = await self._db_client.fetchrow(f"SELECT * FROM members_{_chat_id} WHERE user_id = $1", _user_id)
+        result = await self._db_client.fetchrow(f"SELECT * FROM chat_members WHERE chat_id = $1 AND user_id = $2",
+                                                _chat_id, _user_id)
 
         if not result:
             logger.debug(f"Record with ID {_user_id} was not found in chat {_chat_id}")
             return False
-            
-        if only_bool:
-            return True
             
         logger.debug(f"Record was found: {result}")
         return result
@@ -207,11 +166,12 @@ class DarkyDatabase:
         logger.debug(f"Registering chat member {_user_id} in {_chat_id}...")
         await self._db_client.execute(
             f"""
-            INSERT INTO members_{_chat_id} (user_id) VALUES ($1);
+            INSERT INTO chat_members (chat_id, user_id) VALUES ($1, $2);
             """,
+            _chat_id,
             _user_id
         )
-        logger.debug(f"Chat member {_user_id} was registered in chat_members")
+        logger.debug(f"Chat member {_user_id} was registered in chat_members {_chat_id}")
     
     async def update_chat_timestamp(self,
                                     _chat_id: int) -> None:
@@ -319,8 +279,8 @@ class DarkyDatabase:
             "verify_settings.days_from_signup, " \
             "verify_settings.should_follow_groups, " \
             "verify_settings.spam_detection, " \
-            f"(SELECT COUNT(*) FROM rp_{_chat_id}) AS rp_count, " \
-            f"(SELECT COUNT(*) FROM members_{_chat_id}) AS members_count " \
+            "(SELECT COUNT(*) FROM rp WHERE chat_id = $1) AS rp_count, " \
+            "(SELECT COUNT(*) FROM chat_members WHERE chat_id = $1) AS members_count " \
             "FROM chats chat " \
             "JOIN chat_settings settings ON chat.settings_id = settings.id " \
             "JOIN verify_settings ON chat.verify_settings_id = verify_settings.id "
