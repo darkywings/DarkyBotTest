@@ -110,8 +110,8 @@ class Chats:
             f" 🔹 Управление никнеймами: {_chat["manage_nicknames"]}\n" \
             f" 🔹 Триггеры: {_chat["triggers"]}\n" \
             f" 🔹 Автоисправление раскладки: {_chat["layout_autodetect"]}\n" \
-            f" 🔹 Доступ к mute: {_chat["who_can_mute"]}\n" \
-            f" 🔹 Доступ к kick: {_chat["who_can_kick"]}\n" \
+            f" 🔹 Доступ к запрету сообщений: {_chat["who_can_mute"]}\n" \
+            f" 🔹 Доступ к исключению пользователей: {_chat["who_can_kick"]}\n" \
             f" 🔹 Доступ к предупреждениям: {_chat["who_can_warn"]}\n" \
             f" 🔹 Доступ к банам: {_chat["who_can_ban"]}\n" \
             f" 🔹 Лимит предупреждений: {_chat["warn_limit"]}\n" \
@@ -127,7 +127,7 @@ class Chats:
             .replace("False", "❌")
             .replace("all", "❕ Все пользователи ❕")
             .replace("nobody", "❌ Никто ❌")
-            .replace("only_users", "❗️ Только администраторы ❗️")
+            .replace("admins", "❗️ Только администраторы ❗️")
             .replace("none", "❌ Не установлено ❌")
             .replace("mute", "❕ Запрет на сообщения ❕")
             .replace("kick", "❕ Исключение ❕")
