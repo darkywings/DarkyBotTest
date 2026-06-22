@@ -23,11 +23,10 @@ class Users:
         _user_id = event["object"]["message"]["from_id"]
 
         if _user_id < 0:
-            logger.warning(f"{_user_id} is not user")
             return
 
         logger.debug(f"Checking registration for user {_user_id}...")
-        if await self._db.check_registration("user", _user_id):
+        if await self._db.get_user(_user_id):
             logger.debug(f"User {_user_id} is already registered")
             return
         
@@ -47,8 +46,9 @@ class Users:
         '''
         _user_id = event["object"]["message"]["from_id"]
         
-        logger.debug(f"Getting the user {_user_id}...")
+        logger.debug(f"Getting the user {_user_id} info...")
         _user = await self._db.get_user(_user_id)
+        logger.debug(f"User {_user_id} info was got")
 
         if _user == False:
             return f"⚠️ Я не нашла данные о вашей регистрации"
@@ -60,7 +60,7 @@ class Users:
             f" 🔹 Имя: {_user["first_name"]} {_user["last_name"]}\n" \
             f" 🔹 Короткое имя: {_user["screen_name"]}\n"
             f"⚙️ Ваши настройки:\n"
-            f" 🔹 Оповещения об обновлениях: {_user["update_notifications"]}\n" \
+            f" 🔹 Оповещения бота: {_user["update_notifications"]}\n" \
             f" 🔹 Упоминания ботом: {_user["mentions"]}\n" \
             f" 🔹 РП: {_user["who_can_rp_me"]}\n" \
             f" 🔹 Предупреждения DarkyVerify: {_user["darky_verify_warns"]}\n" \
@@ -73,9 +73,15 @@ class Users:
             .replace("only_bot", "❗️ Только бот ❗️")
         )
 
-    async def update_user(self, event: dict, key: str, value: str) -> None:
+    async def update_user(self, event: dict, key: str, value: str) -> str:
         '''
         Изменение настройки пользователя
+
+        :param key: Название параметра
+        :type key: str
+
+        :param value: Новое значение параметра key
+        :type value: str
         '''
 
         if key in [

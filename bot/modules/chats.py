@@ -100,11 +100,49 @@ class Chats:
 
         logger.info(f"Chat member {_user_id} was registered in chat {_peer_id}")
     
-    async def show_chat(self, event: dict):
+    async def show_chat(self, event: dict) -> str:
         '''
         Отображает данные беседы и ее настройки
         '''
-        pass
+        _peer_id = event["object"]["message"]["peer_id"]
+
+        logger.debug(f"Getting the chat {_peer_id} info...")
+        _chat = await self._db.get_chat(_peer_id)
+        logger.debug(f"Chat {_peer_id} info was got")
+
+        return (
+            "🧾 Информация о чате:\n" \
+            f" 🔹 ID чата: {_chat["chat_id"]}\n" \
+            f" 🔹 ID чата в боте: {_chat["id"]}\n" \
+            f" 🔹 Название чата: {_chat["chat_title"]}\n" \
+            f" 🔹 Количество РП команд: {_chat["rp_count"]}\n" \
+            f" 🔹 Количество зарегистрированных участников: {_chat["members_count"]}\n" \
+            f" 🔹 Дата регистрации в боте: {_chat["created_at"]}\n" \
+            "⚙️ Настройки чата:\n" \
+            " 🔹 Оповещения бота: {_chat.update_notifications}\n" \
+            " 🔹 Упоминания в приветствиях: {_chat.mention_in_greetings}\n" \
+            " 🔹 Оповещения о новых уровнях: {_chat.lvlups}\n" \
+            " 🔹 РП-команды: {_chat.rp}\n" \
+            " 🔹 Никнеймы: {_chat.nicknames}\n" \
+            " 🔹 Управление РП-командами: {_chat.manage_rp}\n" \
+            " 🔹 Управление никнеймами: {_chat.manage_nicknames}\n" \
+            " 🔹 Триггеры: {_chat.triggers}\n" \
+            " 🔹 Автоисправление раскладки: {_chat.layout_autodetect}\n" \
+            " 🔹 Доступ к mute: {_chat.who_can_mute}\n" \
+            " 🔹 Доступ к kick: {_chat.who_can_kick}\n" \
+            " 🔹 Доступ к предупреждениям: {_chat.who_can_warn}\n" \
+            " 🔹 Доступ к банам: {_chat.who_can_ban}\n" \
+            " 🔹 Лимит предупреждений: {_chat.warns_limit}\n" \
+            " 🔹 Наказание за лимит предупреждений: {_chat.warn_punishment}\n" \
+            " 🔹 Автокик: {_chat.autokick}\n" \
+            "🛡 Настройки системы DarkyVerify:\n" \
+            " 🔹 Статус: {_chat.verify_enabled}\n" \
+            " 🔹 Наказание: {_chat.verify_punishment}\n" \
+            " 🔹 Дней с регистрации должно пройти: {_chat.days_from_signup}\n" \
+            " 🔹 Должны быть подписаны на группы: {_chat.should_follow_groups}\n" \
+            " 🔹 Спам-защита: {_chat.spam_detection}"
+        )
+
 
     async def show_chat_member(self, event: dict, member_id: int):
         '''

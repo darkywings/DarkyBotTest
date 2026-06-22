@@ -48,10 +48,10 @@ class IsRegistered(BaseRule):
 
         _peer_id = event["object"]["message"]["peer_id"]
 
-        return await self._db.check_registration(
-            "chat" if _peer_id > 2000000000 else "user",
-            _peer_id
-        )
+        # return await self._db.check_registration(
+        #     "chat" if _peer_id > 2000000000 else "user",
+        #     _peer_id
+        # )
 
 class Disabled(BaseRule):
     '''

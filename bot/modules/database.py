@@ -1,8 +1,12 @@
 import os
 import logging
+from typing import TYPE_CHECKING
 from dotenv import load_dotenv
 
 from utils.db_client import AsyncPGClient
+
+if TYPE_CHECKING:
+    from asyncpg import Record
 
 logger = logging.getLogger("db-client")
 
@@ -17,45 +21,16 @@ class DarkyDatabase:
         )
         logger.debug("Database is connected")
 
-    async def check_registration(self,
-                                 _type: str,
-                                 _id: int,
-                                 only_bool: bool = True) -> dict | bool:
-        '''
-        Проверка регистрации пользователя или чата в базе данных
-        Возвращает найденный объект при наличии иначе False
-
-        :param _type: тип объекта (user/chat)
-        :type _type: str
-
-        :param _id: идентификатор объекта
-        :type _id: int
-
-        :param only_bool: возврат только булева переменной, или найденного объекта
-        :type only_bool: bool
-        '''
-        if _type in ["user", "chat"]:
-        
-            logger.debug(f"Searching records for {_type} with ID {_id}...")
-            result = await self._db_client.fetchrow(f"SELECT * FROM {_type}s WHERE {_type}_id = $1", _id)
-
-            if not result:
-                logger.debug(f"Record of {_type} with ID {_id} was not found")
-                return False
-            
-            if only_bool:
-                return True
-            
-            logger.debug(f"Record was found: {result}")
-            return result
-        
-        raise ValueError("type arg should be \"user\" or \"chat\"")
+    async def close(self):
+        logger.debug(f"Disconnecting the database...")
+        await self._db_client.disconnect()
+        logger.debug(f"Database was disconnected")
     
     async def register_user(self,
                             _id: int,
                             _first_name: str,
                             _last_name: str,
-                            _screen_name: str):
+                            _screen_name: str) -> None:
         '''
         Регистрация пользователя в базе данных
         Происходит автоматически при каждом новом сообщении от этого пользователя
@@ -94,7 +69,7 @@ class DarkyDatabase:
     async def register_chat(self,
                             _id: int,
                             _title: str,
-                            _members: list[dict]):
+                            _members: list[dict]) -> None:
         '''
         Регистрация чата в базе данных
         Происходит только после вызова определенной команды
@@ -181,12 +156,20 @@ class DarkyDatabase:
         await self.reg_chat_members(_id, _members)
         logger.debug(f"Chat {_id} was added to the database")
     
-    async def reg_chat_members(self, _chat_id, _user_ids):
+    async def reg_chat_members(self,
+                               _chat_id: int,
+                               _users: list[dict]) -> None:
         '''
-        Регистрация нескольких участников в базе данных в таблице участников чата
+        Регистрация нескольких участников в таблице участников чата
+
+        :param _chat_id: Идентификатор чата в котором надо зарегистрировать участников
+        :type _chat_id: int
+
+        :param _users: Список словарей участников для регистрации в чате
+        :type _users: list[dict]
         '''
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
-        _query = f"INSERT INTO members_{_chat_id} (user_id) VALUES {", ".join([f"({_user_id["id"]})" for _user_id in _user_ids])};"
+        _query = f"INSERT INTO members_{_chat_id} (user_id) VALUES {", ".join([f"({_user["id"]})" for _user in _users])};"
 
         logger.debug(f"Registering members for {_chat_id}...")
         await self._db_client.execute(_query)
@@ -209,9 +192,17 @@ class DarkyDatabase:
         logger.debug(f"Record was found: {result}")
         return result
         
-    async def reg_chat_member(self, _chat_id, _user_id):
+    async def reg_chat_member(self, 
+                              _chat_id: int,
+                              _user_id: int) -> None:
         '''
-        Регистрация участника в базе данных в таблице участников чата
+        Регистрация одного участника в таблице участников чата
+
+        :param _chat_id: Идентификатор чата в котором надо зарегистрировать участников
+        :type _chat_id: int
+
+        :param _user_id: Идентификатор участника
+        :type _user_id: int
         '''
         logger.debug(f"Registering chat member {_user_id} in {_chat_id}...")
         await self._db_client.execute(
@@ -222,14 +213,13 @@ class DarkyDatabase:
         )
         logger.debug(f"Chat member {_user_id} was registered in chat_members")
     
-    async def close(self):
-        logger.debug(f"Disconnecting the database...")
-        await self._db_client.disconnect()
-        logger.debug(f"Database was disconnected")
-    
-    async def update_chat_timestamp(self, _chat_id):
+    async def update_chat_timestamp(self,
+                                    _chat_id: int) -> None:
         '''
         Обновление временной метки чата в базе данных
+
+        :param _chat_id: Идентификатор чата в котором необходимо обновить временную метку
+        :type _chat_id: int
         '''
         logger.debug(f"Updating timestamp for {_chat_id}...")
         await self._db_client.execute(
@@ -242,8 +232,14 @@ class DarkyDatabase:
         )
         logger.debug(f"Timestamp for {_chat_id} updated")
     
-    async def is_user_bot_admin(self, _user_id):
+    async def is_bot_admin(self,
+                           _user_id: int) -> bool:
+        '''
+        Проверка что пользователь является администратором бота
 
+        :param _user_id: Идентификатор пользователя для проверки
+        :type _user_id: int
+        '''
         logger.debug(f"Searching records for admins with ID {_user_id}...")
         result = await self._db_client.fetchrow(f"SELECT * FROM admins WHERE user_id = $1", _user_id)
 
@@ -253,8 +249,14 @@ class DarkyDatabase:
         
         return True
     
-    async def get_user(self, _user_id):
+    async def get_user(self,
+                       _user_id: int) -> "Record" | bool:
+        '''
+        Проверка регистрации пользователя
 
+        :param _user_id: Идентификатор пользователя для проверки
+        :type _user_id: int
+        '''
         logger.debug(f"Searching user {_user_id}...")
         result = await self._db_client.fetchrow(f"SELECT * FROM users WHERE user_id = $1", _user_id)
 
@@ -264,8 +266,106 @@ class DarkyDatabase:
         
         return result
     
-    async def update_user(self, _user_id, _key, _value):
+    async def update_user(self,
+                          _user_id: int,
+                          _key: str,
+                          _value: str) -> None:
+        '''
+        Обновление полей пользователя в таблцие
 
+        :param _user_id: Идентификатор пользователя для изменения данных
+        :type _user_id: int
+
+        :param _key: Название параметра (столбца) для изменения
+        :type _key: str
+
+        :param _value: Новое значение параметра _key
+        :type _value: str
+        '''
         logger.debug(f"Updating user {_user_id}...")
         await self._db_client.execute(f"UPDATE users SET {_key} = $2 WHERE user_id = $1", _user_id, _value)
         logger.debug(f"User {_user_id} is updated")
+    
+    async def get_chat(self,
+                       _chat_id: int) -> "Record" | bool:
+        '''
+        Проверка регистрации чата и возврат всех его данных одной записью
+
+        :param _chat_id: Идентификатор чата для проверки
+        :type _chat_id: int
+        '''
+        logger.debug(f"Searching chat {_chat_id}...")
+        _chat = await self._db_client.fetchrow(
+            "SELECT " \
+            "chat.id, chat.chat_id, chat.chat_title, chat.created_at, chat.updated_at," \
+            "settings.update_notifications, " \
+            "settings.mention_in_greetings, " \
+            "settings.lvlups, " \
+            "settings.rp, " \
+            "settings.nicknames, " \
+            "settings.manage_rp, " \
+            "settings.manage_nicknames, " \
+            "settings.triggers, " \
+            "settings.layout_autodetect, " \
+            "settings.who_can_mute, " \
+            "settings.who_can_kick, " \
+            "settings.who_can_warn, " \
+            "settings.who_can_ban, " \
+            "settings.warn_limit, " \
+            "settings.warn_punishment, " \
+            "settings.autokick, " \
+            "verify_settings.enabled AS verify_enabled, " \
+            "verify_settings.punishment AS verify_punishment, " \
+            "verify_settings.days_from_signup, " \
+            "verify_settings.should_follow_groups, " \
+            "verify_settings.spam_detection, " \
+            f"(SELECT COUNT(*) FROM rp_{_chat_id}) AS rp_count, " \
+            f"(SELECT COUNT(*) FROM members_{_chat_id}) AS members_count " \
+            "FROM chats chat " \
+            "JOIN chat_settings settings ON chat.settings_id = settings.id " \
+            "JOIN verify_settings ON chat.verify_settings_id = verify_settings.id "
+            "WHERE chat.chat_id = $1",
+            _chat_id
+        )
+
+        if not _chat:
+            logger.debug(f"Record of chat {_chat} was not found")
+            return False
+        
+        return _chat
+    
+    async def update_chat_settings(self,
+                                   _chat_id: int,
+                                   _key: str,
+                                   _value: str) -> None:
+        '''
+        Обновление полей чата в таблице
+
+        :param _chat_id: Идентификатор чата для изменения данных
+        :type _chat_id: int
+
+        :param _key: Название параметра (столбца) для изменения
+        :type _key: str
+
+        :param _value: Новое значение параметра _key
+        :type _value: str
+        '''
+        pass
+
+    async def update_verify_settings(self,
+                                     _chat_id: int,
+                                     _key: str,
+                                     _value: str) -> None:
+        '''
+        Обновление полей чата в системе DarkyVerify в таблице
+
+        :param _chat_id: Идентификатор чата для изменения данных
+        :type _chat_id: int
+
+        :param _key: Название параметра (столбца) для изменения
+        :type _key: str
+
+        :param _value: Новое значение параметра _key
+        :type _value: str
+        '''
+        pass
