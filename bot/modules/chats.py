@@ -27,7 +27,7 @@ class Chats:
             return
 
         logger.debug(f"Checking registration for chat {_peer_id}...")
-        if await self._db.check_registration("chat", _peer_id):
+        if await self._db.get_chat(_peer_id):
             logger.debug(f"Chat {_peer_id} is already registered")
             return f"⚠️ Ваш чат уже был ранее зарегистрирован"
         
@@ -55,15 +55,6 @@ class Chats:
         Обновление временной метки чата в базе данных
         '''
         _peer_id = event["object"]["message"]["peer_id"]
-
-        if _peer_id < 2000000000:
-            logger.error(f"Chat ID cannot be less than 2000000000")
-            return
-
-        logger.debug(f"Checking registration for chat {_peer_id}...")
-        if not await self._db.check_registration("chat", _peer_id):
-            logger.debug(f"Chat {_peer_id} is not registered")
-            return
         
         logger.debug(f"Updating timestamp for chat {_peer_id}...")
         await self._db.update_chat_timestamp(_peer_id)
@@ -76,15 +67,6 @@ class Chats:
         '''
         _user_id = event["object"]["message"]["from_id"]
         _peer_id = event["object"]["message"]["peer_id"]
-
-        if _peer_id < 2000000000:
-            logger.error(f"Chat ID cannot be less than 2000000000")
-            return
-        
-        logger.debug(f"Checking registration for chat {_peer_id}...")
-        if not await self._db.check_registration("chat", _peer_id):
-            logger.debug(f"Chat {_peer_id} is not registered")
-            return
 
         if _user_id < 0:
             logger.warning(f"{_user_id} is not user")
