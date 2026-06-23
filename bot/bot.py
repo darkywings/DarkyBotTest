@@ -108,8 +108,8 @@ async def bot_greets(event: dict):
 
 @bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя"], ignore_case = True, need_list = False) &
                           (~FromChat() | 
-                           (FromChat() & (~IsRegistered() | 
-                                          IsRegistered() & SQLRule(_db._db_client,
+                           (FromChat() & (~IsRegistered(_db) | 
+                                          IsRegistered(_db) & SQLRule(_db._db_client,
                                                                    query = "SELECT triggers " \
                                                                            "FROM chat_settings " \
                                                                            "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
@@ -119,8 +119,8 @@ async def dork_trigger(event: dict):
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False) &
                           (~FromChat() | 
-                           (FromChat() & (~IsRegistered() | 
-                                          IsRegistered() & SQLRule(_db._db_client,
+                           (FromChat() & (~IsRegistered(_db) | 
+                                          IsRegistered(_db) & SQLRule(_db._db_client,
                                                                    query = "SELECT triggers " \
                                                                            "FROM chat_settings " \
                                                                            "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
@@ -130,8 +130,8 @@ async def dork_trigger(event: dict):
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False) &
                           (~FromChat() | 
-                           (FromChat() & (~IsRegistered() | 
-                                          IsRegistered() & SQLRule(_db._db_client,
+                           (FromChat() & (~IsRegistered(_db) | 
+                                          IsRegistered(_db) & SQLRule(_db._db_client,
                                                                    query = "SELECT triggers " \
                                                                            "FROM chat_settings " \
                                                                            "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
@@ -141,8 +141,8 @@ async def dork_trigger(event: dict):
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False) &
                           (~FromChat() | 
-                           (FromChat() & (~IsRegistered() | 
-                                          IsRegistered() & SQLRule(_db._db_client,
+                           (FromChat() & (~IsRegistered(_db) | 
+                                          IsRegistered(_db) & SQLRule(_db._db_client,
                                                                    query = "SELECT triggers " \
                                                                            "FROM chat_settings " \
                                                                            "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
@@ -171,8 +171,8 @@ async def roll(event: dict, rolls: int = 1):
 
 @bot.on_event.message_new(LayoutRule() & 
                           (~FromChat() | 
-                           (FromChat() & (~IsRegistered() | 
-                                          IsRegistered() & SQLRule(_db._db_client,
+                           (FromChat() & (~IsRegistered(_db) | 
+                                          IsRegistered(_db) & SQLRule(_db._db_client,
                                                                    query = "SELECT layout_autodetec " \
                                                                            "FROM chat_settings " \
                                                                            "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
