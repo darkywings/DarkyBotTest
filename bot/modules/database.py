@@ -138,7 +138,7 @@ class DarkyDatabase:
         INSERT INTO chat_members (chat_id, user_id) 
         SELECT 
             chat.id, 
-            user.id
+            user.user_id
         CROSS JOIN (VALUES
             {", ".join([f"({_user["id"]})" for _user in _users])}
         ) AS user(user_id);
