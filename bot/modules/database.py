@@ -97,14 +97,22 @@ class DarkyDatabase:
         await self._db_client.execute(
             f"""
             WITH
-            chatId AS (SELECT id FROM chats WHERE chat_id = $1)
-            INSERT INTO rp (chat_id, trigger, reply_male, reply_female) VALUES
-            (chatId, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
-            (chatId, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
-            (chatId, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
-            (chatId, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
-            (chatId, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
-            (chatId, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+                chat AS (SELECT id FROM chats WHERE chat_id = $1)
+            INSERT INTO rp (chat_id, trigger, reply_male, reply_female)
+            SELECT 
+                chat.id, 
+                r.trigger, 
+                r.reply_male, 
+                r.reply_female
+            FROM chat
+            CROSS JOIN (VALUES
+                ('буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
+                ('кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
+                ('лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
+                ('обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
+                ('поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
+                ('ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+            ) AS r(trigger, reply_male, reply_female);
             """,
             _id
         )
@@ -126,8 +134,14 @@ class DarkyDatabase:
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
         _query = f"""
         WITH
-        chatId AS (SELECT id FROM chats WHERE chat_id = $1)
-        INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"(chatId, {_user["id"]})" for _user in _users])};
+            chat AS (SELECT id FROM chats WHERE chat_id = $1)
+        INSERT INTO chat_members (chat_id, user_id) 
+        SELECT 
+            chat.id, 
+            user.id
+        CROSS JOIN (VALUES
+            {", ".join([f"({_user["id"]})" for _user in _users])}
+        ) AS user(user_id);
         """
 
         logger.debug(f"Registering members for {_chat_id}...")
@@ -170,13 +184,7 @@ class DarkyDatabase:
         :type _user_id: int
         '''
         logger.debug(f"Registering chat member {_user_id} in {_chat_id}...")
-        await self._db_client.execute(
-            f"""
-            INSERT INTO chat_members (chat_id, user_id) VALUES ((SELECT id FROM chats WHERE chat_id = $1), $2);
-            """,
-            _chat_id,
-            _user_id
-        )
+        await self.reg_chat_members(_chat_id, [_user_id])
         logger.debug(f"Chat member {_user_id} was registered in chat_members {_chat_id}")
     
     async def update_chat_timestamp(self,
