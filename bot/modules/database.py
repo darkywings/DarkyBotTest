@@ -379,7 +379,7 @@ class DarkyDatabase:
                 member.nickname, 
                 member.warns, member.is_banned, 
                 (ROW_NUMBER() OVER (ORDER BY member.level_xp DESC)) AS top_place, 
-                (SELECT COUNT(*) FROM members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1)) AS total_top, 
+                (SELECT COUNT(*) FROM chat_members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1)) AS total_top, 
                 member.level, member.level_xp, 
                 (member.level_xp - (200 * (member.level - 1))) AS xp_per_level, 
                 (200 * member.level) AS max_xp_per_level, 
