@@ -97,14 +97,14 @@ class DarkyDatabase:
         await self._db_client.execute(
             f"""
             WITH
-            chat_id AS (SELECT id FROM chats WHERE chat_id = $1)
+            chatId AS (SELECT id FROM chats WHERE chat_id = $1)
             INSERT INTO rp (chat_id, trigger, reply_male, reply_female) VALUES
-            (chat_id, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
-            (chat_id, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
-            (chat_id, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
-            (chat_id, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
-            (chat_id, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
-            (chat_id, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+            (chatId, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
+            (chatId, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
+            (chatId, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
+            (chatId, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
+            (chatId, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
+            (chatId, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
             """,
             _id
         )
@@ -126,8 +126,8 @@ class DarkyDatabase:
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
         _query = f"""
         WITH
-        chat_id AS (SELECT id FROM chats WHERE chat_id = $1)
-        INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"(chat_id, {_user["id"]})" for _user in _users])};
+        chatId AS (SELECT id FROM chats WHERE chat_id = $1)
+        INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"(chatId, {_user["id"]})" for _user in _users])};
         """
 
         logger.debug(f"Registering members for {_chat_id}...")
