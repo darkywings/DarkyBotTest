@@ -24,6 +24,7 @@ from modules.triggers import *
 from modules.simplebot import SimpleCommands
 from modules.witless import Witless
 from custom_rules import *
+from utils.sql import CheckSqlQueries
 from utils.replies import Replies
 from utils.layout import LayoutChanger
 from utils import extractor
@@ -107,46 +108,30 @@ async def bot_greets(event: dict):
 ''' ---------TRIGGERS--------- '''
 
 @bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя"], ignore_case = True, need_list = False) &
-                          (~FromChat() | 
-                           (FromChat() & (~IsRegistered(_db) | 
-                                          IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                   query = "SELECT triggers " \
-                                                                           "FROM chat_settings " \
-                                                                           "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
-                                                                   key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
+                                                                                                         key = "triggers", value = True)))))
 async def dork_trigger(event: dict):
     return dorky_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False) &
-                          (~FromChat() | 
-                           (FromChat() & (~IsRegistered(_db) | 
-                                          IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                   query = "SELECT triggers " \
-                                                                           "FROM chat_settings " \
-                                                                           "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
-                                                                   key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
+                                                                                                         key = "triggers", value = True)))))
 async def dork_trigger(event: dict):
     return hello_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False) &
-                          (~FromChat() | 
-                           (FromChat() & (~IsRegistered(_db) | 
-                                          IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                   query = "SELECT triggers " \
-                                                                           "FROM chat_settings " \
-                                                                           "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
-                                                                   key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
+                                                                                                         key = "triggers", value = True)))))
 async def dork_trigger(event: dict):
     return morning_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False) &
-                          (~FromChat() | 
-                           (FromChat() & (~IsRegistered(_db) | 
-                                          IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                   query = "SELECT triggers " \
-                                                                           "FROM chat_settings " \
-                                                                           "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
-                                                                   key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
+                                                                                                         key = "triggers", value = True)))))
 async def dork_trigger(event: dict):
     return sleep_trigger.react()
 
@@ -170,13 +155,9 @@ async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
 @bot.on_event.message_new(LayoutRule() & 
-                          (~FromChat() | 
-                           (FromChat() & (~IsRegistered(_db) | 
-                                          IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                   query = "SELECT layout_autodetec " \
-                                                                           "FROM chat_settings " \
-                                                                           "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)",
-                                                                   key = "layout_autodetec", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                                         query = CheckSqlQueries.LAYOUT_AUTODETECT_CHECK,
+                                                                                                         key = "layout_autodetect", value = True)))))
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
