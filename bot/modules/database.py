@@ -96,13 +96,15 @@ class DarkyDatabase:
         )
         await self._db_client.execute(
             f"""
+            WITH
+            chat_id AS (SELECT id FROM chats WHERE chat_id = $1)
             INSERT INTO rp (chat_id, trigger, reply_male, reply_female) VALUES
-            ($1, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
-            ($1, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
-            ($1, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
-            ($1, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
-            ($1, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
-            ($1, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+            (chat_id, 'буп', '<user1> бупнула <user2> в нос', '<user1> бупнул <user2> в нос'),
+            (chat_id, 'кусь', '<user1> укусила <user2>', '<user1> укусил <user2>'),
+            (chat_id, 'лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
+            (chat_id, 'обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
+            (chat_id, 'поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
+            (chat_id, 'ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
             """,
             _id
         )
@@ -122,7 +124,11 @@ class DarkyDatabase:
         :type _users: list[dict]
         '''
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
-        _query = f"INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"($1, {_user["id"]})" for _user in _users])};"
+        _query = f"""
+        WITH
+        chat_id AS (SELECT id FROM chats WHERE chat_id = $1)
+        INSERT INTO chat_members (chat_id, user_id) VALUES {", ".join([f"(chat_id, {_user["id"]})" for _user in _users])};
+        """
 
         logger.debug(f"Registering members for {_chat_id}...")
         await self._db_client.execute(_query, _chat_id)
@@ -134,14 +140,14 @@ class DarkyDatabase:
         '''
         Получить участника чата
 
-        :param _chat_id: Идентификатор чата в котором надо зарегистрировать участников
+        :param _chat_id: Идентификатор чата в котором надо получить участника
         :type _chat_id: int
 
         :param _user_id: Идентификатор участника
         :type _user_id: int
         '''
         logger.debug(f"Searching records for chat member with ID: {_user_id} in chat {_chat_id}...")
-        result = await self._db_client.fetchrow(f"SELECT * FROM chat_members WHERE chat_id = $1 AND user_id = $2",
+        result = await self._db_client.fetchrow(f"SELECT * FROM chat_members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) AND user_id = $2",
                                                 _chat_id, _user_id)
 
         if not result:
@@ -166,7 +172,7 @@ class DarkyDatabase:
         logger.debug(f"Registering chat member {_user_id} in {_chat_id}...")
         await self._db_client.execute(
             f"""
-            INSERT INTO chat_members (chat_id, user_id) VALUES ($1, $2);
+            INSERT INTO chat_members (chat_id, user_id) VALUES ((SELECT id FROM chats WHERE chat_id = $1), $2);
             """,
             _chat_id,
             _user_id
@@ -191,6 +197,25 @@ class DarkyDatabase:
             _chat_id
         )
         logger.debug(f"Timestamp for {_chat_id} updated")
+
+    async def update_user_timestamp(self,
+                                    _user_id: int) -> None:
+        '''
+        Обновление временной метки чата в базе данных
+
+        :param _user_id: Идентификатор чата в котором необходимо обновить временную метку
+        :type _user_id: int
+        '''
+        logger.debug(f"Updating timestamp for {_user_id}...")
+        await self._db_client.execute(
+            f"""
+            UPDATE users
+            SET updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = $1;
+            """,
+            _user_id
+        )
+        logger.debug(f"Timestamp for {_user_id} updated")
     
     async def is_bot_admin(self,
                            _user_id: int) -> bool:
@@ -257,30 +282,30 @@ class DarkyDatabase:
         logger.debug(f"Searching chat {_chat_id}...")
         _chat = await self._db_client.fetchrow(
             "SELECT " \
-            "chat.id, chat.chat_id, chat.chat_title, chat.created_at, chat.updated_at," \
-            "settings.update_notifications, " \
-            "settings.mention_in_greetings, " \
-            "settings.lvlups, " \
-            "settings.rp, " \
-            "settings.nicknames, " \
-            "settings.manage_rp, " \
-            "settings.manage_nicknames, " \
-            "settings.triggers, " \
-            "settings.layout_autodetect, " \
-            "settings.who_can_mute, " \
-            "settings.who_can_kick, " \
-            "settings.who_can_warn, " \
-            "settings.who_can_ban, " \
-            "settings.warn_limit, " \
-            "settings.warn_punishment, " \
-            "settings.autokick, " \
-            "verify_settings.enabled AS verify_enabled, " \
-            "verify_settings.punishment AS verify_punishment, " \
-            "verify_settings.days_from_signup, " \
-            "verify_settings.should_follow_groups, " \
-            "verify_settings.spam_detection, " \
-            "(SELECT COUNT(*) FROM rp WHERE chat_id = $1) AS rp_count, " \
-            "(SELECT COUNT(*) FROM chat_members WHERE chat_id = $1) AS members_count " \
+            "   chat.id, chat.chat_id, chat.chat_title, chat.created_at, chat.updated_at," \
+            "   settings.update_notifications, " \
+            "   settings.mention_in_greetings, " \
+            "   settings.lvlups, " \
+            "   settings.rp, " \
+            "   settings.nicknames, " \
+            "   settings.manage_rp, " \
+            "   settings.manage_nicknames, " \
+            "   settings.triggers, " \
+            "   settings.layout_autodetect, " \
+            "   settings.who_can_mute, " \
+            "   settings.who_can_kick, " \
+            "   settings.who_can_warn, " \
+            "   settings.who_can_ban, " \
+            "   settings.warn_limit, " \
+            "   settings.warn_punishment, " \
+            "   settings.autokick, " \
+            "   verify_settings.enabled AS verify_enabled, " \
+            "   verify_settings.punishment AS verify_punishment, " \
+            "   verify_settings.days_from_signup, " \
+            "   verify_settings.should_follow_groups, " \
+            "   verify_settings.spam_detection, " \
+            "   (SELECT COUNT(*) FROM rp WHERE chat_id = chat.id) AS rp_count, " \
+            "   (SELECT COUNT(*) FROM chat_members WHERE chat_id = chat.id) AS members_count " \
             "FROM chats chat " \
             "JOIN chat_settings settings ON chat.settings_id = settings.id " \
             "JOIN verify_settings ON chat.verify_settings_id = verify_settings.id "
@@ -329,3 +354,63 @@ class DarkyDatabase:
         :type _value: str
         '''
         pass
+
+    async def get_chat_member_stats(self,
+                                    _chat_id: int,
+                                    _member_id: int) -> "Record":
+        '''
+        Получить участника чата для вывода статистики
+
+        :param _chat_id: Идентификатор чата в котором надо зарегистрировать участников
+        :type _chat_id: int
+
+        :param _member_id: Идентификатор участника
+        :type _member_id: int
+        '''
+        logger.debug(f"Searching records for chat member with ID: {_member_id} in chat {_chat_id}...")
+        result = await self._db_client.fetchrow(
+            """
+            SELECT 
+                member.id, member.user_id, 
+                member.nickname, 
+                member.warns, member.is_banned, 
+                (ROW_NUMBER() OVER (ORDER BY member.level_xp DESC)) AS top_place, 
+                (SELECT COUNT(*) FROM members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1)) AS total_top, 
+                member.level, member.level_xp, 
+                (member.level_xp - (200 * (member.level - 1))) AS xp_per_level, 
+                (200 * member.level) AS max_xp_per_level, 
+                member.messages, member.bad_words, 
+                member.photo, member.video, member.audio, member.docs, member.audio_messages 
+            FROM chat_members member 
+            WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) 
+                AND user_id = $2
+            """,
+            _chat_id, _member_id
+        )
+
+        if not result:
+            logger.debug(f"Record with ID {_member_id} was not found in chat {_chat_id}")
+            return False
+            
+        logger.debug(f"Record was found: {result}")
+        return result
+    
+    async def get_bot_stats(self) -> "Record":
+        '''
+        Получить статистику бота
+        '''
+        logger.debug(f"Getting bot settings...")
+        _result = await self._db_client.fetchrow(
+            """
+            SELECT 
+                bot_info.version, 
+                bot_info.last_update, 
+                bot_info.requests_handled, 
+                (SELECT COUNT(*) FROM chats) AS chats_total, 
+                (SELECT COUNT(*) FROM users) AS users_total 
+            FROM settings bot_info
+            LIMIT 1;
+            """
+        )
+        logger.debug(f"Bot settings was got")
+        return _result

@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 import logging
 
+from twilight_vk.utils.config import CONFIG as twi_config
+
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
     from modules.database import DarkyDatabase
@@ -139,7 +141,51 @@ class Chats:
         '''
         Отображает данные участника беседы
         '''
-        pass
+
+        # TODO: ЗДЕСЬ ДОЛЖНА БЫТЬ ЕЩЕ КАРТИНКА СТАТИСТИКИ ОТРЕНДЕРЕННАЯ С ГРАФИКОМ АКТИВНОСТИ И ТЕКУЩЕГО УРОВНЯ
+        _peer_id = event["object"]["message"]["peer_id"]
+
+        if member_id == self._methods.messages.__group_id__:
+            
+            _bot_stats = await self._db.get_bot_stats()
+            return (
+                "📊 Статистика Дарки-бота:\n" \
+                f" 🔹 Работает и разрабатывается с 9 марта 2020 года.\n" \
+                f" 🔹 Версия бота: {_bot_stats["version"]}\n" \
+                f" 🔹 Версия фреймворка TWILIGHT: {twi_config.FRAMEWORK.version}\n" \
+                f" 🔹 Последнее обновление получено: {_bot_stats["last_update"]}\n" \
+                f" 🔹 Создатель бота и фреймворка: {twi_config.FRAMEWORK.developer}\n" \
+                f" 🔹 Зарегистрировано бесед: {_bot_stats["chats_total"]}\n" \
+                f" 🔹 Зарегистрировано пользователей {_bot_stats["users_total"]}\n" \
+                f" 🔹 Обработано запросов: {_bot_stats["requests_handled"]}"
+            )
+
+        if member_id < 0:
+            return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
+        
+        logger.debug(f"Getting the chat {_peer_id} member {member_id} info...")
+        _member = await self._db.get_chat_member_stats(_peer_id, member_id)
+        logger.debug(f"Chat {_peer_id} member {member_id} info was got")
+
+        return (
+            "📊 Статистика участника беседы:\n" \
+            f" 🔹 ID пользователя: {_member["user_id"]}\n" \
+            f" 🔹 Забанен: {_member["is_banned"]}\n" \
+            f" 🔹 Никнейм: {_member["nickname"]}\n" \
+            f" 🔹 Место в топе беседы: {_member["top_place"]} / {_member["total_top"]}\n" \
+            f" 🔹 Уровень: {_member["level"]}\n" \
+            f" 🔹 Опыт: {_member["xp_per_level"]} exp. / {_member["max_xp_per_level"]} exp.\n" \
+            f" 🔹 Всего опыта: {_member["level_xp"]}\n" \
+            f" 🔹 Предупреждения: {_member["warns"]}\n" \
+            f" 🔹 Количество сообщений: {_member["messages"]}\n" \
+            f" 🔹 Количество нецензурных слов: {_member["bad_words"]}\n" \
+            f" 🔹 Количество отправленных фотографий: {_member["photo"]}\n" \
+            f" 🔹 Количество отправленных видео: {_member["video"]}\n" \
+            f" 🔹 Количество отправленных аудиозаписей: {_member["audio"]}\n" \
+            f" 🔹 Количество отправленных документов: {_member["docs"]}\n" \
+            f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}\n" \
+            "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника"
+        )
     
     async def update_member(self, event: dict, key: str, value: str):
         '''

@@ -59,6 +59,7 @@ class Users:
             f" 🔹 ID в боте: {_user["id"]}\n" \
             f" 🔹 Имя: {_user["first_name"]} {_user["last_name"]}\n" \
             f" 🔹 Короткое имя: {_user["screen_name"]}\n"
+            f" 🔹 Дата регистрации в боте: {_user["created_at"]}\n" \
             f"⚙️ Ваши настройки:\n"
             f" 🔹 Оповещения бота: {_user["update_notifications"]}\n" \
             f" 🔹 Упоминания ботом: {_user["mentions"]}\n" \
@@ -103,3 +104,13 @@ class Users:
             return f"✅ Значение параметра \"{key}\" установлено на \"{value}\""
 
         return "❌ Такого параметра не существует, либо он меняется не этим путем"
+
+    async def update_timestamp(self, event: dict) -> None:
+        '''
+        Обновление временной метки пользователя в базе данных
+        '''
+        _user_id = event["object"]["message"]["from_id"]
+        
+        logger.debug(f"Updating timestamp for user {_user_id}...")
+        await self._db.update_user_timestamp(_user_id)
+        logger.debug(f"Timestamp for user {_user_id} updated")
