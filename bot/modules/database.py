@@ -136,17 +136,12 @@ class DarkyDatabase:
         WITH
             chat AS (SELECT id FROM chats WHERE chat_id = $1)
         INSERT INTO chat_members (chat_id, user_id) 
-        SELECT 
-            chat.id, 
-            user.user_id
-        FROM chat
-        CROSS JOIN (VALUES
-            {", ".join([f"({_user["id"]})" for _user in _users])}
-        ) AS user(user_id);
+        SELECT chat.id, unnest($2::int[])
+        FROM chat;
         """
 
         logger.debug(f"Registering members for {_chat_id}...")
-        await self._db_client.execute(_query, _chat_id)
+        await self._db_client.execute(_query, _chat_id, [_user["id"] for _user in _users])
         logger.debug(f"Chat members for {_chat_id} was registered")
     
     async def get_chat_member(self,
