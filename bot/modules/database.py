@@ -374,19 +374,21 @@ class DarkyDatabase:
         logger.debug(f"Searching records for chat member with ID: {_member_id} in chat {_chat_id}...")
         result = await self._db_client.fetchrow(
             """
+            WITH 
+                chat AS (SELECT id FROM chats WHERE chat_id = $1)
             SELECT 
                 member.id, member.user_id, 
                 member.nickname, 
                 member.warns, member.is_banned, 
-                (ROW_NUMBER() OVER (ORDER BY member.level_xp DESC)) AS top_place, 
-                (SELECT COUNT(*) FROM chat_members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1)) AS total_top, 
+                (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = (SELECT id FROM chat) AND level_xp > member.level_xp) AS top_place, 
+                (SELECT COUNT(*) FROM chat_members WHERE chat_id = (SELECT id FROM chat)) AS total_top, 
                 member.level, member.level_xp, 
                 (member.level_xp - (200 * (member.level - 1))) AS xp_per_level, 
                 (200 * member.level) AS max_xp_per_level, 
                 member.messages, member.bad_words, 
                 member.photo, member.video, member.audio, member.docs, member.audio_messages 
             FROM chat_members member 
-            WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) 
+            WHERE chat_id = (SELECT id FROM chat) 
                 AND user_id = $2
             """,
             _chat_id, _member_id

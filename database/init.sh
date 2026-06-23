@@ -168,7 +168,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         nickname TEXT DEFAULT NULL,
         warns INT DEFAULT 0,
         is_banned BOOLEAN DEFAULT FALSE,
-        level INT DEFAULT 0,
+        level INT DEFAULT 1,
         level_xp INT DEFAULT 0,
         messages INT DEFAULT 0,
         bad_words INT DEFAULT 0,
