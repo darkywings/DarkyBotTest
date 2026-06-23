@@ -111,7 +111,7 @@ class DarkyDatabase:
                 ('лизь', '<user1> лизнула <user2>', '<user1> лизнул <user2>'),
                 ('обнять', '<user1> обняла <user2>', '<user1> обнял <user2>'),
                 ('поцеловать', '<user1> поцеловала <user2>', '<user1> поцеловал <user2>'),
-                ('ударить', '<user1> ударила <user2>', '<user1> ударил <user2');
+                ('ударить', '<user1> ударила <user2>', '<user1> ударил <user2')
             ) AS r(trigger, reply_male, reply_female);
             """,
             _id
