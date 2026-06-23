@@ -87,7 +87,7 @@ async def show_chat_settings(event: dict):
                           FromChat() & FromUser() & IsRegistered(_db))
 async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (mentions[0]["id"] if mentions[0]["type"] == "user" else -mentions[0]["id"]) if len(mentions) > 0 else False
-    return await bot_chats.show_chat_member(member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
+    return await bot_chats.show_chat_member(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
 
 ''' ---------ON EVERY MESSAGE EVENTS--------- '''
