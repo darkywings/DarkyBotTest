@@ -139,6 +139,7 @@ class DarkyDatabase:
         SELECT 
             chat.id, 
             user.user_id
+        FROM chat
         CROSS JOIN (VALUES
             {", ".join([f"({_user["id"]})" for _user in _users])}
         ) AS user(user_id);
