@@ -60,7 +60,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         mentions BOOLEAN DEFAULT TRUE,
         who_can_rp_me TEXT CHECK (who_can_rp_me IN ( 'all', 'only_users', 'only_bot', 'nobody' )) DEFAULT 'all',
         darky_verify_warns INT DEFAULT 0,
-        is_banned BOOLEAN DEFAULT FALSE
+        is_banned BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
