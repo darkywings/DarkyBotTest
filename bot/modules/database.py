@@ -30,7 +30,8 @@ class DarkyDatabase:
                             _id: int,
                             _first_name: str,
                             _last_name: str,
-                            _screen_name: str) -> None:
+                            _screen_name: str,
+                            _sex: str) -> None:
         '''
         Регистрация пользователя в базе данных
         Происходит автоматически при каждом новом сообщении от этого пользователя
@@ -46,14 +47,17 @@ class DarkyDatabase:
 
         :param _screen_name: короткое имя пользователя в ВК
         :type _screen_name
+
+        :param _sex: Пол пользователя
+        :type _sex: str
         '''
         logger.debug(f"Adding user {_id} into the database...")
         await self._db_client.execute(
             f"""
-            INSERT INTO users (user_id, first_name, last_name, screen_name) VALUES
-            ($1, $2, $3, $4);
+            INSERT INTO users (user_id, first_name, last_name, screen_name, sex) VALUES
+            ($1, $2, $3, $4, $5);
             """,
-            _id, _first_name, _last_name, _screen_name
+            _id, _first_name, _last_name, _screen_name, _sex
         )
         logger.debug(f"User {_id} was added into the database")
     

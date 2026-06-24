@@ -33,10 +33,14 @@ class Users:
         logger.debug(f"Registering user {_user_id}...")
         user = await self._methods.users.get(
             user_ids = _user_id,
-            fields = "screen_name"
+            fields = "screen_name, sex"
         )
         user = user["response"][0]
-        await self._db.register_user(_user_id, user["first_name"], user["last_name"], user["screen_name"])
+
+        _sex = user["sex"]
+        _sex = "female" if _sex == 1 else "male" if _sex == 2 else None
+
+        await self._db.register_user(_user_id, user["first_name"], user["last_name"], user["screen_name"], _sex)
 
         logger.info(f"User {_user_id} was registered")
     
