@@ -102,6 +102,10 @@ async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = N
 async def update_chat_timestamp(event: dict):
     await bot_chats.update_timestamp(event)
 
+@bot.on_event.message_new(FromChat() & IsRegistered(_db) & FromUser())
+async def update_member_stats(event: dict):
+    await bot_chats.update_member_stats(event)
+
 @bot.on_event.message_new(FromUser())
 async def update_user_timestamp(event: dict):
     await bot_users.update_timestamp(event)

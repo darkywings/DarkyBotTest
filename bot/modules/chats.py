@@ -1,8 +1,12 @@
 from typing import TYPE_CHECKING
 import logging
+import random
+import math
 
 from twilight_vk.utils.config import CONFIG as twi_config
 from twilight_vk.utils.types.event_types import BotEventType
+
+from utils import bad_words_detector
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -101,9 +105,8 @@ class Chats:
         '''
         _peer_id = event["object"]["message"]["peer_id"]
 
-        logger.debug(f"Getting the chat {_peer_id} info...")
         _chat = await self._db.get_chat(_peer_id)
-        logger.debug(f"Chat {_peer_id} info was got")
+        logger.info(f"Chat info for {_peer_id} was returned")
 
         return (
             "🧾 Информация о чате:\n" \
@@ -159,6 +162,7 @@ class Chats:
         if member_id == -event["group_id"]:
             
             _bot_stats = await self._db.get_bot_stats()
+            logger.info(f"Bot info was returned for {_peer_id}")
             return (
                 "📊 Статистика Дарки-бота:\n" \
                 f" 🔹 Работает и разрабатывается с 9 марта 2020 года.\n" \
@@ -174,10 +178,8 @@ class Chats:
         if member_id < 0:
             return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
         
-        logger.debug(f"Getting the chat {_peer_id} member {member_id} info...")
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
-        logger.debug(f"Chat {_peer_id} member {member_id} info was got")
-
+        logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
         return (
             "📊 Статистика участника беседы:\n" \
             f" 🔹 ID пользователя: {_member["user_id"]}\n" \
@@ -197,6 +199,81 @@ class Chats:
             f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}\n" \
             "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника"
         )
+    
+    async def update_member_stats(self, event: dict):
+        '''
+        Обновляет статистику участника беседы
+        '''
+
+        if len(list(event["object"]["message"]["text"])) > 500 + random.randint(-50, 50):
+            logger.info("Anti-cheat: Too much text at one message")
+            return
+
+        _peer_id = event["object"]["message"]["peer_id"]
+        _user_id = event["object"]["message"]["from_id"]
+        _attachments = event["object"]["message"]["attachments"]
+        _text = event["object"]["message"]["text"]
+
+        _xp_count = len(_text)
+        _attachments = [0, 0, 0, 0, 0] # photo, video, audio, docs, voice_messages
+        _bad_words_count = bad_words_detector.extract_bad_words(_text)["count"]
+
+        if _attachments != []:
+            for _attachment in _attachments:
+                match _attachment["type"]:
+                    case "photo": _attachments[0] += 20
+                    case "video": _attachments[1] += 30
+                    case "audio": _attachments[2] += 15
+                    case "docs": _attachments[3] += 35
+                    case "audio_messages": _attachments[4] += 10
+        
+        _xp_count += sum(_attachments)
+
+        _chat_member = await self._db.get_chat_member_stats(_peer_id, _user_id)
+        if not _chat_member:
+            logger.warning(f"User {_user_id} not registered yet in chat {_peer_id}")
+            return
+
+        _is_lvlups_allowed = await self._db.get_chat(_peer_id)
+        _is_lvlups_allowed = _is_lvlups_allowed["lvlups"]
+
+        _level = _chat_member["level"]
+        _new_xp = _chat_member["level_xp"] + _xp_count
+        _new_level = (1 + math.sqrt(1 + 4 * _new_xp / 100)) // 2
+
+        await self._db.update_chat_member_stat(_peer_id, _user_id,
+                                               _level = _new_level, _xp = _new_xp,
+                                               _messages = _chat_member["messages"] + 1,
+                                               _bad_words = _chat_member["bad_words"] + _bad_words_count,
+                                               _photo = _attachments[0] / 20,
+                                               _video = _attachments[1] / 30,
+                                               _audio = _attachments[2] / 15,
+                                               _docs = _attachments[3] / 35,
+                                               _audio_messages = _attachments[4] / 10)
+        
+        if (_new_level - _level) > 1:
+            logger.info(f"Chat {_peer_id} member {_user_id} got level up! (up to {_new_level} level)")
+
+            if _is_lvlups_allowed:
+
+                _user = await self._db.get_user(_user_id)
+                _chat = await self._db.get_chat(_peer_id)
+
+                _nickname = _chat_member["nickname"]
+
+                username = _nickname if _nickname is not None and _chat["nicknames"] == True else f"{_user["first_name"]} {_user["last_name"]}"
+                achieved = "достигла" if _user["sex"] == "female" else "достиг"
+
+                if _user["mentions"] == True:
+                    username = f"[id{_user["user_id"]}|{username}]"
+
+                for lvlup in range(_level, _new_level, 1):
+                    await self._methods.messages.send(
+                        peer_ids = _peer_id,
+                        message = f"🎉 {username} только что {achieved} {lvlup + 1} уровня!"
+                    )
+            
+
     
     async def update_member(self, event: dict, key: str, value: str):
         '''

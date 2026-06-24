@@ -426,3 +426,33 @@ class DarkyDatabase:
         '''
         await self._db_client.execute(f"UPDATE settings SET requests_handled = requests_handled + 1;")
         logger.debug(f"requests_handled was increased on 1")
+    
+    async def update_chat_member_stat(self,
+                                      _chat_id: int, _user_id: int,
+                                      _level: int, _xp: int,
+                                      _messages: int, _bad_words: int,
+                                      _photo: int, _video: int, _audio: int, _docs: int, _audio_messages: int) -> None:
+        '''
+        Добавляет increment к stat_key в статистике участника чата
+        '''
+        await self._db_client.execute(
+            f"""
+            UPDATE chat_members 
+            SET 
+                level = $3, 
+                level_xp = $4, 
+                messages = $5, 
+                bad_words = $6, 
+                photo = $7, 
+                video = $8, 
+                audio = $9, 
+                docs = $10, 
+                audio_messages = $11 
+            WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) 
+                AND user_id = $2;
+            """,
+            _chat_id, _user_id,
+            _level, _xp, _messages, _bad_words,
+            _photo, _video, _audio, _docs, _audio_messages
+        )
+        logger.debug(f"Stats was updated for user {_user_id} in chat {_chat_id}")

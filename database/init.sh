@@ -56,6 +56,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         first_name TEXT NOT NULL,
         last_name TEXT NOT NULL,
         screen_name TEXT NOT NULL UNIQUE,
+        sex TEXT CHECK (sex IN ( 'male', 'female' )) DEFAULT NULL
         update_notifications BOOLEAN DEFAULT TRUE,
         mentions BOOLEAN DEFAULT TRUE,
         who_can_rp_me TEXT CHECK (who_can_rp_me IN ( 'all', 'only_users', 'only_bot', 'nobody' )) DEFAULT 'all',
