@@ -60,7 +60,7 @@ async def reg_user(event: dict):
 
 @bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
                           FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "reg_chat"}))
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "reg_chat"}) & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
