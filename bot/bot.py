@@ -14,10 +14,12 @@ from twilight_vk.framework.rules import (
     ContainsRule,
     ReplyRule,
     ForwardRule,
-    MentionRule
+    MentionRule,
+    OnPayloadRule
 )
 from twilight_vk.utils.types.response import Response
 from twilight_vk.utils.twiml import TwiML
+from twilight_vk.utils.types.event_types import BotEventType
 
 from modules.database import DarkyDatabase
 from modules.users import Users
@@ -226,7 +228,9 @@ async def test(event: dict):
 
 ''' ---------BUTTONS HANDLING--------- '''
 
-''' HERE '''
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule())
+async def button_test(event: dict):
+    return "This is button test"
 
 
 ''' ---------WRONG USE COMMANDS--------- '''
