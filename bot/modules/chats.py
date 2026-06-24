@@ -145,7 +145,7 @@ class Chats:
         # TODO: ЗДЕСЬ ДОЛЖНА БЫТЬ ЕЩЕ КАРТИНКА СТАТИСТИКИ ОТРЕНДЕРЕННАЯ С ГРАФИКОМ АКТИВНОСТИ И ТЕКУЩЕГО УРОВНЯ
         _peer_id = event["object"]["message"]["peer_id"]
 
-        if member_id == self._methods.messages.__group_id__:
+        if member_id == -self._methods.messages.__group_id__:
             
             _bot_stats = await self._db.get_bot_stats()
             return (
