@@ -215,7 +215,7 @@ class Chats:
         _text = event["object"]["message"]["text"]
 
         _xp_count = len(_text)
-        _attachments = [0, 0, 0, 0, 0] # photo, video, audio, docs, voice_messages
+        _attachments_xps = [0, 0, 0, 0, 0] # photo, video, audio, docs, voice_messages
         _bad_words_count = bad_words_detector.extract_bad_words(_text)["count"]
 
         if _attachments != []:
@@ -227,7 +227,7 @@ class Chats:
                     case "docs": _attachments[3] += 35
                     case "audio_messages": _attachments[4] += 10
         
-        _xp_count += sum(_attachments)
+        _xp_count += sum(_attachments_xps)
 
         _chat_member = await self._db.get_chat_member_stats(_peer_id, _user_id)
         if not _chat_member:
@@ -245,11 +245,11 @@ class Chats:
                                                _level = _new_level, _xp = _new_xp,
                                                _messages = _chat_member["messages"] + 1,
                                                _bad_words = _chat_member["bad_words"] + _bad_words_count,
-                                               _photo = _attachments[0] / 20,
-                                               _video = _attachments[1] / 30,
-                                               _audio = _attachments[2] / 15,
-                                               _docs = _attachments[3] / 35,
-                                               _audio_messages = _attachments[4] / 10)
+                                               _photo = _attachments_xps[0] / 20,
+                                               _video = _attachments_xps[1] / 30,
+                                               _audio = _attachments_xps[2] / 15,
+                                               _docs = _attachments_xps[3] / 35,
+                                               _audio_messages = _attachments_xps[4] / 10)
         
         if (_new_level - _level) > 1:
             logger.info(f"Chat {_peer_id} member {_user_id} got level up! (up to {_new_level} level)")
