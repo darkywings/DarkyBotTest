@@ -233,7 +233,7 @@ async def test(event: dict):
 
 ''' ---------BUTTONS HANDLING--------- '''
 
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule())
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, ~OnPayloadRule(payload={"darky_button": "help"}) & ~OnPayloadRule(payload={"darky_button": "reg_chat"}) & OnPayloadRule())
 async def button_test(event: dict):
     await bot.methods.messages.base_api.base_get_method(
         api_method = "messages.sendMessageEventAnswer",
