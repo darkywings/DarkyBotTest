@@ -251,7 +251,7 @@ class Chats:
                                                _docs = _attachments_xps[3] / 35,
                                                _audio_messages = _attachments_xps[4] / 10)
         
-        if (_new_level - _level) > 1:
+        if (_new_level - _level) > 0:
             logger.info(f"Chat {_peer_id} member {_user_id} got level up! (up to {_new_level} level)")
 
             if _is_lvlups_allowed:
