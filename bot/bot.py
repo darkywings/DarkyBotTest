@@ -266,9 +266,9 @@ async def get_help(event: dict):
 
 @bot.on_event.message_new((TextRule(value=["$darky try",
                                           "$darky choose",
-                                          "$darky guess",
-                                          "$darky stats"], ignore_case=True)) | 
-                          ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)))
+                                          "$darky guess"], ignore_case=True)) | 
+                          ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)) |
+                          (TextRule(value=["$darky stats"], ignore_case=True) & ~ReplyRule() & ~ForwardRule()))
 async def wrong_usage_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
