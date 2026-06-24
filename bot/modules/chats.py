@@ -239,7 +239,7 @@ class Chats:
 
         _level = _chat_member["level"]
         _new_xp = _chat_member["level_xp"] + _xp_count
-        _new_level = (1 + math.sqrt(1 + 4 * _new_xp / 100)) // 2
+        _new_level = int((1 + math.sqrt(1 + 4 * _new_xp / 100)) // 2)
 
         await self._db.update_chat_member_stat(_peer_id, _user_id,
                                                _level = _new_level, _xp = _new_xp,
