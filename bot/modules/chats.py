@@ -171,7 +171,7 @@ class Chats:
                 f" 🔹 Последнее обновление получено: {_bot_stats["last_update"]}\n" \
                 f" 🔹 Создатель бота и фреймворка: {twi_config.FRAMEWORK.developer}\n" \
                 f" 🔹 Зарегистрировано бесед: {_bot_stats["chats_total"]}\n" \
-                f" 🔹 Зарегистрировано пользователей {_bot_stats["users_total"]}\n" \
+                f" 🔹 Зарегистрировано пользователей: {_bot_stats["users_total"]}\n" \
                 f" 🔹 Обработано запросов: {_bot_stats["requests_handled"]}"
             )
 
