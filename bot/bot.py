@@ -89,7 +89,7 @@ async def show_chat_settings(event: dict):
     return await bot_chats.show_chat(event)
 
 @bot.on_event.message_new(((TwiMLRule(value=["$darky stats <id>"], ignore_case=True) & MentionRule()) | 
-                           TextRule(value=["$darky stats"], ignore_case=True) & (ReplyRule() | ForwardRule())) &
+                           (TextRule(value=["$darky stats"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
                           FromChat() & FromUser() & IsRegistered(_db))
 async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if len(mentions) > 0 else False
