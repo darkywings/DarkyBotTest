@@ -405,7 +405,6 @@ class DarkyDatabase:
         '''
         Получить статистику бота
         '''
-        logger.debug(f"Getting bot settings...")
         _result = await self._db_client.fetchrow(
             """
             SELECT 
@@ -418,5 +417,12 @@ class DarkyDatabase:
             LIMIT 1;
             """
         )
-        logger.debug(f"Bot settings was got")
+        logger.debug(f"Bot info was got from the database")
         return _result
+    
+    async def add_request_handled(self) -> None:
+        '''
+        Добавляет 1 к requests_handled в настройках бота
+        '''
+        await self._db_client.execute(f"UPDATE settings SET requests_handled = requests_handled + 1;")
+        logger.debug(f"requests_handled was increased on 1")

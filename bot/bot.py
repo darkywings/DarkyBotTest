@@ -60,8 +60,13 @@ async def reg_user(event: dict):
 
 @bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
                           FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "reg_chat"}))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
+
+@bot.on_event.message_new(FromChat() & IsAdminRule() & IsRegistered(_db))
+async def reg_chat_member(event: dict):
+    await bot_chats.reg_chat_member(event)
 
 
 ''' ---------USER SETTINGS--------- '''
@@ -102,9 +107,9 @@ async def update_chat_timestamp(event: dict):
 async def update_user_timestamp(event: dict):
     await bot_users.update_timestamp(event)
 
-@bot.on_event.message_new(FromChat() & IsAdminRule() & IsRegistered(_db))
-async def reg_chat_member(event: dict):
-    await bot_chats.reg_chat_member(event)
+@bot.on_event.message_new()
+async def requests_handled_increment(event: dict):
+    await _db.add_request_handled()
 
 
 ''' ---------MAIN--------- '''
@@ -137,28 +142,28 @@ async def bot_greets(event: dict):
                           (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                                          query = CheckSqlQueries.TRIGGER_CHECK,
                                                                                                          key = "triggers", value = True)))))
-async def dork_trigger(event: dict):
+async def trigger1(event: dict):
     return dorky_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False) &
                           (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                                          query = CheckSqlQueries.TRIGGER_CHECK,
                                                                                                          key = "triggers", value = True)))))
-async def dork_trigger(event: dict):
+async def trigger2(event: dict):
     return hello_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False) &
                           (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                                          query = CheckSqlQueries.TRIGGER_CHECK,
                                                                                                          key = "triggers", value = True)))))
-async def dork_trigger(event: dict):
+async def trigger3(event: dict):
     return morning_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False) &
                           (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                                          query = CheckSqlQueries.TRIGGER_CHECK,
                                                                                                          key = "triggers", value = True)))))
-async def dork_trigger(event: dict):
+async def trigger4(event: dict):
     return sleep_trigger.react()
 
 
@@ -169,11 +174,11 @@ async def bot_try(event: dict, action: str):
     return SimpleCommands.try_command(action)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
-async def bot_try(event: dict, variables: str):
+async def bot_choose(event: dict, variables: str):
     return SimpleCommands.choice_command(variables)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))
-async def bot_try(event: dict, user_event: str):
+async def bot_guess(event: dict, user_event: str):
     return SimpleCommands.guess_command(user_event)
 
 @bot.on_event.message_new((TextRule(value=["$darky roll"], ignore_case=True) | TwiMLRule(value=["$darky roll <rolls:int>"], ignore_case=True)))
@@ -241,6 +246,18 @@ async def button_test(event: dict):
     )
     return Replies.UNDER_DEVELOPMENT[0]
 
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "help"}))
+async def get_help(event: dict):
+    await bot.methods.messages.base_api.base_get_method(
+        api_method = "messages.sendMessageEventAnswer",
+        values = {
+            "event_id": event["object"]["event_id"],
+            "user_id": event["object"]["user_id"],
+            "peer_id": event["object"]["peer_id"],
+            "v": bot.methods.messages.__api_version__
+        }
+    )
+    return Replies.HELP[0]
 
 ''' ---------WRONG USE COMMANDS--------- '''
 
