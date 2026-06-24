@@ -235,7 +235,8 @@ async def button_test(event: dict):
         values = {
             "event_id": event["object"]["event_id"],
             "user_id": event["object"]["user_id"],
-            "peer_id": event["object"]["peer_id"]
+            "peer_id": event["object"]["peer_id"],
+            "v": bot.methods.messages.__api_version__
         }
     )
     return Replies.UNDER_DEVELOPMENT[0]
