@@ -221,11 +221,11 @@ class Chats:
         if _attachments != []:
             for _attachment in _attachments:
                 match _attachment["type"]:
-                    case "photo": _attachments[0] += 20
-                    case "video": _attachments[1] += 30
-                    case "audio": _attachments[2] += 15
-                    case "docs": _attachments[3] += 35
-                    case "audio_messages": _attachments[4] += 10
+                    case "photo": _attachments_xps[0] += 20
+                    case "video": _attachments_xps[1] += 30
+                    case "audio": _attachments_xps[2] += 15
+                    case "docs": _attachments_xps[3] += 35
+                    case "audio_messages": _attachments_xps[4] += 10
         
         _xp_count += sum(_attachments_xps)
 
