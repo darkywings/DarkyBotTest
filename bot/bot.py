@@ -230,7 +230,15 @@ async def test(event: dict):
 
 @bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule())
 async def button_test(event: dict):
-    return "This is button test"
+    await bot.methods.messages.base_api.base_get_method(
+        api_method = "messages.sendMessageEventAnswer",
+        values = {
+            "event_id": event["object"]["event_id"],
+            "user_id": event["object"]["user_id"],
+            "peer_id": event["object"]["peer_id"]
+        }
+    )
+    return "This is a test reply on any callback button pressed"
 
 
 ''' ---------WRONG USE COMMANDS--------- '''
@@ -254,10 +262,10 @@ async def wrong_usage_handle(event: dict, **kwargs):
         keyboard = Replies.WRONG_USAGE[2]
     )
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky reg",
-                                           "$darky chat settings",
-                                           "$darky stats",
-                                           "$darky stats <id>"], ignore_case=True) &
+@bot.on_event.message_new((TextRule(value=["$darky reg",
+                                          "$darky chat settings",
+                                          "$darky stats"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) &
                           ~FromChat())
 async def not_from_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
@@ -273,9 +281,9 @@ async def not_from_chat_handle(event: dict, **kwargs):
         keyboard = Replies.NOT_WORK_HERE[2]
     )
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky chat settings",
-                                           "$darky stats",
-                                           "$darky stats <id>"], ignore_case=True) &
+@bot.on_event.message_new((TextRule(value=["$darky chat settings",
+                                           "$darky stats"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) &
                           FromChat() & ~IsRegistered(_db))
 async def not_registered_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
@@ -291,7 +299,7 @@ async def not_registered_chat_handle(event: dict, **kwargs):
         keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
     )
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky reg"], ignore_case=True) & 
+@bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True)) & 
                           FromChat() & ~IsAdminRule())
 async def bot_is_not_admin_reply(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
@@ -307,11 +315,11 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
         keyboard = Replies.BOT_IS_NOT_ADMIN[2]
     )
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky reg", 
-                                           "$darky layout", 
-                                           "$darky layout <text>",
-                                           "$darky chat settings"], ignore_case=True) & 
-                           FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
+@bot.on_event.message_new((TextRule(value=["$darky reg", 
+                                           "$darky layout",
+                                           "$darky chat settings"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky layout <text>"], ignore_case=True)) & 
+                          FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
 async def access_denied_reply(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
