@@ -176,7 +176,7 @@ async def bot_try(event: dict, variables: str):
 async def bot_try(event: dict, user_event: str):
     return SimpleCommands.guess_command(user_event)
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky roll <rolls:int>", "$darky roll"], ignore_case=True))
+@bot.on_event.message_new((TextRule(value=["$darky roll"], ignore_case=True) | TwiMLRule(value=["$darky roll <rolls:int>"], ignore_case=True)))
 async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
@@ -200,7 +200,7 @@ async def speak_handler_push(event: dict):
     await witless.push(event)
     return await witless.generate(event, size="small")
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky speak <size:word>", "$darky speak"], ignore_case=True))
+@bot.on_event.message_new((TextRule(value=["$darky speak"], ignore_case=True) | TwiMLRule(value=["$darky speak <size:word>"], ignore_case=True)))
 async def speak_handler(event: dict, size: str = "any"):
     if size in ["small", "medium", "large", "any"]:
         return await witless.generate(event, size=size, on_self = False)
@@ -238,16 +238,16 @@ async def button_test(event: dict):
             "peer_id": event["object"]["peer_id"]
         }
     )
-    return "This is a test reply on any callback button pressed"
+    return Replies.UNDER_DEVELOPMENT[0]
 
 
 ''' ---------WRONG USE COMMANDS--------- '''
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky try",
-                                           "$darky choose",
-                                           "$darky guess",
-                                           "$darky stats"], ignore_case=True) | 
-                          (TwiMLRule(value=["$darky stats <id>"], ignore_case=True) & ~MentionRule(need_list=False)))
+@bot.on_event.message_new((TextRule(value=["$darky try",
+                                          "$darky choose",
+                                          "$darky guess",
+                                          "$darky stats"], ignore_case=True)) | 
+                          ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)))
 async def wrong_usage_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
