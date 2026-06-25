@@ -276,18 +276,7 @@ async def get_help(event: dict):
                           ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)) |
                           (TextRule(value=["$darky stats"], ignore_case=True) & ~ReplyRule() & ~ForwardRule()))
 async def wrong_usage_handle(event: dict, **kwargs):
-    _peer_id = event["object"]["message"]["peer_id"]
-    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
-    return Response(
-        peer_ids = _peer_id,
-        forward={
-            "is_reply": True,
-            "peer_id": _peer_id,
-            "conversation_message_ids": _conversation_message_id
-        },
-        message = Replies.WRONG_USAGE[0],
-        keyboard = Replies.WRONG_USAGE[2]
-    )
+    return Replies.WRONG_USAGE[0], Replies.WRONG_USAGE[2]
 
 @bot.on_event.message_new((TextRule(value=["$darky reg",
                                           "$darky chat settings",
@@ -295,18 +284,7 @@ async def wrong_usage_handle(event: dict, **kwargs):
                           TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) &
                           ~FromChat())
 async def not_from_chat_handle(event: dict, **kwargs):
-    _peer_id = event["object"]["message"]["peer_id"]
-    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
-    return Response(
-        peer_ids = _peer_id,
-        forward={
-            "is_reply": True,
-            "peer_id": _peer_id,
-            "conversation_message_ids": _conversation_message_id
-        },
-        message = Replies.NOT_WORK_HERE[0],
-        keyboard = Replies.NOT_WORK_HERE[2]
-    )
+    return Replies.NOT_WORK_HERE[0], Replies.NOT_WORK_HERE[2]
 
 @bot.on_event.message_new((TextRule(value=["$darky chat settings",
                                            "$darky stats"], ignore_case=True) | 
@@ -326,39 +304,23 @@ async def not_registered_chat_handle(event: dict, **kwargs):
         keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
     )
 
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & ~IsAdminRule())
 @bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True)) & 
                           FromChat() & ~IsAdminRule())
 async def bot_is_not_admin_reply(event: dict, **kwargs):
-    _peer_id = event["object"]["message"]["peer_id"]
-    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
-    return Response(
-        peer_ids = _peer_id,
-        forward={
-            "is_reply": True,
-            "peer_id": _peer_id,
-            "conversation_message_ids": _conversation_message_id
-        },
-        message = Replies.BOT_IS_NOT_ADMIN[0],
-        keyboard = Replies.BOT_IS_NOT_ADMIN[2]
-    )
+    return Replies.BOT_IS_NOT_ADMIN[0], Replies.BOT_IS_NOT_ADMIN[2]
 
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & IsAdminRule() & (~AdminRule() & ~IsBotAdmin(_db)))
 @bot.on_event.message_new((TextRule(value=["$darky reg", 
                                            "$darky layout",
                                            "$darky chat settings"], ignore_case=True) | 
                           TwiMLRule(value=["$darky layout <text>"], ignore_case=True)) & 
                           FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
 async def access_denied_reply(event: dict, **kwargs):
-    _peer_id = event["object"]["message"]["peer_id"]
-    _conversation_message_id = event["object"]["message"]["conversation_message_id"]
-    return Response(
-        peer_ids = _peer_id,
-        forward={
-            "is_reply": True,
-            "peer_id": _peer_id,
-            "conversation_message_ids": _conversation_message_id
-        },
-        message = Replies.ACCESS_DENIED[0],
-        keyboard = Replies.ACCESS_DENIED[2]
-    )
+    return Replies.ACCESS_DENIED[0], Replies.ACCESS_DENIED[2]
 
 bot.start()
