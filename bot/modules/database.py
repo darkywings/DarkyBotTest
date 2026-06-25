@@ -455,7 +455,7 @@ class DarkyDatabase:
                 docs = $10, 
                 audio_messages = $11 
             WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) 
-                AND user_id = $2;
+                AND user_id = (SELECT id FROM users WHERE user_id = $2);
             """,
             _chat_id, _user_id,
             _level, _xp, _messages, _bad_words,
