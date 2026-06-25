@@ -58,7 +58,7 @@ class Chats:
                                          _member["first_name"],
                                          _member["last_name"],
                                          _member["screen_name"],
-                                         _member["sex"])
+                                         "female" if _member["sex"] == 1 else "male")
 
         await self._db.register_chat(_chat_id, _chat_title, _chat_members)
 
