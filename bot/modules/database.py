@@ -55,7 +55,7 @@ class DarkyDatabase:
         await self._db_client.execute(
             f"""
             INSERT INTO users (user_id, first_name, last_name, screen_name, sex) VALUES
-            ($1, $2, $3, $4, $5);
+            ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING;
             """,
             _id, _first_name, _last_name, _screen_name, _sex
         )
