@@ -380,11 +380,8 @@ class DarkyDatabase:
         '''
         logger.debug(f"Searching records for chat member with ID: {_member_id} in chat {_chat_id}...")
         result = await self._db_client.fetchrow(
-            """
-            WITH 
-                chat AS (SELECT id FROM chats WHERE chat_id = $1)
-            SELECT 
-                member.id, (SELECT user_id FROM users WHERE user_id = $2) AS user_id, 
+            """SELECT 
+                member.id, u.user_id, 
                 member.nickname, 
                 member.warns, member.is_banned, 
                 (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = (SELECT id FROM chat) 
@@ -396,8 +393,9 @@ class DarkyDatabase:
                 member.messages, member.bad_words, 
                 member.photo, member.video, member.audio, member.docs, member.audio_messages 
             FROM chat_members member 
-            WHERE chat_id = (SELECT id FROM chat) 
-                AND user_id = $2
+            JOIN users u ON member.user_id = u.id
+            JOIN chats c ON member.chat_id = c.id
+            WHERE c.chat_id = $1 AND u.user_id = $2
             """,
             _chat_id, _member_id
         )
