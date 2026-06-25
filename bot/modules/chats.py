@@ -62,16 +62,6 @@ class Chats:
 
         await self._db.register_chat(_chat_id, _chat_title, _chat_members)
 
-        await self._methods.messages.base_api.base_get_method(
-            api_method = "messages.sendMessageEventAnswer",
-            values = {
-                "event_id": event["object"]["event_id"],
-                "user_id": event["object"]["user_id"],
-                "peer_id": event["object"]["peer_id"],
-                "v": self._methods.messages.__api_version__
-            }
-        )
-
         logger.info(f"Chat {_peer_id} was registered")
         return f"✅ Ваш чат с ID: {_chat_id} был успешно зарегистрирован"
     

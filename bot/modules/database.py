@@ -492,6 +492,7 @@ class DarkyDatabase:
                 "   CURRENT_DATE, " \
                 "   0 " \
                 "FROM cht, usr",
+                _chat_id, _user_id
             )
             _today_activity = {"activity": 0}
 
