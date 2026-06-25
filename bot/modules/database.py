@@ -384,7 +384,7 @@ class DarkyDatabase:
             WITH 
                 chat AS (SELECT id FROM chats WHERE chat_id = $1)
             SELECT 
-                member.id, member.user_id, 
+                member.id, (SELECT user_id FROM users WHERE user_id = $2) AS user_id, 
                 member.nickname, 
                 member.warns, member.is_banned, 
                 (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = (SELECT id FROM chat) 
