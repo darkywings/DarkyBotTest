@@ -138,10 +138,11 @@ class DarkyDatabase:
         logger.debug(f"Generating query for registering chat members for {_chat_id}...")
         _query = f"""
         WITH
-            chat AS (SELECT id FROM chats WHERE chat_id = $1)
+            cht AS (SELECT id FROM chats WHERE chat_id = $1), 
+            usr AS (SELECT id FROM users WHERE user_id = unnest($2::int[])) 
         INSERT INTO chat_members (chat_id, user_id) 
-        SELECT chat.id, unnest($2::int[])
-        FROM chat;
+        SELECT cht.id, usr.id 
+        FROM cht, usr;
         """
 
         logger.debug(f"Registering members for {_chat_id}...")
@@ -161,7 +162,9 @@ class DarkyDatabase:
         :type _user_id: int
         '''
         logger.debug(f"Searching records for chat member with ID: {_user_id} in chat {_chat_id}...")
-        result = await self._db_client.fetchrow(f"SELECT * FROM chat_members WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) AND user_id = $2",
+        result = await self._db_client.fetchrow("SELECT * FROM chat_members " \
+                                                "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+                                                "AND user_id = (SELECT id FROM users WHERE user_id = $2)",
                                                 _chat_id, _user_id)
 
         if not result:
@@ -461,3 +464,43 @@ class DarkyDatabase:
             _photo, _video, _audio, _docs, _audio_messages
         )
         logger.debug(f"Stats was updated for user {_user_id} in chat {_chat_id}")
+    
+    async def update_activity(self,
+                              _chat_id: int,
+                              _user_id: int) -> None:
+        '''
+        Пишет активность пользователя в чате для каждого дня
+        '''
+        _today_activity = await self._db_client.fetchrow(
+            "SELECT activity " \
+            "FROM member_activity " \
+            "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "AND date = CURRENT_DATE;",
+            _chat_id, _user_id
+        )
+
+        if not _today_activity:
+            await self._db_client.execute(
+                "WITH " \
+                "   cht AS (SELECT id FROM chats WHERE chat_id = $1), " \
+                "   usr AS (SELECT id FROM users WHERE user_id = $2) " \
+                "INSERT INTO member_activity (chat_id, user_id, date, activity) " \
+                "SELECT " \
+                "   cht.id, " \
+                "   usr.id, " \
+                "   CURRENT_DATE, " \
+                "   0" \
+                "FROM cht, usr",
+            )
+            _today_activity = {"activity": 0}
+
+        await self._db_client.execute(
+            "UPDATE member_activity " \
+            "SET activity = $3 " \
+            "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "AND date = CURRENT_DATE;",
+            _chat_id, _user_id, _today_activity["activity"] + 1
+        )
+        logger.debug(f"Member {_user_id} activity for chat {_chat_id} was written")

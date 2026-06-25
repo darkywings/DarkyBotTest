@@ -165,7 +165,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS chat_members (
         id SERIAL PRIMARY KEY,
         chat_id INT REFERENCES chats (id),
-        user_id INT NOT NULL,
+        user_id INT REFERENCES users (id),
         nickname TEXT DEFAULT NULL,
         warns INT DEFAULT 0,
         is_banned BOOLEAN DEFAULT FALSE,
@@ -184,6 +184,7 @@ EOSQL
 psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
     CREATE TABLE IF NOT EXISTS member_activity (
         id SERIAL PRIMARY KEY,
+        chat_id INT REFERENCES chats (id),
         user_id INT REFERENCES users (id),
         date DATE NOT NULL UNIQUE,
         activity INT NOT NULL

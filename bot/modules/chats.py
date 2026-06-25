@@ -45,12 +45,20 @@ class Chats:
         _chat = _chat["response"]["items"][0]
 
         _chat_members = await self._methods.messages.getConversationMembers(
-            peer_id = _peer_id
+            peer_id = _peer_id,
+            fields = "screen_name, sex"
         )
         _chat_members = _chat_members["response"]["profiles"]
 
         _chat_id = _chat["peer"]["id"]
         _chat_title = _chat["chat_settings"]["title"]
+
+        for _member in _chat_members:
+            await self._db.register_user(_member["id"], 
+                                         _member["first_name"],
+                                         _member["last_name"],
+                                         _member["screen_name"],
+                                         _member["sex"])
 
         await self._db.register_chat(_chat_id, _chat_title, _chat_members)
 
@@ -276,7 +284,14 @@ class Chats:
                         message = f"🎉 {username} только что {achieved} {lvlup + 1} уровня!"
                     )
             
+    async def note_activity(self, event: dict):
+        '''
+        Запоминает активность участника беседы
+        '''
+        _peer_id = event["object"]["message"]["peer_id"] if event["type"] == BotEventType.MESSAGE_NEW else event["object"]["peer_id"]
+        _user_id = event["object"]["message"]["from_id"] if event["type"] == BotEventType.MESSAGE_NEW else event["object"]["user_id"]
 
+        await self._db.update_activity(_peer_id, _user_id)
     
     async def update_member(self, event: dict, key: str, value: str):
         '''
