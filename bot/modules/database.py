@@ -139,7 +139,7 @@ class DarkyDatabase:
         _query = f"""
         WITH
             cht AS (SELECT id FROM chats WHERE chat_id = $1), 
-            usr AS (SELECT id FROM users WHERE user_id = unnest($2::int[])) 
+            usr AS (SELECT id FROM users WHERE user_id = ANY($2::int[])) 
         INSERT INTO chat_members (chat_id, user_id) 
         SELECT cht.id, usr.id 
         FROM cht, usr;
@@ -490,7 +490,7 @@ class DarkyDatabase:
                 "   cht.id, " \
                 "   usr.id, " \
                 "   CURRENT_DATE, " \
-                "   0" \
+                "   0 " \
                 "FROM cht, usr",
             )
             _today_activity = {"activity": 0}
