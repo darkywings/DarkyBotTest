@@ -58,6 +58,9 @@ twiml = TwiML()
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 @bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
                           FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
@@ -236,7 +239,10 @@ async def test(event: dict):
 
 ''' ---------BUTTONS HANDLING--------- '''
 
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT, ~OnPayloadRule(payload={"darky_button": "help"}) & OnPayloadRule())
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT, 
+                  ~OnPayloadRule(payload={"darky_button": "help"}) & 
+                  ~OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  OnPayloadRule())
 async def button_test(event: dict):
     await bot.methods.messages.base_api.base_get_method(
         api_method = "messages.sendMessageEventAnswer",

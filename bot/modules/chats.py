@@ -198,6 +198,9 @@ class Chats:
             f" 🔹 Количество отправленных документов: {_member["docs"]}\n" \
             f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}\n" \
             "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника"
+            .replace("True", "✅")
+            .replace("False", "❌")
+            .replace("None", "❌ Не установлен ❌")
         )
     
     async def update_member_stats(self, event: dict):
