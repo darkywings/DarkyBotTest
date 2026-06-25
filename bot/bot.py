@@ -58,9 +58,6 @@ twiml = TwiML()
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
-                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
-                  FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 @bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
                           FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
@@ -244,29 +241,45 @@ async def test(event: dict):
                   ~OnPayloadRule(payload={"darky_button": "reg_chat"}) &
                   OnPayloadRule())
 async def button_test(event: dict):
-    await bot.methods.messages.base_api.base_get_method(
-        api_method = "messages.sendMessageEventAnswer",
-        values = {
-            "event_id": event["object"]["event_id"],
-            "user_id": event["object"]["user_id"],
-            "peer_id": event["object"]["peer_id"],
-            "v": bot.methods.messages.__api_version__
-        }
-    )
+    await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
+                                                      event["object"]["user_id"],
+                                                      event["object"]["peer_id"])
     return Replies.UNDER_DEVELOPMENT[0]
 
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
+async def reg_chat_button(event: dict):
+    await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
+                                                      event["object"]["user_id"],
+                                                      event["object"]["peer_id"])
+    return bot_chats.reg_chat(event)
+
 @bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "help"}))
-async def get_help(event: dict):
-    await bot.methods.messages.base_api.base_get_method(
-        api_method = "messages.sendMessageEventAnswer",
-        values = {
-            "event_id": event["object"]["event_id"],
-            "user_id": event["object"]["user_id"],
-            "peer_id": event["object"]["peer_id"],
-            "v": bot.methods.messages.__api_version__
-        }
-    )
+async def help_button(event: dict):
+    await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
+                                                      event["object"]["user_id"],
+                                                      event["object"]["peer_id"])
     return Replies.HELP[0]
+
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & ~IsAdminRule())
+async def bot_is_not_admin_button(event: dict):
+    await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
+                                                      event["object"]["user_id"],
+                                                      event["object"]["peer_id"])
+    return Replies.BOT_IS_NOT_ADMIN[0], Replies.BOT_IS_NOT_ADMIN[2]
+
+@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
+                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
+                  FromChat() & IsAdminRule() & (~AdminRule() & ~IsBotAdmin(_db)))
+async def access_denied_button(event: dict):
+    await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
+                                                      event["object"]["user_id"],
+                                                      event["object"]["peer_id"])
+    return Replies.ACCESS_DENIED[0], Replies.ACCESS_DENIED[2]
+
 
 ''' ---------WRONG USE COMMANDS--------- '''
 
@@ -304,17 +317,11 @@ async def not_registered_chat_handle(event: dict, **kwargs):
         keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
     )
 
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
-                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
-                  FromChat() & ~IsAdminRule())
 @bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True)) & 
                           FromChat() & ~IsAdminRule())
 async def bot_is_not_admin_reply(event: dict, **kwargs):
     return Replies.BOT_IS_NOT_ADMIN[0], Replies.BOT_IS_NOT_ADMIN[2]
 
-@bot.on_event.raw(BotEventType.MESSAGE_EVENT,
-                  OnPayloadRule(payload={"darky_button": "reg_chat"}) &
-                  FromChat() & IsAdminRule() & (~AdminRule() & ~IsBotAdmin(_db)))
 @bot.on_event.message_new((TextRule(value=["$darky reg", 
                                            "$darky layout",
                                            "$darky chat settings"], ignore_case=True) | 
