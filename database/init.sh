@@ -186,7 +186,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         id SERIAL PRIMARY KEY,
         chat_id INT REFERENCES chats (id),
         user_id INT REFERENCES users (id),
-        date DATE NOT NULL UNIQUE,
+        date DATE NOT NULL,
         activity INT NOT NULL
     );
 EOSQL
