@@ -254,7 +254,7 @@ async def reg_chat_button(event: dict):
     await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
                                                       event["object"]["user_id"],
                                                       event["object"]["peer_id"])
-    return bot_chats.reg_chat(event)
+    return await bot_chats.reg_chat(event)
 
 @bot.on_event.raw(BotEventType.MESSAGE_EVENT, OnPayloadRule(payload={"darky_button": "help"}))
 async def help_button(event: dict):
