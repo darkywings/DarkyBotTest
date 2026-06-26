@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 import logging
 import random
 import math
+import os
 
 from twilight_vk.utils.config import CONFIG as twi_config
 from twilight_vk.utils.types.event_types import BotEventType
@@ -182,9 +183,15 @@ class Chats:
             user_ids = _member["user_id"],
             fields = "photo_100"
         ))["response"][0]
+
         _rank_card = RankCard(_user, _member, await self._db.get_activity_stats(_peer_id, member_id))
         await _rank_card.render()
-        _rank_card.save("test.png")
+        
+        if not os.path.exists("temp"):
+            os.mkdir("temp")
+
+        _rank_card.save(f"temp/stats_{member_id}.png")
+        
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
         return (
             "📊 Статистика участника беседы:\n" \

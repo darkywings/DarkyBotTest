@@ -21,15 +21,15 @@ class RankCard:
         self._user = user
         self._member = member
         self._data = data or []
-        self._font_path = font_path or "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+        self._font_path = font_path or "assets/stats/fonts/MyriadPro-Regular.otf"
         self._image: Image.Image
 
         self.http = Http()
 
         self._avatar = None
-        self._background = Image.open("assets/stats_background.png").convert("RGBA")
+        self._background = Image.open("assets/stats/img/background.png").resize(800, 571).convert("RGBA")
 
-        self._width, self._height = 800, 600
+        self._width, self._height = 800, 300
     
     async def _draw_avatar(self, 
                            size: int = 100):
@@ -41,32 +41,52 @@ class RankCard:
                 BytesIO(_resp.content)
             ).convert("RGBA").resize((size, size), Image.Resampling.LANCZOS)
         except Exception:
-            avatar = Image.new("RGBA", (size, size), (128,128,128,255))
+            logger.error("Error with getting avatar. Avatar will be replaced on blank", exc_info = True)
+            avatar = Image.new("RGBA", (size, size), (50,50,50,255))
             draw = ImageDraw.Draw(avatar)
-            draw.ellipse((0,0,size,size), fill=(128,128,128,255))
+            draw.ellipse((0, 0, size, size), fill=(50,50,50,255))
 
         mask = Image.new("L", (size, size), 0)
         draw = ImageDraw.Draw(mask)
-        draw.ellipse((0, 0, size, size), fill=255)
+        draw.ellipse((0, 0, size, size), fill = 255)
         avatar.putalpha(mask)
+
         self._avatar = self._avatar_outline(avatar, size)
 
     def _avatar_outline(self, 
                         avatar: Image.Image,
                         size: int = 100, 
-                        border_size: int = 4):
+                        border_size: int = 4,
+                        offset: int = 2):
 
-        border_img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-        draw_border = ImageDraw.Draw(border_img)
+        total_size = size + 2 * (offset + border_size)
+        center = total_size // 2
 
-        for i in range(border_size):
-            t = i / border_size
-            r = int(66 + (233 - 66) * t)
-            g = int(133 + (30 - 133) * t)
-            b = int(244 + (99 - 244) * t)
-            draw_border.ellipse((i, i, size - i, size - i), outline = (r, g, b, 255), width = 1)
+        gradient = Image.new("RGBA", (total_size, total_size), (0, 0, 0, 0))
+        draw_gradient = ImageDraw.Draw(gradient)
+        for x in range(total_size):
+            t = x / (total_size - 1)
+            r = int(0 + (255 - 0) * t)
+            g = int(108 + (0 - 108) * t)
+            b = int(255 + (108 - 255) * t)
+            draw_gradient.rectangle((x, 0, x + 1, total_size), fill = (r, g, b, 255))
+
+        mask = Image.new("L", (total_size, total_size), 0)
+        draw_mask = ImageDraw.Draw(mask)
+        draw_mask.ellipse((0, 0, total_size - 1, total_size - 1), fill = 255)
+        inner_radius = size // 2 + offset
+        draw_mask.ellipse((center - inner_radius, center - inner_radius,
+                           center + inner_radius, center + inner_radius), fill = 0)
         
-        return Image.alpha_composite(avatar, border_img)
+        gradient.putalpha(mask)
+
+        avatar_resized = avatar.resize((size, size), Image.Resampling.LANCZOS)
+        result = Image.new("RGBA", (total_size, total_size), (0, 0, 0, 0))
+        avatar_pos = offset + border_size
+        result.paste(avatar_resized, (avatar_pos, avatar_pos))
+
+        result = Image.alpha_composite(result, gradient)
+        return result
     
     def _draw_progress_bar(self, 
                            draw: ImageDraw.ImageDraw, 
@@ -75,22 +95,49 @@ class RankCard:
                            progress: int, 
                            color_start: tuple[int, int, int], color_end: tuple[int, int, int]):
         
-        draw.rectangle((x, y, x + width, y + height), fill = (50, 50, 50, 180))
+        bar = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(bar)
+
+        radius = height // 2
+
+        draw.rounded_rectangle((0, 0, width, height), radius=radius, fill=(50, 50, 50, 180))
 
         if progress > 0:
 
             fill_width = int(width * progress)
+
+            grad = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+            grad_draw = ImageDraw.Draw(grad)
             
             for i in range(fill_width):
-                t = i / fill_width
+                t = i / width
                 r = int(color_start[0] + (color_end[0] - color_start[0]) * t)
                 g = int(color_start[1] + (color_end[1] - color_start[1]) * t)
                 b = int(color_start[2] + (color_end[2] - color_start[2]) * t)
-                draw.rectangle((x + i, y, x + i + 1, y + height), fill = (r, g, b, 220))
+                grad_draw.rectangle((x + i, y, x + i + 1, y + height), fill = (r, g, b, 220))
+
+            mask_progress = Image.new("L", (width, height), 0)
+            mask_draw = ImageDraw.Draw(mask_progress)
+            mask_draw.rectangle((0, 0, fill_width, height), fill=255)
+
+            grad = Image.composite(grad, Image.new("RGBA", (width, height), (0, 0, 0, 0)), mask_progress)
+
+            mask_rounded = Image.new("L", (fill_width, height), 0)
+            mask_rounded_draw = ImageDraw.Draw(mask_rounded)
+            mask_rounded_draw.rounded_rectangle((0, 0, fill_width, height),
+                                            radius=radius,
+                                            corners=(0, radius, radius, 0))
+            
+            grad_final = Image.new("RGBA", (fill_width, height), (0, 0, 0, 0))
+            grad_final.paste(grad.crop((0, 0, fill_width, height)), (0, 0), mask_rounded)
+
+            bar.paste(grad_final, (0, 0), grad_final)
+
+        return bar
 
     def _make_graph(self, data, days_labels):
 
-        fig, ax = plt.subplots(figsize=(6, 2.5), dpi=100)
+        fig, ax = plt.subplots(figsize=(7, 1.25), dpi=100)
         fig.patch.set_alpha(0)
         ax.patch.set_alpha(0)
 
@@ -99,22 +146,22 @@ class RankCard:
             x_smooth = np.linspace(days.min(), days.max(), 300)
             spline = make_interp_spline(days, data, k=3)
             y_smooth = spline(x_smooth)
-            ax.plot(x_smooth, y_smooth, color='#4A90D9', linewidth=2, alpha=0.8)
+            ax.plot(x_smooth, y_smooth, color='#0661fb', linewidth=2, alpha=0.8)
         else:
-            ax.plot(days, data, color='#4A90D9', linewidth=2, alpha=0.8)
+            ax.plot(days, data, color='#0661fb', linewidth=2, alpha=0.8)
 
-        ax.plot(days, data, 'o', color='#4A90D9', markerfacecolor='none',
-                markeredgewidth=2, markersize=8)
+        ax.plot(days, data, 'o', color='#0661fb', markerfacecolor='none',
+                markeredgewidth=2, markersize=4)
 
         ax.set_xticks(days)
-        ax.set_xticklabels(days_labels, color='white', fontsize=9)
-        ax.tick_params(axis='y', colors='white', labelsize=8)
+        ax.set_xticklabels(days_labels, color='#0661fb', fontsize=8)
+        ax.tick_params(axis='y', colors='#0661fb', labelsize=8)
         ax.set_ylim(0, max(data)*1.2 if max(data)>0 else 1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.spines['bottom'].set_color('white')
-        ax.spines['left'].set_color('white')
-        ax.grid(True, linestyle='--', alpha=0.3, color='white')
+        ax.spines['bottom'].set_color(False)
+        ax.spines['left'].set_color('#0661fb')
+        ax.grid(True, linestyle='--', alpha=0.1, color='#0661fb')
 
         buf = BytesIO()
         plt.savefig(buf, format='png', transparent=True, bbox_inches='tight', pad_inches=0.1)
@@ -138,70 +185,58 @@ class RankCard:
         
         sorted_days = sorted(_activity.keys())
         self._weekly_activity = [_activity[day] for day in sorted_days]
-        self._days = [day.strftime("%a") for day in sorted_days]
+        self._days = [day.strftime("%d.%m") for day in sorted_days]
 
     async def render(self) -> Image.Image:
 
         try:
             self._validateData()
             
-            bg = self._background.resize((self._width, self._height)).convert("RGBA")
+            '''Background rendering'''
+            bg = Image.new("RGBA", (self._width, self._height), (30,30,30,255))
             draw = ImageDraw.Draw(bg)
+            bg.paste(self._background, (0, -125), self._background)
 
-            '''Positions'''
+            '''Avatar rendering'''
             _avatar_size = 100
-            _avatar_x, _avatar_y = 40, 40
-
-            _name_x = _avatar_x + _avatar_size + 3
-            _name_y = 50
-
-            _nickname_x, _nickname_y = _name_x, _name_y + 40
-
-            _level_x = _name_x
-            _level_y = _nickname_y + 60
-
-            _bar_x = _name_x
-            _bar_y = _level_y + 30
-            _bar_width = 400
-            _bar_height = 20
-
-            _graph_x = _avatar_x
-            _graph_y = _avatar_y + _avatar_size + 50
+            _avatar_x, _avatar_y = 45, 15
 
             await self._draw_avatar(_avatar_size)
             bg.paste(self._avatar, (_avatar_x, _avatar_y), self._avatar)
-        
-            font_name = ImageFont.truetype(self._font_path, 28)
-            font_nick = ImageFont.truetype(self._font_path, 18)
+
+            _name_x, _name_y = 175, 20
+            font_name = ImageFont.truetype(self._font_path, 30)
+            _nickname = f"{self._user["nickname"]}"
+            _full_name = f"{self._user["first_name"]} {self._user["last_name"]}"
+            draw.text((_name_x, _name_y), _nickname or _full_name, font = font_name, fill = '#8fc5ff')
+
+            _screen_name_x, _screen_name_y = _name_x, _name_y + 30
+            font_screen_name = ImageFont.truetype(self._font_path, 16)
+            draw.text((_screen_name_x, _screen_name_y), f"@{self._member['screen_name']}", font=font_screen_name, fill='#39a1ff')
+
+            _level_x, _level_y = _name_x, _name_y + 60
             font_level = ImageFont.truetype(self._font_path, 18)
+            level_text = f"Уровень {self._member['level']}  •  ({self._member['xp_per_level']} exp. / {self._member['max_xp_per_level']} exp.)"
+            draw.text((_level_x, _level_y), level_text, font=font_level, fill='#39a1ff')
 
-            full_name = f"{self._member.get('first_name')} {self._member.get('last_name', '')} ({self._member.get("nickname")})".strip()
-            draw.text((_name_x, _name_y), full_name, font = font_name, fill = '#88F')
-
-            if self._member.get('screen_name'):
-                draw.text((_nickname_x, _nickname_y), f"@{self._member['screen_name']}", font=font_nick, fill='#55D')
-
-            level_text = f"Уровень {self._member['level']} • ({self._member['xp_per_level']} exp. / {self._member['max_xp_per_level']} exp.)"
-            draw.text((_level_x, _level_y), level_text, font=font_level, fill='#55F')
-
+            _bar_x, _bar_y = 170, 105
+            _bar_width, _bar_height = 600, 5
             progress = self._member['xp_per_level'] / self._member.get('max_xp_per_level', 1)
             progress = min(max(progress, 0), 1)
-            self._draw_progress_bar(draw, _bar_x, _bar_y, _bar_width, _bar_height,
-                                    progress, (66, 133, 244), (233, 30, 99))
-            
-            draw.text((_bar_x + _bar_width + 10, _bar_y), f"{int(progress*100)}%",
-                    font=font_level, fill='#FFF')
+            bar_img = self._draw_progress_bar(_bar_width, _bar_height, progress, 
+                                    (0, 108, 255), (255, 0, 108))
+            bg.paste(bar_img, (_bar_x, _bar_y), bar_img)
+
+            _graph_x, _graph_y = 30, 140
             
             if hasattr(self, '_weekly_activity') and hasattr(self, '_days'):
 
                 graph_img = self._make_graph(self._weekly_activity, self._days)
                 
-                graph_width = self._width - 80
-                aspect = graph_img.width / graph_img.height
-                graph_height = int(graph_width / aspect)
+                graph_width, graph_height = 700, 125
                 graph_img = graph_img.resize((graph_width, graph_height), Image.Resampling.LANCZOS)
                 
-                bg.paste(graph_img, (40, _graph_y), graph_img)
+                bg.paste(graph_img, (_graph_x, _graph_y), graph_img)
 
             self._image = bg
         
