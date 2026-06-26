@@ -91,7 +91,7 @@ class RankCard:
     
     def _draw_progress_bar(self, 
                            width: int, height: int, 
-                           progress: int, 
+                           progress: float, 
                            color_start: tuple[int, int, int], color_end: tuple[int, int, int]):
         
         bar = Image.new("RGBA", (width, height), (0, 0, 0, 0))
@@ -104,6 +104,9 @@ class RankCard:
         if progress > 0:
 
             fill_width = int(width * progress)
+
+            if fill_width <= 0:
+                return bar
 
             grad = Image.new("RGBA", (width, height), (0, 0, 0, 0))
             grad_draw = ImageDraw.Draw(grad)
@@ -186,7 +189,7 @@ class RankCard:
         self._weekly_activity = [_activity[day] for day in sorted_days]
         self._days = [day.strftime("%d.%m") for day in sorted_days]
 
-    async def render(self) -> Image.Image:
+    async def render(self) -> None:
 
         try:
             self._validateData()
