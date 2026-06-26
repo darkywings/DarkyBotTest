@@ -178,10 +178,10 @@ class Chats:
             return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
         
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
-        _member["photo_100"] = await self._methods.users.get(
+        _member["photo_100"] = (await self._methods.users.get(
             user_ids = _member["user_id"],
             fields = "photo_100"
-        )["response"][0]
+        ))["response"][0]
         _rank_card = await RankCard(_member,
                                     await self._db.get_activity_stats(_peer_id, member_id)).render()
         _rank_card.save("test.png")
