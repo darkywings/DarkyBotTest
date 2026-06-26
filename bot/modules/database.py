@@ -384,9 +384,9 @@ class DarkyDatabase:
                 member.id, u.user_id, 
                 member.nickname, 
                 member.warns, member.is_banned, 
-                (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = c.chat_id 
+                (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = c.id 
                 AND (level_xp > member.level_xp OR (level_xp = member.level_xp AND user_id < member.user_id))) AS top_place, 
-                (SELECT COUNT(*) FROM chat_members WHERE chat_id = c.chat_id ) AS total_top, 
+                (SELECT COUNT(*) FROM chat_members WHERE chat_id = c.id ) AS total_top, 
                 member.level, member.level_xp, 
                 (member.level_xp - (100 * member.level * (member.level - 1))) AS xp_per_level, 
                 (200 * member.level) AS max_xp_per_level, 
@@ -455,7 +455,7 @@ class DarkyDatabase:
                 docs = $10, 
                 audio_messages = $11 
             WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) 
-                AND user_id = (SELECT id FROM users WHERE user_id = $2);
+            AND user_id = (SELECT id FROM users WHERE user_id = $2);
             """,
             _chat_id, _user_id,
             _level, _xp, _messages, _bad_words,
