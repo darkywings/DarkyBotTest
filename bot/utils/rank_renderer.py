@@ -14,10 +14,12 @@ logger = logging.getLogger("rank-render")
 class RankCard:
 
     def __init__(self,
-                 user: dict,
+                 user: Record,
+                 member: Record,
                  data: list[Record],
                  font_path: str = None) -> None:
         self._user = user
+        self._member = member
         self._data = data or []
         self._font_path = font_path or "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
         self._image: Image.Image
@@ -173,16 +175,16 @@ class RankCard:
             font_nick = ImageFont.truetype(self._font_path, 18)
             font_level = ImageFont.truetype(self._font_path, 18)
 
-            full_name = f"{self._user['first_name']} {self._user.get('last_name', '')} ({self._user.get("nickname", " - ")})".strip()
+            full_name = f"{self._member.get('first_name')} {self._member.get('last_name', '')} ({self._member.get("nickname")})".strip()
             draw.text((_name_x, _name_y), full_name, font = font_name, fill = '#88F')
 
-            if self._user.get('screen_name'):
-                draw.text((_nickname_x, _nickname_y), f"@{self._user['screen_name']}", font=font_nick, fill='#55D')
+            if self._member.get('screen_name'):
+                draw.text((_nickname_x, _nickname_y), f"@{self._member['screen_name']}", font=font_nick, fill='#55D')
 
-            level_text = f"Уровень {self._user['level']} • ({self._user['xp_per_level']} exp. / {self._user['max_xp_per_level']} exp.)"
+            level_text = f"Уровень {self._member['level']} • ({self._member['xp_per_level']} exp. / {self._member['max_xp_per_level']} exp.)"
             draw.text((_level_x, _level_y), level_text, font=font_level, fill='#55F')
 
-            progress = self._user['xp_per_level'] / self._user.get('max_xp_per_level', 1)
+            progress = self._member['xp_per_level'] / self._member.get('max_xp_per_level', 1)
             progress = min(max(progress, 0), 1)
             self._draw_progress_bar(draw, _bar_x, _bar_y, _bar_width, _bar_height,
                                     progress, (66, 133, 244), (233, 30, 99))
