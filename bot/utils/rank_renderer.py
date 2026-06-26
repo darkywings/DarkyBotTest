@@ -190,7 +190,7 @@ class RankCard:
             
             '''Background rendering'''
             bg = Image.new("RGBA", (self._width, self._height), (30,30,30,255))
-            bg_mask = Image.new("RGBA", (self._width, self._height), (125, 125, 125, 255))
+            bg_mask = Image.new("RGBA", (800, 571), (125, 125, 125, 255))
             draw = ImageDraw.Draw(bg)
             bg.paste(self._background, (0, -125), bg_mask)
 
