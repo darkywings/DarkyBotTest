@@ -235,11 +235,9 @@ async def test(event: dict):
     return "Hello world"
 
 @bot.on_event.message_new(TwiMLRule(value=["test stats <member:int> <chat:int>"]) & IsBotAdmin(_db))
-async def test_stats_pic(event:dict, member: int = 0, chat: int = 0):
+async def test_stats_pic(event: dict, member: int = 0, chat: int = 0):
     event["object"]["message"]["peer_id"] = chat
-    if await bot_chats.show_chat_member(event, member) is not None:
-        return "Hello world"
-    return "Error"
+    await bot_chats.show_chat_member(event, member)
 
 
 ''' ---------BUTTONS HANDLING--------- '''
