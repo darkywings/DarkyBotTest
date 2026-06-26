@@ -19,7 +19,7 @@ class RankCard:
                  font_path: str = None) -> None:
         self._user = user
         self._data = data or []
-        self._font_path = font_path or "arial.ttf"
+        self._font_path = font_path or "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
         self._image: Image.Image
 
         self.http = Http()

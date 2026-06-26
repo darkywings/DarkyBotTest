@@ -1,5 +1,7 @@
 FROM python:3.12.4
 
+RUN apt-get update && apt-get install -y fonts-liberation
+
 WORKDIR /app
 
 COPY requirements.txt requirements.txt
