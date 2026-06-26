@@ -254,11 +254,11 @@ class Chats:
                                                _level = _new_level, _xp = _new_xp,
                                                _messages = _chat_member["messages"] + 1,
                                                _bad_words = _chat_member["bad_words"] + _bad_words_count,
-                                               _photo = _attachments_xps[0] / 20,
-                                               _video = _attachments_xps[1] / 30,
-                                               _audio = _attachments_xps[2] / 15,
-                                               _docs = _attachments_xps[3] / 35,
-                                               _audio_messages = _attachments_xps[4] / 10)
+                                               _photo = _chat_member["photo"] + _attachments_xps[0] / 20,
+                                               _video = _chat_member["video"] + _attachments_xps[1] / 30,
+                                               _audio = _chat_member["audio"] + _attachments_xps[2] / 15,
+                                               _docs = _chat_member["docs"] + _attachments_xps[3] / 35,
+                                               _audio_messages = _chat_member["audio_messages"] + _attachments_xps[4] / 10)
         
         if (_new_level - _level) > 0:
             logger.info(f"Chat {_peer_id} member {_user_id} got level up! (up to level {_new_level})")
