@@ -469,37 +469,33 @@ class DarkyDatabase:
         '''
         Пишет активность пользователя в чате для каждого дня
         '''
-        _today_activity = await self._db_client.fetchrow(
-            "SELECT activity " \
+        await self._db_client.execute(
+            "WITH " \
+            "   cht AS (SELECT id FROM chats WHERE chat_id = $1), " \
+            "   usr AS (SELECT id FROM users WHERE user_id = $2) " \
+            "INSERT INTO member_activity (chat_id, user_id, date, activity) " \
+            "SELECT cht.id, usr.id, CURRENT_DATE, 1 " \
+            "FROM cht, usr " \
+            "ON CONFLICT (chat_id, user_id, date) " \
+            "DO UPDATE SET activity = member_activity.activity + 1",
+            _chat_id, _user_id
+        )
+        logger.debug(f"Member {_user_id} activity for chat {_chat_id} was written")
+    
+    async def get_activity_stats(self,
+                                 chat_id: int,
+                                 user_id: int) -> "list[Record]":
+        '''
+        Получает статистику активности участника беседы за 2 недели
+        '''
+        _records = await self._db_client.fetch(
+            "SELECT date, activity " \
             "FROM member_activity " \
             "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
             "AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
-            "AND date = CURRENT_DATE;",
-            _chat_id, _user_id
+            "ORDER BY date DESC " \
+            "LIMIT 14",
+            chat_id, user_id
         )
-
-        if not _today_activity:
-            await self._db_client.execute(
-                "WITH " \
-                "   cht AS (SELECT id FROM chats WHERE chat_id = $1), " \
-                "   usr AS (SELECT id FROM users WHERE user_id = $2) " \
-                "INSERT INTO member_activity (chat_id, user_id, date, activity) " \
-                "SELECT " \
-                "   cht.id, " \
-                "   usr.id, " \
-                "   CURRENT_DATE, " \
-                "   0 " \
-                "FROM cht, usr",
-                _chat_id, _user_id
-            )
-            _today_activity = {"activity": 0}
-
-        await self._db_client.execute(
-            "UPDATE member_activity " \
-            "SET activity = $3 " \
-            "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
-            "AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
-            "AND date = CURRENT_DATE;",
-            _chat_id, _user_id, _today_activity["activity"] + 1
-        )
-        logger.debug(f"Member {_user_id} activity for chat {_chat_id} was written")
+        logger.debug(f"Got member {user_id} activity stats in chat {chat_id}")
+        return _records

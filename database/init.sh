@@ -147,7 +147,8 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         id SERIAL PRIMARY KEY,
         chat_id INT REFERENCES chats (id),
         command TEXT NOT NULL,
-        assocs TEXT[]
+        assocs TEXT[], 
+        CONSTRAINT unique_assoc UNIQUE (chat_id, command)
     );
 EOSQL
 
@@ -157,7 +158,8 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         chat_id INT REFERENCES chats (id),
         trigger TEXT NOT NULL,
         reply_male TEXT NOT NULL,
-        reply_female TEXT NOT NULL
+        reply_female TEXT NOT NULL, 
+        CONSTRAINT unique_rp UNIQUE (chat_id, trigger)
     );
 EOSQL
 
@@ -177,7 +179,8 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         video INT DEFAULT 0,
         audio INT DEFAULT 0,
         docs INT DEFAULT 0,
-        audio_messages INT DEFAULT 0
+        audio_messages INT DEFAULT 0, 
+        CONSTRAINT unique_user UNIQUE (chat_id, user_id)
     );
 EOSQL
 
@@ -187,6 +190,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         chat_id INT REFERENCES chats (id),
         user_id INT REFERENCES users (id),
         date DATE NOT NULL,
-        activity INT NOT NULL
+        activity INT NOT NULL DEFAULT 0, 
+        CONSTRAINT unique_user UNIQUE (chat_id, user_id, date)
     );
 EOSQL

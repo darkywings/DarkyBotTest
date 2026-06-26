@@ -7,6 +7,7 @@ from twilight_vk.utils.config import CONFIG as twi_config
 from twilight_vk.utils.types.event_types import BotEventType
 
 from utils import bad_words_detector
+from utils.rank_renderer import RankCard
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -177,6 +178,7 @@ class Chats:
             return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
         
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
+        _rank_card = await RankCard().render()
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
         return (
             "📊 Статистика участника беседы:\n" \
@@ -195,7 +197,8 @@ class Chats:
             f" 🔹 Количество отправленных аудиозаписей: {_member["audio"]}\n" \
             f" 🔹 Количество отправленных документов: {_member["docs"]}\n" \
             f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}\n" \
-            "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника"
+            "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника \n"
+            f"{_rank_card}"
             .replace("True", "✅")
             .replace("False", "❌")
             .replace("None", "❌ Не установлен ❌")
