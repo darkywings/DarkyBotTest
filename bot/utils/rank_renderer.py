@@ -126,9 +126,12 @@ class RankCard:
 
             mask_rounded = Image.new("L", (fill_width, height), 0)
             mask_rounded_draw = ImageDraw.Draw(mask_rounded)
-            mask_rounded_draw.rounded_rectangle((0, 0, fill_width, height),
-                                            radius=radius,
-                                            corners=(0, radius, radius, 0))
+            if fill_width >= 2 * radius:
+                mask_rounded_draw.rounded_rectangle((0, 0, fill_width, height),
+                                                    radius=radius,
+                                                    corners=(0, radius, radius, 0))
+            else:
+                mask_rounded_draw.rectangle((0, 0, fill_width, height), fill=255)
             
             grad_final = Image.new("RGBA", (fill_width, height), (0, 0, 0, 0))
             grad_final.paste(grad.crop((0, 0, fill_width, height)), (0, 0), mask_rounded)
