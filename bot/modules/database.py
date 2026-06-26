@@ -381,7 +381,7 @@ class DarkyDatabase:
         logger.debug(f"Searching records for chat member with ID: {_member_id} in chat {_chat_id}...")
         result = await self._db_client.fetchrow(
             """SELECT 
-                member.id, u.user_id, u.first_name, u.last_name, u.screen_name
+                member.id, u.user_id, u.first_name, u.last_name, u.screen_name, 
                 member.nickname, 
                 member.warns, member.is_banned, 
                 (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = c.id 
