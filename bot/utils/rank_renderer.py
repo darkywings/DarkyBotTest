@@ -28,6 +28,8 @@ class RankCard:
 
         self._avatar = None
         self._background = Image.open("assets/stats/img/background.png").resize((800, 571)).convert("RGBA")
+        black = Image.new("RGB", self._background.size, (0, 0, 0))
+        self._background = Image.blend(self._background.convert("RGB"), black, 0.5).convert("RGBA")
 
         self._width, self._height = 800, 300
     
@@ -190,9 +192,8 @@ class RankCard:
             
             '''Background rendering'''
             bg = Image.new("RGBA", (self._width, self._height), (30,30,30,255))
-            bg_mask = Image.new("RGBA", (800, 571), (125, 125, 125, 255))
             draw = ImageDraw.Draw(bg)
-            bg.paste(self._background, (0, -125), bg_mask)
+            bg.paste(self._background, (0, -125), self._background)
 
             '''Avatar rendering'''
             _avatar_size = 100
