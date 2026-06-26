@@ -190,8 +190,9 @@ class RankCard:
             
             '''Background rendering'''
             bg = Image.new("RGBA", (self._width, self._height), (30,30,30,255))
+            bg_mask = Image.new("RGBA", (self._width, self._height), (125, 125, 125, 255))
             draw = ImageDraw.Draw(bg)
-            bg.paste(self._background, (0, -125), self._background)
+            bg.paste(self._background, (0, -125), bg_mask)
 
             '''Avatar rendering'''
             _avatar_size = 100
@@ -202,9 +203,9 @@ class RankCard:
 
             _name_x, _name_y = 175, 20
             font_name = ImageFont.truetype(self._font_path, 30)
-            _nickname = f"{self._member["nickname"]}"
+            _nickname = self._member["nickname"]
             _full_name = f"{self._user["first_name"]} {self._user["last_name"]}"
-            draw.text((_name_x, _name_y), _nickname or _full_name, font = font_name, fill = '#8fc5ff')
+            draw.text((_name_x, _name_y), f"{_nickname}" if _nickname is not None else _full_name, font = font_name, fill = '#8fc5ff')
 
             _screen_name_x, _screen_name_y = _name_x, _name_y + 30
             font_screen_name = ImageFont.truetype(self._font_path, 16)
