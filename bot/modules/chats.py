@@ -182,8 +182,8 @@ class Chats:
             user_ids = _member["user_id"],
             fields = "photo_100"
         ))["response"][0]
-        _rank_card = await RankCard(_user, _member,
-                                    await self._db.get_activity_stats(_peer_id, member_id)).render()
+        _rank_card = RankCard(_user, _member, await self._db.get_activity_stats(_peer_id, member_id))
+        await _rank_card.render()
         _rank_card.save("test.png")
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
         return (
