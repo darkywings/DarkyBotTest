@@ -234,6 +234,12 @@ async def wipe_speak_data(event: dict):
 async def test(event: dict):
     return "Hello world"
 
+@bot.on_event.message_new(TwiMLRule(value=["$darky stats <member:int> <chat:int>"]) & IsBotAdmin(_db))
+async def test_stats_pic(event:dict, member: int = 0, chat: int = 0):
+    event["object"]["message"]["peer_id"] = chat
+    await bot_chats.show_chat_member(event, member)
+    return "Картинка должна была отрендериться, проверьте временную папку бота"
+
 
 ''' ---------BUTTONS HANDLING--------- '''
 
