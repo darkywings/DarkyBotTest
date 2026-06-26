@@ -34,6 +34,7 @@ class RankCard:
         
         try:
             _resp = await self.http.get(self._user.get("photo_100", ""))
+            await self.http.close()
             avatar = Image.open(
                 BytesIO(_resp.content)
             ).convert("RGBA").resize((size, size), Image.Resampling.LANCZOS)
