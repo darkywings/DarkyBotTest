@@ -178,7 +178,7 @@ class Chats:
             return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
         
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
-        _rank_card = await RankCard(await self._db.get_user(member_id),
+        _rank_card = await RankCard(_member,
                                     await self._db.get_activity_stats(_peer_id, member_id)).render()
         _rank_card.save("test.png")
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
