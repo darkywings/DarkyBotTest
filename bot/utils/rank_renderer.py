@@ -27,7 +27,7 @@ class RankCard:
         self.http = Http()
 
         self._avatar = None
-        self._background = Image.open("assets/stats/img/background.png").resize(800, 571).convert("RGBA")
+        self._background = Image.open("assets/stats/img/background.png").resize((800, 571)).convert("RGBA")
 
         self._width, self._height = 800, 300
     
@@ -89,8 +89,6 @@ class RankCard:
         return result
     
     def _draw_progress_bar(self, 
-                           draw: ImageDraw.ImageDraw, 
-                           x: int, y: int, 
                            width: int, height: int, 
                            progress: int, 
                            color_start: tuple[int, int, int], color_end: tuple[int, int, int]):
@@ -114,7 +112,7 @@ class RankCard:
                 r = int(color_start[0] + (color_end[0] - color_start[0]) * t)
                 g = int(color_start[1] + (color_end[1] - color_start[1]) * t)
                 b = int(color_start[2] + (color_end[2] - color_start[2]) * t)
-                grad_draw.rectangle((x + i, y, x + i + 1, y + height), fill = (r, g, b, 220))
+                grad_draw.rectangle((i, 0, i + 1, height), fill = (r, g, b, 255))
 
             mask_progress = Image.new("L", (width, height), 0)
             mask_draw = ImageDraw.Draw(mask_progress)
@@ -159,7 +157,7 @@ class RankCard:
         ax.set_ylim(0, max(data)*1.2 if max(data)>0 else 1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.spines['bottom'].set_color(False)
+        ax.spines['bottom'].set_visible(False)
         ax.spines['left'].set_color('#0661fb')
         ax.grid(True, linestyle='--', alpha=0.1, color='#0661fb')
 
@@ -242,6 +240,7 @@ class RankCard:
         
         except Exception as exc:
             logger.error(f"Renderer error: {exc}", exc_info = True)
+            self._image = Image.new("RGBA", (self._width, self._height), (255, 255, 255, 255))
     
     def save(self, 
              path: str):
