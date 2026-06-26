@@ -36,9 +36,10 @@ class RankCard:
         
         try:
             _resp = await self.http.get(self._user.get("photo_100", ""))
+            _img_data = await _resp.read()
             await self.http.close()
             avatar = Image.open(
-                BytesIO(_resp.content)
+                BytesIO(_img_data)
             ).convert("RGBA").resize((size, size), Image.Resampling.LANCZOS)
         except Exception:
             logger.error("Error with getting avatar. Avatar will be replaced on blank", exc_info = True)
@@ -204,7 +205,7 @@ class RankCard:
 
             _name_x, _name_y = 175, 20
             font_name = ImageFont.truetype(self._font_path, 30)
-            _nickname = f"{self._user["nickname"]}"
+            _nickname = f"{self._member["nickname"]}"
             _full_name = f"{self._user["first_name"]} {self._user["last_name"]}"
             draw.text((_name_x, _name_y), _nickname or _full_name, font = font_name, fill = '#8fc5ff')
 
