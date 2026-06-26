@@ -225,13 +225,13 @@ class RankCard:
                                     (0, 108, 255), (255, 0, 108))
             bg.paste(bar_img, (_bar_x, _bar_y), bar_img)
 
-            _graph_x, _graph_y = 30, 140
+            _graph_x, _graph_y = 20, 135
             
             if hasattr(self, '_weekly_activity') and hasattr(self, '_days'):
 
                 graph_img = self._make_graph(self._weekly_activity, self._days)
                 
-                graph_width, graph_height = 700, 125
+                graph_width, graph_height = 760, 150
                 graph_img = graph_img.resize((graph_width, graph_height), Image.Resampling.LANCZOS)
                 
                 bg.paste(graph_img, (_graph_x, _graph_y), graph_img)
