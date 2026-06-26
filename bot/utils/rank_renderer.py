@@ -90,53 +90,44 @@ class RankCard:
         return result
     
     def _draw_progress_bar(self, 
-                           width: int, height: int, 
-                           progress: float, 
-                           color_start: tuple[int, int, int], color_end: tuple[int, int, int]):
+                        width: int, height: int, 
+                        progress: float, 
+                        color_start: tuple[int, int, int], 
+                        color_end: tuple[int, int, int]) -> Image.Image:
         
         bar = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(bar)
-
         radius = height // 2
 
         draw.rounded_rectangle((0, 0, width, height), radius=radius, fill=(50, 50, 50, 180))
 
         if progress > 0:
-
             fill_width = int(width * progress)
-
             if fill_width <= 0:
                 return bar
 
             grad = Image.new("RGBA", (width, height), (0, 0, 0, 0))
             grad_draw = ImageDraw.Draw(grad)
-            
-            for i in range(fill_width):
+            for i in range(width):
                 t = i / width
                 r = int(color_start[0] + (color_end[0] - color_start[0]) * t)
                 g = int(color_start[1] + (color_end[1] - color_start[1]) * t)
                 b = int(color_start[2] + (color_end[2] - color_start[2]) * t)
-                grad_draw.rectangle((i, 0, i + 1, height), fill = (r, g, b, 255))
+                grad_draw.rectangle((i, 0, i + 1, height), fill=(r, g, b, 255))
+
+            mask_rounded = Image.new("L", (width, height), 0)
+            mask_rounded_draw = ImageDraw.Draw(mask_rounded)
+            mask_rounded_draw.rounded_rectangle((0, 0, width, height), radius=radius, fill=255)
+
+            grad = Image.composite(grad, Image.new("RGBA", (width, height), (0, 0, 0, 0)), mask_rounded)
 
             mask_progress = Image.new("L", (width, height), 0)
-            mask_draw = ImageDraw.Draw(mask_progress)
-            mask_draw.rectangle((0, 0, fill_width, height), fill=255)
+            mask_progress_draw = ImageDraw.Draw(mask_progress)
+            mask_progress_draw.rectangle((0, 0, fill_width, height), fill=255)
 
             grad = Image.composite(grad, Image.new("RGBA", (width, height), (0, 0, 0, 0)), mask_progress)
 
-            mask_rounded = Image.new("L", (fill_width, height), 0)
-            mask_rounded_draw = ImageDraw.Draw(mask_rounded)
-            if fill_width >= 2 * radius:
-                mask_rounded_draw.rounded_rectangle((0, 0, fill_width, height),
-                                                    radius=radius,
-                                                    corners=(0, radius, radius, 0))
-            else:
-                mask_rounded_draw.rectangle((0, 0, fill_width, height), fill=255)
-            
-            grad_final = Image.new("RGBA", (fill_width, height), (0, 0, 0, 0))
-            grad_final.paste(grad.crop((0, 0, fill_width, height)), (0, 0), mask_rounded)
-
-            bar.paste(grad_final, (0, 0), grad_final)
+            bar.paste(grad, (0, 0), grad)
 
         return bar
 
