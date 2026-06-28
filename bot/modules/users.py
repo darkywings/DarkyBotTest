@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 import logging
 
+from validators import SettingsParamValidator
+
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
     from modules.database import DarkyDatabase
@@ -94,14 +96,10 @@ class Users:
             "mentions",
             "who_can_rp_me"
         ]:
-            if value in ["true", "false"]:
-                value = True if value == "true" else False
+            value = SettingsParamValidator.validate(value)
 
-            elif value.isdigit():
-                value = int(value)
-
-            if (key in ["update_notifications", "mentions"] and not isinstance(value, bool) or 
-                key in ["who_can_rp_me"] and value not in ["all", "only_bot", "only_users", "nobody"]):
+            if ((key in ["update_notifications", "mentions"] and not isinstance(value, bool)) or 
+                (key in ["who_can_rp_me"] and value not in ["all", "only_bot", "only_users", "nobody"])):
                 return f"⚠️ Неверное значение \"{value}\" для параметра \"{key}\", убедитесь в его правильности и повторите попытку"
 
             await self._db.update_user(event["object"]["message"]["from_id"], key, value)

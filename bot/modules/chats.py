@@ -9,6 +9,7 @@ from twilight_vk.utils.types.event_types import BotEventType
 
 from utils import bad_words_detector
 from utils.rank_renderer import RankCard
+from validators import SettingsParamValidator
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -156,7 +157,6 @@ class Chats:
         Отображает данные участника беседы
         '''
 
-        # TODO: ЗДЕСЬ ДОЛЖНА БЫТЬ ЕЩЕ КАРТИНКА СТАТИСТИКИ ОТРЕНДЕРЕННАЯ С ГРАФИКОМ АКТИВНОСТИ И ТЕКУЩЕГО УРОВНЯ
         _peer_id = event["object"]["message"]["peer_id"]
 
         if member_id == -event["group_id"]:
@@ -179,6 +179,10 @@ class Chats:
             return "⚠️ Я не собираю статистику и не регистрирую других ботов в своей базе, у меня нет необходимости делать это"
         
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
+        
+        '''
+        ВК больше не поддерживает загрузку фоток через бота в группу
+        
         _user = (await self._methods.users.get(
             user_ids = _member["user_id"],
             fields = "photo_100"
@@ -191,6 +195,7 @@ class Chats:
             os.mkdir("temp")
 
         _rank_card.save(f"temp/stats_{member_id}.png")
+        '''
         
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
         return (
@@ -209,8 +214,7 @@ class Chats:
             f" 🔹 Количество отправленных видео: {_member["video"]}\n" \
             f" 🔹 Количество отправленных аудиозаписей: {_member["audio"]}\n" \
             f" 🔹 Количество отправленных документов: {_member["docs"]}\n" \
-            f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}\n" \
-            "[DEV_NOTE]: Здесь должна быть еще картинка с диаграммой активности и отображением прогресс бара для уровня участника \n"
+            f" 🔹 Количество голосовых сообщений: {_member["audio_messages"]}"
             .replace("True", "✅")
             .replace("False", "❌")
             .replace("None", "❌ Не установлен ❌")
@@ -307,5 +311,59 @@ class Chats:
     async def update_chat(self, event: dict, key: str, value: str):
         '''
         Обновляет данные чата
+
+        :param key: Название параметра
+        :type key: str
+
+        :param value: Новое значение параметра key
+        :type value: str
         '''
-        pass
+        if key in [
+            "update_notifications",
+            "mention_in_greetings",
+            "lvlups",
+            "rp", 
+            "nicknames",
+            "manage_rp",
+            "manage_nicknames",
+            "triggers",
+            "layout_autodetect",
+            "who_can_mute",
+            "who_can_kick",
+            "who_can_warn",
+            "who_can_ban",
+            "warn_limit",
+            "warn_punishment",
+            "autokick",
+            "verify.enabled",
+            "verify.punishment",
+            "verify.days_from_signup",
+            "verify.should_follow_groups",
+            "verify.groups_to_follow",
+            "verify.spam_detector"
+        ]:
+            value = SettingsParamValidator.validate(value)
+
+            if (
+                (key in ["update_notifications", "mention_in_greetings", "lvlups", "rp", "nicknames", "triggers", "layout_autodetect", "autokick", "verify.enabled", "verify.should_follow_groups", "verify.spam_detector"] and not isinstance(value, bool)) or
+                (key in ["manage_rp", "manage_nicknames", "who_can_mute", "who_can_kick", "who_can_warn", "who_can_ban"] and value not in ["all", "admins", "nobody"]) or
+                (key in ["warn_limit"] and (not isinstance(value, int) or (isinstance(value, int) and value not in range(0, 6)))) or
+                (key in ["warn_punishment"] and value not in ["ban", "kick", "mute", "none"]) or
+                (key in ["verify.punishment"] and value not in ["ban", "kick"]) or
+                (key in ["groups_to_follow"] and not isinstance(value, list))
+            ):
+                return f"⚠️ Неверное значение \"{value}\" для параметра \"{key}\", убедитесь в его правильности и повторите попытку"
+
+            _chat_id = event["object"]["message"]["peer_id"]
+
+            if "verify" in key:
+                key = key.split(".")[1]
+                await self._db.update_verify_settings(_chat_id, key, value)
+                return (f"✅ Настройки системы DarkyVerify чата изменены\n" \
+                        f"❕ Значение параметра \"{key}\" установлено на \"{value}\"")
+            
+            await self._db.update_chat_settings(_chat_id, key, value)
+            return (f"✅ Настройки чата изменены\n" \
+                        f"❕ Значение параметра \"{key}\" установлено на \"{value}\"")
+
+        return "❌ Такого параметра не существует, либо он меняется не этим путем"

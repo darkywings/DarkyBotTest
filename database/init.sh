@@ -108,6 +108,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         punishment TEXT CHECK (punishment IN ( 'ban', 'kick' )) DEFAULT 'ban',
         days_from_signup INT DEFAULT 3,
         should_follow_groups BOOLEAN DEFAULT FALSE,
+        groups_to_follow TEXT[] DEFAULT NULL,
         spam_detection BOOLEAN DEFAULT TRUE
     );
 EOSQL
@@ -180,7 +181,8 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         audio INT DEFAULT 0,
         docs INT DEFAULT 0,
         audio_messages INT DEFAULT 0, 
-        CONSTRAINT unique_user UNIQUE (chat_id, user_id)
+        CONSTRAINT unique_user UNIQUE (chat_id, user_id),
+        CONSTRAINT unique_nickname UNIQUE (chat_id, nickname)
     );
 EOSQL
 

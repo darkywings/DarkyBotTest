@@ -95,6 +95,11 @@ async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = N
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await bot_chats.show_chat_member(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
+@bot.on_event.message_new(TwiMLRule(value=["$darky chat set <key:word> <value>"], ignore_case=True) & 
+                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+async def update_chat_settings(event: dict, key: str = None, value: str = None):
+    return await bot_chats.update_chat(event, key, value)
+
 
 ''' ---------ON EVERY MESSAGE EVENTS--------- '''
 
@@ -142,7 +147,7 @@ async def bot_greets(event: dict):
 
 ''' ---------TRIGGERS--------- '''
 
-@bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя"], ignore_case = True, need_list = False) &
+@bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя", "dorky", "doorky", "dorke", "doorke"], ignore_case = True, need_list = False) &
                           (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                                          query = CheckSqlQueries.TRIGGER_CHECK,
                                                                                                          key = "triggers", value = True)))))
@@ -234,11 +239,6 @@ async def wipe_speak_data(event: dict):
 async def test(event: dict):
     return "Hello world"
 
-@bot.on_event.message_new(TwiMLRule(value=["test stats <member:int> <chat:int>"]) & IsBotAdmin(_db))
-async def test_stats_pic(event: dict, member: int = 0, chat: int = 0):
-    event["object"]["message"]["peer_id"] = chat
-    await bot_chats.show_chat_member(event, member)
-
 
 ''' ---------BUTTONS HANDLING--------- '''
 
@@ -291,7 +291,11 @@ async def access_denied_button(event: dict):
 
 @bot.on_event.message_new((TextRule(value=["$darky try",
                                           "$darky choose",
-                                          "$darky guess"], ignore_case=True)) | 
+                                          "$darky guess",
+                                          "$darky chat set",
+                                          "$darky user set"], ignore_case=True) | 
+                           TwiMLRule(value=["$darky user set <param:word>",
+                                            "$darky chat set <param:word>"], ignore_case=True)) | 
                           ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)) |
                           (TextRule(value=["$darky stats"], ignore_case=True) & ~ReplyRule() & ~ForwardRule()))
 async def wrong_usage_handle(event: dict, **kwargs):
@@ -299,15 +303,19 @@ async def wrong_usage_handle(event: dict, **kwargs):
 
 @bot.on_event.message_new((TextRule(value=["$darky reg",
                                           "$darky chat settings",
-                                          "$darky stats"], ignore_case=True) | 
-                          TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) &
+                                          "$darky stats",
+                                          "$darky chat set"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky stats <id>",
+                                           "$darky chat set <params>"], ignore_case=True)) &
                           ~FromChat())
 async def not_from_chat_handle(event: dict, **kwargs):
     return Replies.NOT_WORK_HERE[0], Replies.NOT_WORK_HERE[2]
 
 @bot.on_event.message_new((TextRule(value=["$darky chat settings",
-                                           "$darky stats"], ignore_case=True) | 
-                          TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) &
+                                           "$darky stats",
+                                           "$darky chat set"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky stats <id>",
+                                           "$darky chat set <params>"], ignore_case=True)) &
                           FromChat() & ~IsRegistered(_db))
 async def not_registered_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
@@ -323,15 +331,20 @@ async def not_registered_chat_handle(event: dict, **kwargs):
         keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
     )
 
-@bot.on_event.message_new((TextRule(value=["$darky reg"], ignore_case=True)) & 
+@bot.on_event.message_new((TextRule(value=["$darky reg",
+                                           "$darky chat settings",
+                                           "$darky chat set"], ignore_case=True) |
+                          TwiMLRule(value=["$darky chat set <params>"], ignore_case=True)) & 
                           FromChat() & ~IsAdminRule())
 async def bot_is_not_admin_reply(event: dict, **kwargs):
     return Replies.BOT_IS_NOT_ADMIN[0], Replies.BOT_IS_NOT_ADMIN[2]
 
 @bot.on_event.message_new((TextRule(value=["$darky reg", 
                                            "$darky layout",
-                                           "$darky chat settings"], ignore_case=True) | 
-                          TwiMLRule(value=["$darky layout <text>"], ignore_case=True)) & 
+                                           "$darky chat settings",
+                                           "$darky chat set"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky layout <text>",
+                                           "$darky chat set <params>"], ignore_case=True)) & 
                           FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
 async def access_denied_reply(event: dict, **kwargs):
     return Replies.ACCESS_DENIED[0], Replies.ACCESS_DENIED[2]

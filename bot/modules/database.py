@@ -278,9 +278,8 @@ class DarkyDatabase:
         :param _value: Новое значение параметра _key
         :type _value: str
         '''
-        logger.debug(f"Updating user {_user_id}...")
         await self._db_client.execute(f"UPDATE users SET {_key} = $2 WHERE user_id = $1", _user_id, _value)
-        logger.debug(f"User {_user_id} is updated")
+        logger.debug(f"Parameter {_key} of user {_user_id} is updated on {_value}")
     
     async def get_chat(self,
                        _chat_id: int) -> "Record":
@@ -346,7 +345,8 @@ class DarkyDatabase:
         :param _value: Новое значение параметра _key
         :type _value: str
         '''
-        pass
+        await self._db_client.execute(f"UPDATE chat_settings SET {_key} = $2 WHERE id = (SELECT verify_settings_id FROM chats WHERE chat_id = $1)", _chat_id, _value)
+        logger.debug(f"Parameter {_key} of chat {_chat_id} is updated on {_value}")
 
     async def update_verify_settings(self,
                                      _chat_id: int,
@@ -364,7 +364,8 @@ class DarkyDatabase:
         :param _value: Новое значение параметра _key
         :type _value: str
         '''
-        pass
+        await self._db_client.execute(f"UPDATE verify_settings SET {_key} = $2 WHERE id = (SELECT settings_id FROM chats WHERE chat_id = $1)", _chat_id, _value)
+        logger.debug(f"Parameter {_key} of chat verify system {_chat_id} is updated on {_value}")
 
     async def get_chat_member_stats(self,
                                     _chat_id: int,
