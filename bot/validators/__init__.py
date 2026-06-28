@@ -1,1 +1,1 @@
-from settings_validator import SettingsParamValidator
+from .settings_validator import SettingsParamValidator
