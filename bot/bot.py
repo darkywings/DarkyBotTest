@@ -75,7 +75,7 @@ async def reg_chat_member(event: dict):
 async def show_user_settings(event: dict):
     return await bot_users.get_user(event)
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky user set <key:word> <value:word>"], ignore_case=True) & 
+@bot.on_event.message_new(TwiMLRule(value=["$darky user set <key:word> <value:word>", "$darky user set <key:word>"], ignore_case=True) & 
                           FromUser())
 async def update_user_settings(event: dict, key: str = None, value: str = None):
     return await bot_users.update_user(event, key, value)
@@ -95,7 +95,7 @@ async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = N
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await bot_chats.show_chat_member(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky chat set <key:word> <value>"], ignore_case=True) & 
+@bot.on_event.message_new(TwiMLRule(value=["$darky chat set <key:word> <value>", "$darky chat set <key:word>"], ignore_case=True) & 
                           FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
 async def update_chat_settings(event: dict, key: str = None, value: str = None):
     return await bot_chats.update_chat(event, key, value)
