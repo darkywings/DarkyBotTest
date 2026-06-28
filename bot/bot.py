@@ -293,9 +293,7 @@ async def access_denied_button(event: dict):
                                           "$darky choose",
                                           "$darky guess",
                                           "$darky chat set",
-                                          "$darky user set"], ignore_case=True) | 
-                           TwiMLRule(value=["$darky user set <param:word>",
-                                            "$darky chat set <param:word>"], ignore_case=True)) | 
+                                          "$darky user set"], ignore_case=True)) |
                           ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)) |
                           (TextRule(value=["$darky stats"], ignore_case=True) & ~ReplyRule() & ~ForwardRule()))
 async def wrong_usage_handle(event: dict, **kwargs):
