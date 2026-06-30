@@ -85,9 +85,10 @@ class Assoc:
         assocs = await self._db.get_assocs(_chat_id)
 
         for assoc in assocs:
-            _assoc = assoc["assocs"]
+            _assocs = assoc["assocs"]
             _command = assoc["command"]
-            if _assoc in _message_low:
-                return re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
+            for _assoc in _assocs:
+                if _assoc in _message_low:
+                    return re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
         
         return False
