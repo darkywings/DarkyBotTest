@@ -37,11 +37,12 @@ class Assoc:
         logger.debug(f"Checking if assoc {assoc} is free to use in chat {_chat_id}...")
         assocs = await self._db.get_assocs(_chat_id)
 
-        for _assoc in assocs:
-            _command = _assoc["command"]
-            if assoc in _assoc["assocs"]:
-                logger.debug(f"Assoc {assoc} is already in use for command {_command}")
-                return f"⚠️ Ассоциация \"{assoc}\" уже зарезервирована командой \"{_command}\", используйте другую ассоциацию или удалите уже существующую"
+        if assocs != False:
+            for _assoc in assocs:
+                _command = _assoc["command"]
+                if assoc in _assoc["assocs"]:
+                    logger.debug(f"Assoc {assoc} is already in use for command {_command}")
+                    return f"⚠️ Ассоциация \"{assoc}\" уже зарезервирована командой \"{_command}\", используйте другую ассоциацию или удалите уже существующую"
         
         logger.debug(f"Assoc {assoc} is free to use in chat {_chat_id}")
 
@@ -62,13 +63,14 @@ class Assoc:
         logger.debug(f"Checking if assoc {assoc} is existing in chat {_chat_id}...")
         assocs = await self._db.get_assocs(_chat_id)
 
-        for _assoc in assocs:
-            if assoc in _assoc["assocs"]:
-                logger.debug(f"Assoc {assoc} was found in command {_assoc["command"]} in chat {_chat_id}")
+        if assocs != False:
+            for _assoc in assocs:
+                if assoc in _assoc["assocs"]:
+                    logger.debug(f"Assoc {assoc} was found in command {_assoc["command"]} in chat {_chat_id}")
 
-                await self._db.delete_assoc(_chat_id, assoc)
-                logger.info(f"Assoc {assoc} was deleted from chat {_chat_id}")
-                return f"✅ Ассоциация \"{assoc}\" была удалена"
+                    await self._db.delete_assoc(_chat_id, assoc)
+                    logger.info(f"Assoc {assoc} was deleted from chat {_chat_id}")
+                    return f"✅ Ассоциация \"{assoc}\" была удалена"
             
         logger.debug(f"Assoc {assoc} is not in use in chat {_chat_id}")
         return f"⚠️ Ассоциация \"{assoc}\" не используется в этом чате"
@@ -84,11 +86,14 @@ class Assoc:
         logger.debug(f"Checking for assocs in chat {_chat_id}")
         assocs = await self._db.get_assocs(_chat_id)
 
-        for assoc in assocs:
-            _assocs = assoc["assocs"]
-            _command = assoc["command"]
-            for _assoc in _assocs:
-                if _assoc in _message_low:
-                    return re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
+        if assocs != False:
+            for assoc in assocs:
+                _assocs = assoc["assocs"]
+                _command = assoc["command"]
+                for _assoc in _assocs:
+                    if _assoc in _message_low:
+                        logger.info(f"Assoc {_assoc} was found and was replaced on {_command}")
+                        return re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
         
+        logger.debug(f"No assocs found for the message {_message}")
         return False
