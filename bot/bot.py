@@ -53,17 +53,6 @@ morning_trigger = MorningTrigger()
 sleep_trigger = SleepTrigger()
 twiml = TwiML()
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky assoc <command> = <assoc>"], ignore_case = True) & 
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
-async def assoc_add_handler(event: dict, command: str = None, assoc: str = None):
-    return await assocs.add(event, command, assoc)
-
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky assoc del <assoc>"], ignore_case = True) &
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
-async def assoc_del_handler(event: dict, assoc: str = None):
-    return await assocs.delete(event, assoc)
 
 ''' ---------REGISTRATION--------- '''
 
@@ -71,8 +60,7 @@ async def assoc_del_handler(event: dict, assoc: str = None):
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky reg"], ignore_case=True) & 
+@bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
                           FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
@@ -84,14 +72,12 @@ async def reg_chat_member(event: dict):
 
 ''' ---------USER SETTINGS--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky user settings"], ignore_case=True) & 
+@bot.on_event.message_new(TextRule(value=["$darky user settings"], ignore_case=True) & 
                           FromUser())
 async def show_user_settings(event: dict):
     return await bot_users.get_user(event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky user set <key:word> <value:word>", "$darky user set <key:word>"], ignore_case=True) & 
+@bot.on_event.message_new(TwiMLRule(value=["$darky user set <key:word> <value:word>", "$darky user set <key:word>"], ignore_case=True) & 
                           FromUser())
 async def update_user_settings(event: dict, key: str = None, value: str = None):
     return await bot_users.update_user(event, key, value)
@@ -99,22 +85,19 @@ async def update_user_settings(event: dict, key: str = None, value: str = None):
 
 ''' ---------CHAT SETTINGS--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky chat settings"], ignore_case=True) & 
+@bot.on_event.message_new(TextRule(value=["$darky chat settings"], ignore_case=True) & 
                           FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
 async def show_chat_settings(event: dict):
     return await bot_chats.show_chat(event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True) & MentionRule()) | 
+@bot.on_event.message_new(((TwiMLRule(value=["$darky stats <id>"], ignore_case=True) & MentionRule()) | 
                            (TextRule(value=["$darky stats"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
                           FromChat() & FromUser() & IsRegistered(_db))
 async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await bot_chats.show_chat_member(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky chat set <key:word> <value>", "$darky chat set <key:word>"], ignore_case=True) & 
+@bot.on_event.message_new(TwiMLRule(value=["$darky chat set <key:word> <value>", "$darky chat set <key:word>"], ignore_case=True) & 
                           FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
 async def update_chat_settings(event: dict, key: str = None, value: str = None):
     return await bot_chats.update_chat(event, key, value)
@@ -142,8 +125,7 @@ async def requests_handled_increment(event: dict):
 
 ''' ---------MAIN--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky help"], ignore_case=True))
+@bot.on_event.message_new(TextRule(value=["$darky help"], ignore_case=True))
 async def get_help(event: dict):
     '''
     Запрос руководства по использованию бота
@@ -198,23 +180,19 @@ async def trigger4(event: dict):
 
 ''' ---------SIMPLE COMMANDS--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky try <action>"], ignore_case=True))
+@bot.on_event.message_new(TwiMLRule(value=["$darky try <action>"], ignore_case=True))
 async def bot_try(event: dict, action: str):
     return SimpleCommands.try_command(action)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
+@bot.on_event.message_new(TwiMLRule(value=["$darky choose <variables:any>"], ignore_case=True))
 async def bot_choose(event: dict, variables: str):
     return SimpleCommands.choice_command(variables)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))
+@bot.on_event.message_new(TwiMLRule(value=["$darky guess <user_event>"], ignore_case=True))
 async def bot_guess(event: dict, user_event: str):
     return SimpleCommands.guess_command(user_event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky roll"], ignore_case=True) | TwiMLRule(value=["$darky roll <rolls:int>"], ignore_case=True)))
+@bot.on_event.message_new((TextRule(value=["$darky roll"], ignore_case=True) | TwiMLRule(value=["$darky roll <rolls:int>"], ignore_case=True)))
 async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
@@ -225,12 +203,23 @@ async def roll(event: dict, rolls: int = 1):
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky layout"], ignore_case = True) & (ReplyRule() | ForwardRule()))
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TwiMLRule(value=["$darky layout <text>"], ignore_case = True))
+@bot.on_event.message_new(TextRule(value=["$darky layout"], ignore_case = True) & (ReplyRule() | ForwardRule()))
+@bot.on_event.message_new(TwiMLRule(value=["$darky layout <text>"], ignore_case = True))
 async def change_layout_text(event: dict, text: str = None, have_reply: bool = None, have_forward: bool = None):
     return await SimpleCommands.layout(text or extractor.extract_text_from_reply(event, have_reply, have_forward))
+
+
+''' ---------ASSOCS--------- '''
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky assoc <command> = <assoc>"], ignore_case = True) & 
+                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+async def assoc_add_handler(event: dict, command: str = None, assoc: str = None):
+    return await assocs.add(event, command, assoc)
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky assoc del <assoc>"], ignore_case = True) &
+                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+async def assoc_del_handler(event: dict, assoc: str = None):
+    return await assocs.delete(event, assoc)
 
 
 ''' ---------DARKY-SPEAK--------- '''
@@ -240,34 +229,28 @@ async def speak_handler_push(event: dict):
     await witless.push(event)
     return await witless.generate(event, size="small")
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky speak"], ignore_case=True) | TwiMLRule(value=["$darky speak <size:word>"], ignore_case=True)))
+@bot.on_event.message_new((TextRule(value=["$darky speak"], ignore_case=True) | TwiMLRule(value=["$darky speak <size:word>"], ignore_case=True)))
 async def speak_handler(event: dict, size: str = "any"):
     if size in ["small", "medium", "large", "any"]:
         return await witless.generate(event, size=size, on_self = False)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky bugurt"], ignore_case=True))
+@bot.on_event.message_new(TextRule(value=["$darky bugurt"], ignore_case=True))
 async def bugurt_handler(event: dict):
     return await witless.bugurt(event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky speak data"], ignore_case=True))
+@bot.on_event.message_new(TextRule(value=["$darky speak data"], ignore_case=True))
 async def speak_data_handler(event: dict):
     return await witless.info(event)
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat())
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat())
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat())
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat())
 async def wipe_speak_data(event: dict):
     return await witless.wipe(event["object"]["message"]["peer_id"])
 
 
 ''' ---------TEST COMMANDS--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          TextRule(value=["hello world"]) & Disabled())
+@bot.on_event.message_new(TextRule(value=["hello world"]) & Disabled())
 async def test(event: dict):
     return "Hello world"
 
@@ -321,8 +304,7 @@ async def access_denied_button(event: dict):
 
 ''' ---------WRONG USE COMMANDS--------- '''
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky try",
+@bot.on_event.message_new((TextRule(value=["$darky try",
                                           "$darky choose",
                                           "$darky guess",
                                           "$darky chat set",
@@ -334,8 +316,7 @@ async def access_denied_button(event: dict):
 async def wrong_usage_handle(event: dict, **kwargs):
     return Replies.WRONG_USAGE[0], Replies.WRONG_USAGE[2]
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky reg",
+@bot.on_event.message_new((TextRule(value=["$darky reg",
                                           "$darky chat settings",
                                           "$darky stats",
                                           "$darky chat set",
@@ -349,8 +330,7 @@ async def wrong_usage_handle(event: dict, **kwargs):
 async def not_from_chat_handle(event: dict, **kwargs):
     return Replies.NOT_WORK_HERE[0], Replies.NOT_WORK_HERE[2]
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky chat settings",
+@bot.on_event.message_new((TextRule(value=["$darky chat settings",
                                            "$darky stats",
                                            "$darky chat set",
                                            "$darky assoc",
@@ -374,8 +354,7 @@ async def not_registered_chat_handle(event: dict, **kwargs):
         keyboard = Replies.CHAT_IS_NOT_REGISTERED[2]
     )
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky reg",
+@bot.on_event.message_new((TextRule(value=["$darky reg",
                                            "$darky chat settings",
                                            "$darky chat set"], ignore_case=True) |
                           TwiMLRule(value=["$darky chat set <params>"], ignore_case=True)) & 
@@ -383,8 +362,7 @@ async def not_registered_chat_handle(event: dict, **kwargs):
 async def bot_is_not_admin_reply(event: dict, **kwargs):
     return Replies.BOT_IS_NOT_ADMIN[0], Replies.BOT_IS_NOT_ADMIN[2]
 
-@bot.on_event.message_new(((IsRegistered(_db) & AssocRule(assocs) | TrueRule())) & 
-                          (TextRule(value=["$darky reg", 
+@bot.on_event.message_new((TextRule(value=["$darky reg", 
                                            "$darky layout",
                                            "$darky chat settings",
                                            "$darky chat set",
