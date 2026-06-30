@@ -1,6 +1,7 @@
 from .command_rules import (
     FromUser,
-    FromChat
+    FromChat,
+    AssocRule
 )
 from .layout import LayoutRule
 from .admin import IsBotAdmin

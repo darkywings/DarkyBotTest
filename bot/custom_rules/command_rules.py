@@ -3,6 +3,9 @@ from typing import TYPE_CHECKING
 from twilight_vk.framework.rules import BaseRule
 from twilight_vk.utils.types.event_types import BotEventType
 
+if TYPE_CHECKING:
+    from modules.assocs import Assoc
+
 class FromUser(BaseRule):
 
     def __init__(self) -> None:
@@ -40,3 +43,24 @@ class FromChat(BaseRule):
             return True
         
         return False
+    
+class AssocRule(BaseRule):
+
+    def __init__(self, assocs: "Assoc") -> None:
+        '''
+        Проверка ассоциации команды
+        '''
+        super().__init__(
+            on_event_types = [BotEventType.MESSAGE_NEW],
+            _assocs = assocs
+        )
+        self._assocs: "Assoc"
+
+    async def check(self, event: dict) -> bool:
+
+        message = await self._assocs.check(event)
+
+        if message != False:
+            event["object"]["message"]["text"] = message
+
+        return True

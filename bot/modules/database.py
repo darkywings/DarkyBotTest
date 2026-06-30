@@ -381,7 +381,8 @@ class DarkyDatabase:
         '''
         logger.debug(f"Searching records for chat member with ID: {_member_id} in chat {_chat_id}...")
         result = await self._db_client.fetchrow(
-            """SELECT 
+            """
+            SELECT 
                 member.id, u.user_id, u.first_name, u.last_name, u.screen_name, 
                 member.nickname, 
                 member.warns, member.is_banned, 
@@ -469,6 +470,12 @@ class DarkyDatabase:
                               _user_id: int) -> None:
         '''
         Пишет активность пользователя в чате для каждого дня
+
+        :param _chat_id: Идентификатор чата
+        :type _chat_id: int
+
+        :param _user_id: Идентификатор пользователя
+        :type _user_id: int
         '''
         await self._db_client.execute(
             "WITH " \
@@ -488,6 +495,12 @@ class DarkyDatabase:
                                  user_id: int) -> "list[Record]":
         '''
         Получает статистику активности участника беседы за 2 недели
+
+        :param chat_id: Идентификатор чата
+        :type chat_id: int
+
+        :param user_id: Идентификатор пользователя
+        :type user_id: int
         '''
         _records = await self._db_client.fetch(
             "SELECT date, activity " \
@@ -500,3 +513,63 @@ class DarkyDatabase:
         )
         logger.debug(f"Got member {user_id} activity stats in chat {chat_id}")
         return _records
+    
+    async def add_assoc(self,
+                        chat_id: int,
+                        command: str,
+                        assoc: str) -> None:
+        '''
+        Добавляет ассоциацию в таблицу chat_assocs
+
+        :param command: Оригинальная команда
+        :type command: str
+
+        :param assoc: Ассоциация для команды command
+        :type assoc: str
+        '''
+        await self._db_client.execute(
+            "WITH " \
+            "    chat AS (SELECT id FROM chats WHERE chat_id = $1) " \
+            "INSERT INTO chat_assocs (chat_id, command, assocs) " \
+            "SELECT id, $2, ARRAY[$3] " \
+            "FROM chat " \
+            "ON CONFLICT (chat_id, command) DO " \
+            "UPDATE SET assocs = array_append(chat_assocs.assocs, $3) " \
+            "WHERE $3 <> ALL(chat_assocs.assocs);",
+            chat_id, command, assoc
+        )
+        logger.debug(f"Assoc \"{assoc}\" was added to the command \"{command}\" for chat {chat_id}")
+
+    async def delete_assoc(self,
+                           chat_id: int,
+                           assoc: str) -> None:
+        '''
+        Удаляет ассоциацию из таблицы
+
+        :param assoc: Ассоциация для команды которую надо удалить
+        :type assoc: str
+        '''
+        await self._db_client.execute(
+            "WITH " \
+            "   chat AS (SELECT id FROM chats WHERE chat_id = $1) " \
+            "UPDATE chat_assocs SET assocs = array_remove(assocs, $3) " \
+            "FROM chat " \
+            "WHERE chat_assocs.chat_id = chat.id",
+            chat_id, assoc
+        )
+        logger.debug(f"Assoc \"{assoc}\" was deleted from all commands in chat {chat_id}")
+
+    async def get_assocs(self,
+                         chat_id: int) -> "Record":
+        '''
+        Возвращает список всех ассоциаций чата
+        '''
+        _assocs = await self._db_client.fetch(
+            "SELECT command, assocs FROM chat_assocs WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1)", chat_id
+        )
+        if not _assocs:
+            logger.debug(f"No assocs setted for chat {chat_id}")
+            return False
+
+        logger.debug(f"Assoc list was returned for chat {chat_id}")
+        return _assocs

@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Any
 from twilight_vk.framework.rules import BaseRule
 from twilight_vk.utils.types.event_types import BotEventType
 
+from modules.assocs import Assoc
+
 if TYPE_CHECKING:
     from utils.db_client import AsyncPGClient
     from modules.database import DarkyDatabase

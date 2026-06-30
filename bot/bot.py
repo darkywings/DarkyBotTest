@@ -21,6 +21,7 @@ from twilight_vk.utils.types.response import Response
 from twilight_vk.utils.twiml import TwiML
 from twilight_vk.utils.types.event_types import BotEventType
 
+from modules.assocs import Assoc
 from modules.database import DarkyDatabase
 from modules.users import Users
 from modules.chats import Chats
@@ -45,12 +46,27 @@ _db = DarkyDatabase()
 bot_users = Users(_db, bot.methods)
 bot_chats = Chats(_db, bot.methods)
 witless = Witless()
+assocs = Assoc(_db)
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
 morning_trigger = MorningTrigger()
 sleep_trigger = SleepTrigger()
 twiml = TwiML()
 
+''' ---------ASSOCS--------- '''
+@bot.on_event.message_new(FromChat() & FromUser() & IsRegistered(_db) & AssocRule(assocs))
+async def assoc_handling(event: dict):
+    return
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky assoc <command> = <assoc>"], ignore_case = True) & 
+                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+async def assoc_add_handler(event: dict, command: str = None, assoc: str = None):
+    return await assocs.add(event, command, assoc)
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky assoc del <assoc>"], ignore_case = True) &
+                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+async def assoc_del_handler(event: dict, assoc: str = None):
+    return await assocs.delete(event, assoc)
 
 ''' ---------REGISTRATION--------- '''
 
@@ -293,7 +309,9 @@ async def access_denied_button(event: dict):
                                           "$darky choose",
                                           "$darky guess",
                                           "$darky chat set",
-                                          "$darky user set"], ignore_case=True)) |
+                                          "$darky user set",
+                                          "$darky assoc",
+                                          "$darky assoc del"], ignore_case=True)) |
                           ((TwiMLRule(value=["$darky stats <id>"], ignore_case=True)) & ~MentionRule(need_list=False)) |
                           (TextRule(value=["$darky stats"], ignore_case=True) & ~ReplyRule() & ~ForwardRule()))
 async def wrong_usage_handle(event: dict, **kwargs):
@@ -302,18 +320,26 @@ async def wrong_usage_handle(event: dict, **kwargs):
 @bot.on_event.message_new((TextRule(value=["$darky reg",
                                           "$darky chat settings",
                                           "$darky stats",
-                                          "$darky chat set"], ignore_case=True) | 
+                                          "$darky chat set",
+                                          "$darky assoc",
+                                          "$darky assoc del"], ignore_case=True) | 
                           TwiMLRule(value=["$darky stats <id>",
-                                           "$darky chat set <params>"], ignore_case=True)) &
+                                           "$darky chat set <params>",
+                                           "$darky assoc <params>",
+                                           "$darky assoc del <params>"], ignore_case=True)) &
                           ~FromChat())
 async def not_from_chat_handle(event: dict, **kwargs):
     return Replies.NOT_WORK_HERE[0], Replies.NOT_WORK_HERE[2]
 
 @bot.on_event.message_new((TextRule(value=["$darky chat settings",
                                            "$darky stats",
-                                           "$darky chat set"], ignore_case=True) | 
+                                           "$darky chat set",
+                                           "$darky assoc",
+                                           "$darky assoc del"], ignore_case=True) | 
                           TwiMLRule(value=["$darky stats <id>",
-                                           "$darky chat set <params>"], ignore_case=True)) &
+                                           "$darky chat set <params>",
+                                           "$darky assoc <params>",
+                                           "$darky assoc del <params>"], ignore_case=True)) &
                           FromChat() & ~IsRegistered(_db))
 async def not_registered_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
@@ -340,9 +366,13 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
 @bot.on_event.message_new((TextRule(value=["$darky reg", 
                                            "$darky layout",
                                            "$darky chat settings",
-                                           "$darky chat set"], ignore_case=True) | 
+                                           "$darky chat set",
+                                           "$darky assoc",
+                                           "$darky assoc del"], ignore_case=True) | 
                           TwiMLRule(value=["$darky layout <text>",
-                                           "$darky chat set <params>"], ignore_case=True)) & 
+                                           "$darky chat set <params>",
+                                           "$darky assoc <params>",
+                                           "$darky assoc del <params>"], ignore_case=True)) & 
                           FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
 async def access_denied_reply(event: dict, **kwargs):
     return Replies.ACCESS_DENIED[0], Replies.ACCESS_DENIED[2]
