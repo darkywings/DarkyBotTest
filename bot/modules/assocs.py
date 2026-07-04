@@ -82,6 +82,7 @@ class Assoc:
         Поиск оригинальной команды по ассоциации и замена ее в сообщении
         '''
         if event.get("type", None) != BotEventType.MESSAGE_NEW:
+            logger.debug(f"Event is not MESSAGE_NEW, no need to find assocs")
             return event
 
         _chat_id: int = event["object"]["message"]["peer_id"]
