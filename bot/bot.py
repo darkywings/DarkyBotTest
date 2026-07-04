@@ -56,7 +56,7 @@ twiml = TwiML()
 
 ''' ---------MIDDLEWARES--------- '''
 
-@bot.middleware.pre()
+@bot.middleware.pre
 async def assoc_handle(event: dict):
     event = assocs.check(event)
     return event
