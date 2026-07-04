@@ -181,8 +181,6 @@ class Chats:
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
         
         '''
-        ВК больше не поддерживает загрузку фоток через бота в группу
-        
         _user = (await self._methods.users.get(
             user_ids = _member["user_id"],
             fields = "photo_100"

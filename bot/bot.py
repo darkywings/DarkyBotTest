@@ -54,6 +54,14 @@ sleep_trigger = SleepTrigger()
 twiml = TwiML()
 
 
+''' ---------MIDDLEWARES--------- '''
+
+@bot.middleware.pre()
+async def assoc_handle(event: dict):
+    event = assocs.check(event)
+    return event
+
+
 ''' ---------REGISTRATION--------- '''
 
 @bot.on_event.message_new(FromUser())

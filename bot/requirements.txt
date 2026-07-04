@@ -1,4 +1,4 @@
-twilight-vk==0.5.1b3
+twilight-vk @ git+https://github.com/darky-bot/TwilightVK.git
 python-dotenv==1.0.0
 asyncpg==0.31.0
 Pillow==11.0.0
