@@ -2,6 +2,8 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+from twilight_vk.utils.types.event_types import BotEventType
+
 if TYPE_CHECKING:
     from asyncpg import Record
     from modules.database import DarkyDatabase
@@ -79,6 +81,9 @@ class Assoc:
         '''
         Поиск оригинальной команды по ассоциации и замена ее в сообщении
         '''
+        if event.get("type", None) != BotEventType.MESSAGE_NEW:
+            return event
+
         _chat_id: int = event["object"]["message"]["peer_id"]
         _message: str = event["object"]["message"]["text"]
         _message_low: str = _message.lower()
@@ -93,7 +98,7 @@ class Assoc:
                 for _assoc in _assocs:
                     if _assoc in _message_low:
                         logger.info(f"Assoc {_assoc} was found and was replaced on {_command}")
-                        return re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
+                        event["object"]["message"]["text"] = re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
         
         logger.debug(f"No assocs found for the message {_message}")
-        return False
+        return event

@@ -58,8 +58,7 @@ twiml = TwiML()
 
 @bot.middleware.pre
 async def assoc_handle(event: dict):
-    event = await assocs.check(event)
-    return event
+    return await assocs.check(event)
 
 
 ''' ---------REGISTRATION--------- '''
