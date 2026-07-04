@@ -31,7 +31,7 @@ class Witless:
         logger.debug(f"Generating on peer_id: {_peer_id}...")
         response = await self.http.get(
             url = f"http://witless-api:{WITLESS_PORT}/generate",
-            data = {"peer_id": _peer_id, "size": size},
+            json = {"peer_id": _peer_id, "size": size},
             raw = False
         )
         
@@ -76,7 +76,7 @@ class Witless:
         for i in range(random.randint(3, 10)):
             response = await self.http.get(
                 url = f"http://witless-api:{WITLESS_PORT}/generate",
-                data = {"peer_id": _peer_id, "size": "md"},
+                json = {"peer_id": _peer_id, "size": "md"},
                 raw = False
             )
             if "success" in response.keys() and response["success"]:
@@ -110,7 +110,7 @@ class Witless:
 
         response = await self.http.get(
             url = f"http://witless-api:{WITLESS_PORT}/count",
-            data = {"peer_id": _peer_id},
+            json = {"peer_id": _peer_id},
             raw = False
         )
 
@@ -136,7 +136,7 @@ class Witless:
 
         response = await self.http.get(
             url = f"http://witless-api:{WITLESS_PORT}/wipe",
-            data = {"peer_id": peer_id},
+            json = {"peer_id": peer_id},
             raw = False
         )
 
@@ -160,7 +160,7 @@ class Witless:
 
             await self.http.get(
                 url = f"http://witless-api:{WITLESS_PORT}/push",
-                data = {"peer_id": _peer_id, "message": _text.lower()}
+                json = {"peer_id": _peer_id, "message": _text.lower()}
             )
 
         return
