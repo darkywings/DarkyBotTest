@@ -57,6 +57,7 @@ services:
     restart: on-failure
     volumes:
       - darkybot_data:/app/temp
+      - .bot/twilight_vk.log:/app/twilight_vk.log:rw
     networks:
       - twi-network
     attach: true
