@@ -62,18 +62,7 @@ async def pre_middleware_handler(event: dict):
     if event.get("type", None) != BotEventType.MESSAGE_NEW:
         logger.debug(f"Event is not MESSAGE_NEW, no need to find assocs")
         return event
-    
-    try:
-        await bot.methods.messages.methods.get(api_method="messages.setActivity",
-                                            values = {
-                                                "type": "typing",
-                                                "peer_id": event["object"]["message"]["peer_id"],
-                                                "group_id": event.get("group_id", 0),
-                                                "v": bot._vk_api
-                                            })
-    except twilight_vk.exceptions.VkApiError as exc:
-        if exc.error_code == 10:
-            logger.error("Got an internal server error while trying to send typing status")
+
     return await assocs.check(event)
 
 
