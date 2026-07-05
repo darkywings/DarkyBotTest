@@ -56,8 +56,7 @@ services:
       - POSTGRES_BOT_DB=${DB_NAME}
     restart: on-failure
     volumes:
-      - darkybot_data:/app/temp
-      - ./bot/twilight_vk.log:/app/twilight_vk.log:rw
+      - ./bot:/app
     networks:
       - twi-network
     attach: true
