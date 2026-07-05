@@ -102,7 +102,7 @@ class DarkyDatabase:
             f"""
             WITH
                 chat AS (SELECT id FROM chats WHERE chat_id = $1)
-            INSERT INTO rp (chat_id, trigger, reply_male, reply_female)
+            INSERT INTO rp (chat_id, trigger, reply_female, reply_male)
             SELECT 
                 chat.id, 
                 r.trigger, 

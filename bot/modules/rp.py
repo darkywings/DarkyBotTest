@@ -41,15 +41,15 @@ class Rp:
         _result = _member["nickname"] or f"{_user["first_name"]} {_user["last_name"]}"
         return _result if _user["mentions"] == False else f"[id{_user["user_id"]}|{_result}]", _user["sex"]
     
-    async def _get_output(self, reply: str, user1: str, user2: str) -> str:
+    def _get_output(self, reply: str, user1: str, user2: str) -> str:
         '''
         Подставляет в РП пользователей, если в строке ответа они не обозначены явно - подставляет по краям по умолчанию
         '''
         if "<user1>" not in reply: reply = f"<user1> {reply}"
         if "<user2>" not in reply: reply = f"{reply} <user2>"
 
-        re.sub("<user1>", user1, reply, flags=re.IGNORECASE)
-        re.sub("<user2>", user2, reply, flags=re.IGNORECASE)
+        reply = re.sub("<user1>", user1, reply, flags=re.IGNORECASE)
+        reply = re.sub("<user2>", user2, reply, flags=re.IGNORECASE)
 
         return reply
 
@@ -68,4 +68,4 @@ class Rp:
         if not user2:
             return "⚠️ Я не смогла найти данного пользователя в этом чате, вероятно он ни разу не состоял в этой беседе или не активил"
 
-        return await self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
+        return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
