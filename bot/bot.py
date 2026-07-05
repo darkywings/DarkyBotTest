@@ -144,7 +144,7 @@ async def requests_handled_increment(event: dict):
                           FromChat() & FromUser() & IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                 query = CheckSqlQueries.RP_CHECK,
                                                                                 key = "rp", value = True))
-async def rp_handler(event: dict, rp: str = None, id: str = None, have_reply: bool = None, have_forward: bool = None):
+async def rp_handler(event: dict, rp: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     return rps.do(event["object"]["message"]["peer_id"],
                   event["object"]["message"]["from_id"],
                   rp,
