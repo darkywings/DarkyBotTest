@@ -3,6 +3,7 @@ import logging
 import random
 import math
 import os
+from datetime import datetime
 
 from twilight_vk.utils.config import CONFIG as twi_config
 from twilight_vk.utils.types.event_types import BotEventType
@@ -188,7 +189,7 @@ class Chats:
 
         _rank_card = RankCard(_user, _member, await self._db.get_activity_stats(_peer_id, member_id))
         await _rank_card.render()
-        _img_data = _rank_card.get_formdata()
+        _img_data = _rank_card.get_formdata(filename = f"stats_{_peer_id}_{datetime.now()}.png")
 
         _photo_upload_server = await self._methods.photos.getMessagesUploadServer(peer_id = _peer_id)
         _photo_upload_server = _photo_upload_server["response"]
