@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import logging
 
+import aiohttp
 import numpy as np
 from scipy.interpolate import make_interp_spline
 from asyncpg import Record
@@ -241,6 +242,32 @@ class RankCard:
         except Exception as exc:
             logger.error(f"Renderer error: {exc}", exc_info = True)
             self._image = Image.new("RGBA", (self._width, self._height), (255, 255, 255, 255))
+    
+    def get_formdata(self, 
+                     format: str = 'PNG', 
+                     field_name: str = "photo",
+                     filename: str = "image.png",
+                     content_type = None) -> aiohttp.FormData:
+        '''
+        Создает multiform/form-data из изображения для выгрузки на сервера ВК
+        '''
+        _buffer = BytesIO()
+        self._image.save(_buffer, format=format)
+        _buffer.seek(0)
+
+        if content_type is None:
+            extension = filename.split('.')[-1].lower() if '.' in filename else 'png'
+
+            if extension in ['png']: content_type = 'image/png'
+            elif extension in ['jpg', 'jpeg']: content_type = 'image/jpeg'
+            else: content_type = 'application/octet-stream'
+
+        _form = aiohttp.FormData()
+        _form.add_field(name = field_name, 
+                       value = _buffer.getvalue(), 
+                       filename = filename, 
+                       content_type = content_type)
+        return _form
     
     def save(self, 
              path: str):

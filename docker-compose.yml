@@ -56,7 +56,7 @@ services:
       - POSTGRES_BOT_DB=${DB_NAME}
     restart: on-failure
     volumes:
-      - ./bot:/app
+      - darkybot_data:/app/temp
     networks:
       - twi-network
     attach: true
@@ -82,6 +82,7 @@ networks:
     attachable: true
 
 volumes:
+  darkybot_data: {}
   postgres_data: {}
   pgadmin_data: {}
   witless_data: {}

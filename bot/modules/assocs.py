@@ -81,25 +81,29 @@ class Assoc:
         '''
         Поиск оригинальной команды по ассоциации и замена ее в сообщении
         '''
-        if event.get("type", None) != BotEventType.MESSAGE_NEW:
-            logger.debug(f"Event is not MESSAGE_NEW, no need to find assocs")
-            return event
 
         _chat_id: int = event["object"]["message"]["peer_id"]
+        _from_id: int = event["object"]["message"]["from_id"]
         _message: str = event["object"]["message"]["text"]
         _message_low: str = _message.lower()
 
         logger.debug(f"Checking for assocs in chat {_chat_id}")
         assocs = await self._db.get_assocs(_chat_id)
 
+        #TODO: get nicknames
+
         if assocs != False:
+            
             for assoc in assocs:
-                _assocs = assoc["assocs"]
-                _command = assoc["command"]
+                _assocs, _command = assoc["assocs"], assoc["command"]
                 for _assoc in _assocs:
                     if _assoc in _message_low:
-                        logger.info(f"Assoc {_assoc} was found and was replaced on {_command}")
-                        event["object"]["message"]["text"] = re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
+                        logger.info(f"Assoc {_assoc} was found and was replaced on {_command} in {_chat_id}")
+                        _message = re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
+
+            _message = re.sub("myself", f"[id{_from_id}|@id{_from_id}]", _message, flags = re.IGNORECASE)
+
+            return event
         
         logger.debug(f"No assocs found for the message {_message}")
         return event

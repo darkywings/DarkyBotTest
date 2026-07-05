@@ -6,6 +6,7 @@ import os
 
 from twilight_vk.utils.config import CONFIG as twi_config
 from twilight_vk.utils.types.event_types import BotEventType
+from twilight_vk.utils.types.response import Response
 
 from utils import bad_words_detector
 from utils.rank_renderer import RankCard
@@ -180,7 +181,6 @@ class Chats:
         
         _member = await self._db.get_chat_member_stats(_peer_id, member_id)
         
-        '''
         _user = (await self._methods.users.get(
             user_ids = _member["user_id"],
             fields = "photo_100"
@@ -188,15 +188,26 @@ class Chats:
 
         _rank_card = RankCard(_user, _member, await self._db.get_activity_stats(_peer_id, member_id))
         await _rank_card.render()
-        
-        if not os.path.exists("temp"):
-            os.mkdir("temp")
+        _img_data = _rank_card.get_formdata()
 
-        _rank_card.save(f"temp/stats_{member_id}.png")
-        '''
-        
+        _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
+        _photo_upload_server = _photo_upload_server["response"]
+
+        _uploaded_image = await self._methods.photos.methods.httpClient.post(
+            url = _photo_upload_server["upload_url"],
+            data = _img_data,
+            raw = False
+        )
+
+        _saved_photo = await self._methods.photos.saveMessagesPhoto(
+            photo = _uploaded_image["photo"],
+            server = _uploaded_image["server"],
+            hash = _uploaded_image["hash"]
+        )
+        _saved_photo = _saved_photo["response"][0]
+
         logger.info(f"Chat member {member_id} info was returned for {_peer_id}")
-        return (
+        response_text = (
             "📊 Статистика участника беседы:\n" \
             f" 🔹 ID пользователя: {_member["user_id"]}\n" \
             f" 🔹 Забанен: {_member["is_banned"]}\n" \
@@ -216,6 +227,16 @@ class Chats:
             .replace("True", "✅")
             .replace("False", "❌")
             .replace("None", "❌ Не установлен ❌")
+        )
+        return Response(
+            peer_ids = _peer_id,
+            message = response_text,
+            attachment = f"photo{_saved_photo["owner_id"]}_{_saved_photo["id"]}",
+            forward = {
+                "is_reply": True,
+                "peer_id": _peer_id,
+                "conversation_message_ids": event["object"]["message"]["conversation_message_id"]
+            }
         )
     
     async def update_member_stats(self, event: dict):
