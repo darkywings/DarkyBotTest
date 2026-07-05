@@ -573,3 +573,21 @@ class DarkyDatabase:
 
         logger.debug(f"Assoc list was returned for chat {chat_id}")
         return _assocs
+    
+    async def get_nicknames(self,
+                            chat_id: int) -> "Record":
+        '''
+        Возвращает все никнеймы для определенного чата
+        '''
+        _nicknames = await self._db_client.fetch(
+            "SELECT u.user_id, nickname FROM chat_members " \
+            "JOIN users u ON chat_members.user_id = u.id " \
+            "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "AND nickname IS NOT NULL;", chat_id
+        )
+        if not _nicknames:
+            logger.debug(f"")
+            return False
+        
+        logger.debug(f"Nickname list was returned for chat {chat_id}")
+        return _nicknames

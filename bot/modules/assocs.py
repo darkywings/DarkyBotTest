@@ -89,8 +89,7 @@ class Assoc:
 
         logger.debug(f"Checking for assocs in chat {_chat_id}")
         assocs = await self._db.get_assocs(_chat_id)
-
-        #TODO: get nicknames
+        nicknames = await self._db.get_nicknames(_chat_id)
 
         if assocs != False:
             
@@ -98,13 +97,18 @@ class Assoc:
                 _assocs, _command = assoc["assocs"], assoc["command"]
                 for _assoc in _assocs:
                     if _assoc in _message_low:
-                        logger.info(f"Assoc {_assoc} was found and was replaced on {_command} in {_chat_id}")
+                        logger.info(f"Assoc {_assoc} was found and replaced on {_command} in {_chat_id}")
                         _message = re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
 
-            _message = re.sub("myself", f"[id{_from_id}|@id{_from_id}]", _message, flags = re.IGNORECASE)
-            
-            event["object"]["message"]["text"] = _message
-            return event
+        if nicknames != False:
+
+            for nickname in nicknames:
+                _user_id, _nickname = nickname["user_id"], nickname["nickname"]
+                if _nickname in _message:
+                    logger.info(f"Nickname {_nickname} was found and replaced on mention in {_chat_id}")
+                    _message = re.sub(_nickname, f"[id{_user_id}|{_nickname}]", _message, flags = re.IGNORECASE)
+
+        _message = re.sub("myself", f"[id{_from_id}|@id{_from_id}]", _message, flags = re.IGNORECASE)
         
-        logger.debug(f"No assocs found for the message {_message}")
+        event["object"]["message"]["text"] = _message
         return event
