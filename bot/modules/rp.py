@@ -35,6 +35,8 @@ class Rp:
         _user = await self._db.get_user(user_id)
         _member = await self._db.get_chat_member(peer_id, user_id)
 
+        # TODO: on user_id < 0 - Группы
+
         if not _user or not _member:
             return False
 

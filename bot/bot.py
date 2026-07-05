@@ -140,7 +140,7 @@ async def requests_handled_increment(event: dict):
 ''' ---------RP--------- '''
 
 @bot.on_event.message_new(((TwiMLRule(value=["<rp> <id>"], ignore_case=True) & MentionRule()) | 
-                           (TextRule(value=["<rp>"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
+                           (TwiMLRule(value=["<rp>"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
                           FromChat() & FromUser() & IsRegistered(_db) & SQLRule(_db._db_client,
                                                                                 query = CheckSqlQueries.RP_CHECK,
                                                                                 key = "rp", value = True))
