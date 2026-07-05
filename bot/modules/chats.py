@@ -190,7 +190,14 @@ class Chats:
         await _rank_card.render()
         _img_data = _rank_card.get_formdata()
 
-        _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
+        # _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
+        _photo_upload_server = await self._methods.photos.methods.get(
+            api_method = "messages.getMessagesUploadServer",
+            values = {
+                "peer_id": _peer_id,
+                "v": self._methods.photos._api_version
+            }
+        )
         _photo_upload_server = _photo_upload_server["response"]
 
         _uploaded_image = await self._methods.photos.methods.httpClient.post(
