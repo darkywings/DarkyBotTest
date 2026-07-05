@@ -190,14 +190,7 @@ class Chats:
         await _rank_card.render()
         _img_data = _rank_card.get_formdata()
 
-        # _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
-        _photo_upload_server = await self._methods.photos.methods.get(
-            api_method = "photos.getMessagesUploadServer",
-            values = {
-                "peer_id": _peer_id,
-                "v": self._methods.photos._api_version
-            }
-        )
+        _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
         _photo_upload_server = _photo_upload_server["response"]
 
         _uploaded_image = await self._methods.photos.methods.httpClient.post(
@@ -206,19 +199,10 @@ class Chats:
             raw = False
         )
 
-        # _saved_photo = await self._methods.photos.saveMessagesPhoto(
-        #     photo = _uploaded_image["photo"],
-        #     server = _uploaded_image["server"],
-        #     hash = _uploaded_image["hash"]
-        # )
-        _saved_photo = await self._methods.photos.methods.get(
-            api_method = "photos.saveMessagesPhoto",
-            values = {
-                "photo": _uploaded_image["photo"],
-                "server": _uploaded_image["server"],
-                "hash": _uploaded_image["hash"],
-                "v": self._methods.photos._api_version
-            }
+        _saved_photo = await self._methods.photos.saveMessagesPhoto(
+            photo = _uploaded_image["photo"],
+            server = _uploaded_image["server"],
+            hash = _uploaded_image["hash"]
         )
         _saved_photo = _saved_photo["response"][0]
 
