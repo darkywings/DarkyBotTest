@@ -192,7 +192,7 @@ class Chats:
 
         # _photo_upload_server = await self._methods.photos.getMessageUploadServer(peer_id = _peer_id)
         _photo_upload_server = await self._methods.photos.methods.get(
-            api_method = "messages.getMessagesUploadServer",
+            api_method = "photos.getMessagesUploadServer",
             values = {
                 "peer_id": _peer_id,
                 "v": self._methods.photos._api_version
