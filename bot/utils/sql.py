@@ -11,3 +11,9 @@ class CheckSqlQueries:
         "FROM chat_settings " \
         "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)"
     )
+
+    RP_CHECK = (
+        "SELECT rp " \
+        "FROM chat_settings " \
+        "WHERE id = (SELECT settings_id FROM chats WHERE <chat_id_check>)"
+    )

@@ -26,6 +26,7 @@ from modules.database import DarkyDatabase
 from modules.users import Users
 from modules.chats import Chats
 from modules.triggers import *
+from modules.rp import Rp
 from modules.simplebot import SimpleCommands
 from modules.witless import Witless
 from custom_rules import *
@@ -47,6 +48,7 @@ bot_users = Users(_db, bot.methods)
 bot_chats = Chats(_db, bot.methods)
 witless = Witless()
 assocs = Assoc(_db)
+rps = Rp(_db, bot.methods)
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
 morning_trigger = MorningTrigger()
@@ -133,6 +135,20 @@ async def update_user_timestamp(event: dict):
 @bot.on_event.message_new()
 async def requests_handled_increment(event: dict):
     await _db.add_request_handled()
+
+
+''' ---------RP--------- '''
+
+@bot.on_event.message_new(((TwiMLRule(value=["<rp> <id>"], ignore_case=True) & MentionRule()) | 
+                           (TextRule(value=["<rp>"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
+                          FromChat() & FromUser() & IsRegistered(_db) & SQLRule(_db._db_client,
+                                                                                query = CheckSqlQueries.RP_CHECK,
+                                                                                key = "rp", value = True))
+async def rp_handler(event: dict, rp: str = None, id: str = None, have_reply: bool = None, have_forward: bool = None):
+    return rps.do(event["object"]["message"]["peer_id"],
+                  event["object"]["message"]["from_id"],
+                  rp,
+                  id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
 
 ''' ---------MAIN--------- '''

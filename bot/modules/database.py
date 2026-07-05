@@ -586,8 +586,27 @@ class DarkyDatabase:
             "AND nickname IS NOT NULL;", chat_id
         )
         if not _nicknames:
-            logger.debug(f"")
+            logger.debug(f"Nickname list is empty")
             return False
         
         logger.debug(f"Nickname list was returned for chat {chat_id}")
         return _nicknames
+    
+    async def get_rp_replies(self,
+                             chat_id: int,
+                             rp: str) -> "Record":
+        '''
+        Возвращает ответы m/f для рп команды
+        '''
+        _rp = await self._db_client.fetchrow(
+            "SELECT reply_male, reply_female FROM rp " \
+            "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "AND trigger = $2;",
+            chat_id, rp
+        )
+        if not _rp:
+            logger.debug(f"There is no rp {rp} in {chat_id}")
+            return False
+        
+        logger.debug(f"RP {rp} was found in {chat_id}")
+        return _rp
