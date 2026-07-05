@@ -206,10 +206,19 @@ class Chats:
             raw = False
         )
 
-        _saved_photo = await self._methods.photos.saveMessagesPhoto(
-            photo = _uploaded_image["photo"],
-            server = _uploaded_image["server"],
-            hash = _uploaded_image["hash"]
+        # _saved_photo = await self._methods.photos.saveMessagesPhoto(
+        #     photo = _uploaded_image["photo"],
+        #     server = _uploaded_image["server"],
+        #     hash = _uploaded_image["hash"]
+        # )
+        _saved_photo = await self._methods.photos.methods.get(
+            api_method = "photos.saveMessagesPhoto",
+            values = {
+                "photo": _uploaded_image["photo"],
+                "server": _uploaded_image["server"],
+                "hash": _uploaded_image["hash"],
+                "v": self._methods.photos._api_version
+            }
         )
         _saved_photo = _saved_photo["response"][0]
 
