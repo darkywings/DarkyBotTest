@@ -68,4 +68,4 @@ class Rp:
         if not user2:
             return "⚠️ Я не смогла найти данного пользователя в этом чате, вероятно он ни разу не состоял в этой беседе или не активил"
 
-        return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
+        return await self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
