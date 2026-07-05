@@ -102,7 +102,8 @@ class Assoc:
                         _message = re.sub(_assoc, _command, _message, flags = re.IGNORECASE)
 
             _message = re.sub("myself", f"[id{_from_id}|@id{_from_id}]", _message, flags = re.IGNORECASE)
-
+            
+            event["object"]["message"]["text"] = _message
             return event
         
         logger.debug(f"No assocs found for the message {_message}")
