@@ -145,10 +145,10 @@ async def requests_handled_increment(event: dict):
                                                                                 query = CheckSqlQueries.RP_CHECK,
                                                                                 key = "rp", value = True))
 async def rp_handler(event: dict, rp: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
-    return rps.do(event["object"]["message"]["peer_id"],
-                  event["object"]["message"]["from_id"],
-                  rp,
-                  id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
+    return await rps.do(event["object"]["message"]["peer_id"],
+                        event["object"]["message"]["from_id"],
+                        rp,
+                        id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
 
 ''' ---------MAIN--------- '''
