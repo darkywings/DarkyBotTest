@@ -39,7 +39,7 @@ class Rp:
             return False
 
         _result = _member["nickname"] or f"{_user["first_name"]} {_user["last_name"]}"
-        return _result if _user["mentions"] == False else f"[id{_user["user_id"]}|{_result}]"
+        return _result if _user["mentions"] == False else f"[id{_user["user_id"]}|{_result}]", _user["sex"]
     
     async def _get_output(self, reply: str, user1: str, user2: str) -> str:
         '''
@@ -62,10 +62,10 @@ class Rp:
         if not rp_reply:
             return
 
-        user1 = await self._prepare_user(peer_id, from_id)
-        user2 = await self._prepare_user(peer_id, to_id)
+        user1, user1sex = await self._prepare_user(peer_id, from_id)
+        user2, user2sex = await self._prepare_user(peer_id, to_id)
 
         if not user2:
             return "⚠️ Я не смогла найти данного пользователя в этом чате, вероятно он ни разу не состоял в этой беседе или не активил"
 
-        return self._get_output(rp_reply, user1, user2)
+        return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
