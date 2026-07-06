@@ -22,5 +22,8 @@ class SettingsParamValidator:
         
         if match := re.findall(r"(?:https://)?(?:www\.)?vk.(?:com|ru)/(\w+)(?=,|, |$|\s)", value):
             return match
+        
+        if re.findall(r"null", value.lower()):
+            return None
 
         return value

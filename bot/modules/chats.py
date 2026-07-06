@@ -139,8 +139,9 @@ class Chats:
             "🛡 Настройки системы DarkyVerify:\n" \
             f" 🔹 Статус: {_chat["verify_enabled"]}\n" \
             f" 🔹 Наказание: {_chat["verify_punishment"]}\n" \
+            f" 🔹 Проверка при вступлении в чат: {_chat["join_check"]}\n" \
             f" 🔹 Дней с регистрации должно пройти: {_chat["days_from_signup"]}\n" \
-            f" 🔹 Должны быть подписаны на группы: {[f"https://vk.ru/{group}" for group in _chat["groups_to_follow"]] if _chat["should_follow_groups"] else False}\n" \
+            f" 🔹 Должны быть подписаны на группы: {[f"https://vk.ru/{group}" for group in _chat["groups_to_follow"]] if _chat["should_follow_groups"] and _chat["groups_to_follow"] is not None else False}\n" \
             f" 🔹 Спам-защита: {_chat["spam_detection"]}"
             .replace("True", "✅")
             .replace("False", "❌")
@@ -365,12 +366,12 @@ class Chats:
             value = SettingsParamValidator.validate(value)
 
             if (
-                (key in ["update_notifications", "mention_in_greetings", "lvlups", "rp", "nicknames", "triggers", "layout_autodetect", "autokick", "verify.enabled", "verify.should_follow_groups", "verify.spam_detector"] and not isinstance(value, bool)) or
+                (key in ["update_notifications", "mention_in_greetings", "lvlups", "rp", "nicknames", "triggers", "layout_autodetect", "autokick", "verify.enabled", "verify.should_follow_groups", "verify.spam_detector", "verify.join_check"] and not isinstance(value, bool)) or
                 (key in ["manage_rp", "manage_nicknames", "who_can_mute", "who_can_kick", "who_can_warn", "who_can_ban"] and value not in ["all", "admins", "nobody"]) or
                 (key in ["warn_limit"] and (not isinstance(value, int) or (isinstance(value, int) and value not in range(0, 6)))) or
                 (key in ["warn_punishment"] and value not in ["ban", "kick", "mute", "none"]) or
                 (key in ["verify.punishment"] and value not in ["ban", "kick"]) or
-                (key in ["groups_to_follow"] and not isinstance(value, list))
+                (key in ["groups_to_follow"] and not isinstance(value, list) and value is not None)
             ):
                 return f"⚠️ Неверное значение \"{value}\" для параметра \"{key}\", убедитесь в его правильности и повторите попытку"
 

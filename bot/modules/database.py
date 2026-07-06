@@ -312,6 +312,7 @@ class DarkyDatabase:
             "   verify_settings.enabled AS verify_enabled, " \
             "   verify_settings.punishment AS verify_punishment, " \
             "   verify_settings.days_from_signup, " \
+            "   verify_settings.join_check, " \
             "   verify_settings.groups_to_follow, "
             "   verify_settings.should_follow_groups, " \
             "   verify_settings.spam_detection, " \

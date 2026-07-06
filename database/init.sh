@@ -107,6 +107,7 @@ psql --username "$POSTGRES_BOT_USER" --dbname "$POSTGRES_BOT_DB" <<-EOSQL
         enabled BOOLEAN DEFAULT TRUE,
         punishment TEXT CHECK (punishment IN ( 'ban', 'kick' )) DEFAULT 'ban',
         days_from_signup INT DEFAULT 3,
+        join_check BOOLEAN DEFAULT FALSE,
         should_follow_groups BOOLEAN DEFAULT FALSE,
         groups_to_follow TEXT[] DEFAULT NULL,
         spam_detection BOOLEAN DEFAULT TRUE
