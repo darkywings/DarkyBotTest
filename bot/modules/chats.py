@@ -140,7 +140,7 @@ class Chats:
             f" 🔹 Статус: {_chat["verify_enabled"]}\n" \
             f" 🔹 Наказание: {_chat["verify_punishment"]}\n" \
             f" 🔹 Дней с регистрации должно пройти: {_chat["days_from_signup"]}\n" \
-            f" 🔹 Должны быть подписаны на группы: {[f"https://vk.ru/{group}" for group in _chat["groups_to_follow"]] or _chat["should_follow_groups"]}\n" \
+            f" 🔹 Должны быть подписаны на группы: {[f"https://vk.ru/{group}" for group in _chat["groups_to_follow"]] if _chat["should_follow_groups"] else False}\n" \
             f" 🔹 Спам-защита: {_chat["spam_detection"]}"
             .replace("True", "✅")
             .replace("False", "❌")
