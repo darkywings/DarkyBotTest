@@ -32,10 +32,15 @@ class Rp:
         '''
         Готовит пользователя для отображения в РП команде (из его ID делает строку вида Имя Фамилия или Никнейм, с упоминанием или без)
         '''
+        if user_id < 0:
+
+            _group = await self._methods.groups.getById(group_ids = user_id)
+            _group = _group["response"]["groups"][0]
+
+            return f"[club{_group["id"]}|{_group["name"]}]"
+
         _user = await self._db.get_user(user_id)
         _member = await self._db.get_chat_member(peer_id, user_id)
-
-        # TODO: on user_id < 0 - Группы
 
         if not _user or not _member:
             return False
@@ -71,3 +76,9 @@ class Rp:
             return "⚠️ Я не смогла найти данного пользователя в этом чате, вероятно он ни разу не состоял в этой беседе или не активил"
 
         return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
+    
+    async def random_rp(self):
+        '''
+        Вызывает рандомное рп в рандомном чате
+        '''
+        pass
