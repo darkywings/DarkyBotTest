@@ -152,7 +152,7 @@ class Witless:
         Сохранение сообщений для обучения
         '''
         _peer_id = event["object"]["message"]["peer_id"]
-        _text = event["object"]["message"]["text"]
+        _text = event["object"]["message"]["default_text"]
 
         if len(_text.split(' ')) > 1 and len(_text) <= 400:
 

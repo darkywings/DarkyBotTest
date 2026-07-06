@@ -11,66 +11,62 @@ if TYPE_CHECKING:
 
 class IsRegistered(BaseRule):
 
-    def __init__(self, db: "DarkyDatabase") -> None:
+    def __init__(self) -> None:
         '''
-        Проверка что чат зарегистрирован в базе данных
+        Проверка что пользователь/чат зарегистрирован в базе данных
         '''
         super().__init__(
-            on_event_types = [BotEventType.MESSAGE_NEW, BotEventType.MESSAGE_EVENT],
-            _db = db
+            on_event_types = [BotEventType.MESSAGE_NEW, BotEventType.MESSAGE_EVENT]
         )
-        self._db: "DarkyDatabase"
+    
+    async def _get_entity(self, event: dict, entity: str = "user") -> bool:
 
+        _data = event.get("chat_data") if entity == "chat" else event.get("user_data")
+        return True if _data else False
+    
+class IsUserRegistered(IsRegistered):
+    '''
+    Проверка регистрации пользователя в базе данных
+    '''
     async def check(self, event: dict) -> bool:
+        return await self._get_entity(event, "user")
+    
+class IsChatRegistered(IsRegistered):
+    '''
+    Проверка регистрации чата в базе данных
+    '''
+    async def check(self, event: dict) -> bool:
+        return await self._get_entity(event, "chat")
+    
+class CheckSettings(BaseRule):
 
-        _peer_id = event["object"]["message"]["peer_id"] if event.get("type") == BotEventType.MESSAGE_NEW else event["object"]["peer_id"]
-        return await self._db.get_chat(_peer_id) if _peer_id > 2000000000 else await self._db.get_user(_peer_id)
-    
-class SQLRule(BaseRule):
-    
     def __init__(self,
-                 asyncpg: "AsyncPGClient",
-                 query: str,
-                 key: str,
-                 value) -> None:
+                 value: str,
+                 key: Any) -> None:
         '''
-        Проверка поля таблицы по SQL запросу
-
-        :param key: Поле для проверки
-        :type key: str
-
-        :param value: Ожидаемое значение поля key
-        :type value: Any
+        Проверка определенных полей в настройках пользователя/чата
         '''
         super().__init__(
             on_event_types = [BotEventType.MESSAGE_NEW, BotEventType.MESSAGE_EVENT],
-            _db = asyncpg,
-            _query = query,
-            _key = key,
-            _value = value
+            value = value,
+            key = key
         )
-        self._db: "AsyncPGClient"
-        self._query: str
-        self._key: str
-        self._value: Any
-
+        self.key: str
+        self.value: Any
+    
+    async def _check_setting(self, event: dict, entity: str = "user") -> bool:
+        return (event["chat_data"][self.key] == self.value) if entity == "chat" else (event["user_data"][self.key] == self.value)
+    
+class CheckUserSettings(CheckSettings):
+    '''
+    Проверка поля в настройках пользователя
+    '''
     async def check(self, event: dict) -> bool:
-
-        if "SELECT" not in self._query:
-            return False
-
-        _user_id = event["object"]["message"]["from_id"] if event.get("type") == BotEventType.MESSAGE_NEW else event["object"]["user_id"]
-        _chat_id = event["object"]["message"]["peer_id"] if event.get("type") == BotEventType.MESSAGE_NEW else event["object"]["peer_id"]
-        
-        self._query = (
-            self._query
-            .replace("<user_id_check>", f"user_id = {_user_id}")
-            .replace("<chat_id_check>", f"chat_id = {_chat_id}")
-        )
-
-        result = await self._db.fetchrow(self._query)
-        
-        if not result:
-            return False
-        
-        return result[self._key] == self._value
+        return await self._check_setting(event, "user")
+    
+class CheckChatSettings(CheckSettings):
+    '''
+    Проверка поля в настройках чата
+    '''
+    async def check(self, event: dict) -> bool:
+        return await self._check_setting(event, "chat")

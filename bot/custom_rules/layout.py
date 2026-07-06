@@ -19,7 +19,7 @@ class LayoutRule(BaseRule):
 
     async def check(self, event: dict) -> bool:
 
-        _text: str = event["object"]["message"]["text"]
+        _text: str = event["object"]["message"]["default_text"]
 
         return await self.layout.detect(_text)
         

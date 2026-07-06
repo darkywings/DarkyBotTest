@@ -27,6 +27,7 @@ from modules.users import Users
 from modules.chats import Chats
 from modules.triggers import *
 from modules.rp import Rp
+from modules.middlewares import Middleware
 from modules.simplebot import SimpleCommands
 from modules.witless import Witless
 from custom_rules import *
@@ -48,6 +49,7 @@ bot_users = Users(_db, bot.methods)
 bot_chats = Chats(_db, bot.methods)
 witless = Witless()
 assocs = Assoc(_db)
+middleware = Middleware(_db, bot.methods, assocs)
 rps = Rp(_db, bot.methods)
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
@@ -60,26 +62,21 @@ twiml = TwiML()
 
 @bot.middleware.pre
 async def pre_middleware_handler(event: dict):
-    
-    if event.get("type", None) != BotEventType.MESSAGE_NEW:
-        logger.debug(f"Event is not MESSAGE_NEW, no need to find assocs")
-        return event
-
-    return await assocs.check(event)
+    return await middleware.prepare_event(event)
 
 
 ''' ---------REGISTRATION--------- '''
 
-@bot.on_event.message_new(FromUser())
+@bot.on_event.message_new(FromUser() & ~IsUserRegistered())
 async def reg_user(event: dict):
     await bot_users.reg_user(event)
 
 @bot.on_event.message_new(TextRule(value=["$darky reg"], ignore_case=True) & 
-                          FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
+                          FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin()))
 async def reg_chat(event: dict):
     return await bot_chats.reg_chat(event)
 
-@bot.on_event.message_new(FromChat() & IsAdminRule() & IsRegistered(_db))
+@bot.on_event.message_new(FromChat() & IsAdminRule() & IsChatRegistered())
 async def reg_chat_member(event: dict):
     await bot_chats.reg_chat_member(event)
 
@@ -100,30 +97,30 @@ async def update_user_settings(event: dict, key: str = None, value: str = None):
 ''' ---------CHAT SETTINGS--------- '''
 
 @bot.on_event.message_new(TextRule(value=["$darky chat settings"], ignore_case=True) & 
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+                          FromChat() & FromUser() & IsChatRegistered() & (AdminRule() | IsBotAdmin()))
 async def show_chat_settings(event: dict):
     return await bot_chats.show_chat(event)
 
 @bot.on_event.message_new(((TwiMLRule(value=["$darky stats <id>"], ignore_case=True) & MentionRule()) | 
                            (TextRule(value=["$darky stats"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
-                          FromChat() & FromUser() & IsRegistered(_db))
+                          FromChat() & FromUser() & IsChatRegistered())
 async def show_chat_member_stats(event: dict, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await bot_chats.show_chat_member(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky chat set <key:word> <value>", "$darky chat set <key:word>"], ignore_case=True) & 
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+                          FromChat() & FromUser() & IsChatRegistered() & (AdminRule() | IsBotAdmin()))
 async def update_chat_settings(event: dict, key: str = None, value: str = None):
     return await bot_chats.update_chat(event, key, value)
 
 
 ''' ---------ON EVERY MESSAGE EVENTS--------- '''
 
-@bot.on_event.message_new(FromChat() & IsRegistered(_db))
+@bot.on_event.message_new(FromChat() & IsChatRegistered())
 async def update_chat_timestamp(event: dict):
     await bot_chats.update_timestamp(event)
 
-@bot.on_event.message_new(FromChat() & IsRegistered(_db) & FromUser())
+@bot.on_event.message_new(FromChat() & IsChatRegistered() & FromUser())
 async def update_member_stats(event: dict):
     await bot_chats.update_member_stats(event)
     await bot_chats.note_activity(event)
@@ -141,9 +138,7 @@ async def requests_handled_increment(event: dict):
 
 @bot.on_event.message_new(((TwiMLRule(value=["<rp> <id>"], ignore_case=True) & MentionRule()) | 
                            (TwiMLRule(value=["<rp>"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
-                          FromChat() & FromUser() & IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                query = CheckSqlQueries.RP_CHECK,
-                                                                                key = "rp", value = True))
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(value = "rp", value = True))
 async def rp_handler(event: dict, rp: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await rps.do(event["object"]["message"]["peer_id"],
@@ -179,30 +174,22 @@ async def bot_greets(event: dict):
 ''' ---------TRIGGERS--------- '''
 
 @bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя", "dorky", "doorky", "dorke", "doorke"], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
-                                                                                                         key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
 async def trigger1(event: dict):
     return dorky_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
-                                                                                                         key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
 async def trigger2(event: dict):
     return hello_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
-                                                                                                         key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
 async def trigger3(event: dict):
     return morning_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                                         query = CheckSqlQueries.TRIGGER_CHECK,
-                                                                                                         key = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
 async def trigger4(event: dict):
     return sleep_trigger.react()
 
@@ -226,9 +213,7 @@ async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
 @bot.on_event.message_new(LayoutRule() & 
-                          (~FromChat() | (FromChat() & (~IsRegistered(_db) | IsRegistered(_db) & SQLRule(_db._db_client,
-                                                                                                         query = CheckSqlQueries.LAYOUT_AUTODETECT_CHECK,
-                                                                                                         key = "layout_autodetect", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "layout_autodetect", value = True)))))
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
@@ -241,12 +226,12 @@ async def change_layout_text(event: dict, text: str = None, have_reply: bool = N
 ''' ---------ASSOCS--------- '''
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky assoc <command> = <assoc>"], ignore_case = True) & 
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+                          FromChat() & FromUser() & IsChatRegistered() & (AdminRule() | IsBotAdmin()))
 async def assoc_add_handler(event: dict, command: str = None, assoc: str = None):
     return await assocs.add(event, command, assoc)
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky assoc del <assoc>"], ignore_case = True) &
-                          FromChat() & FromUser() & IsRegistered(_db) & (AdminRule() | IsBotAdmin(_db)))
+                          FromChat() & FromUser() & IsChatRegistered() & (AdminRule() | IsBotAdmin()))
 async def assoc_del_handler(event: dict, assoc: str = None):
     return await assocs.delete(event, assoc)
 
@@ -271,7 +256,7 @@ async def bugurt_handler(event: dict):
 async def speak_data_handler(event: dict):
     return await witless.info(event)
 
-@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin(_db)) & FromChat())
+@bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & (AdminRule() | IsBotAdmin()) & FromChat())
 @bot.on_event.message_new(TextRule(value=["$darky speak wipe"], ignore_case=True) & ~FromChat())
 async def wipe_speak_data(event: dict):
     return await witless.wipe(event["object"]["message"]["peer_id"])
@@ -298,7 +283,7 @@ async def button_test(event: dict):
 
 @bot.on_event.raw(BotEventType.MESSAGE_EVENT,
                   OnPayloadRule(payload={"darky_button": "reg_chat"}) &
-                  FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin(_db)))
+                  FromChat() & IsAdminRule() & (AdminRule() | IsBotAdmin()))
 async def reg_chat_button(event: dict):
     await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
                                                       event["object"]["user_id"],
@@ -323,7 +308,7 @@ async def bot_is_not_admin_button(event: dict):
 
 @bot.on_event.raw(BotEventType.MESSAGE_EVENT,
                   OnPayloadRule(payload={"darky_button": "reg_chat"}) &
-                  FromChat() & IsAdminRule() & (~AdminRule() & ~IsBotAdmin(_db)))
+                  FromChat() & IsAdminRule() & (~AdminRule() & ~IsBotAdmin()))
 async def access_denied_button(event: dict):
     await bot.methods.messages.sendMessageEventAnswer(event["object"]["event_id"],
                                                       event["object"]["user_id"],
@@ -368,7 +353,7 @@ async def not_from_chat_handle(event: dict, **kwargs):
                                            "$darky chat set <params>",
                                            "$darky assoc <params>",
                                            "$darky assoc del <params>"], ignore_case=True)) &
-                          FromChat() & ~IsRegistered(_db))
+                          FromChat() & ~IsChatRegistered())
 async def not_registered_chat_handle(event: dict, **kwargs):
     _peer_id = event["object"]["message"]["peer_id"]
     _conversation_message_id = event["object"]["message"]["conversation_message_id"]
@@ -401,7 +386,7 @@ async def bot_is_not_admin_reply(event: dict, **kwargs):
                                            "$darky chat set <params>",
                                            "$darky assoc <params>",
                                            "$darky assoc del <params>"], ignore_case=True)) & 
-                          FromChat() & (~AdminRule() & ~IsBotAdmin(_db)))
+                          FromChat() & (~AdminRule() & ~IsBotAdmin()))
 async def access_denied_reply(event: dict, **kwargs):
     return Replies.ACCESS_DENIED[0], Replies.ACCESS_DENIED[2]
 

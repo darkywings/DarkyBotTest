@@ -1,7 +1,6 @@
 from .command_rules import (
     FromUser,
-    FromChat,
-    AssocRule
+    FromChat
 )
 from .layout import LayoutRule
 from .admin import IsBotAdmin
@@ -10,6 +9,8 @@ from .main import (
     UnderDevelopment
 )
 from .database import (
-    IsRegistered,
-    SQLRule
+    IsUserRegistered,
+    IsChatRegistered,
+    CheckUserSettings,
+    CheckChatSettings
 )

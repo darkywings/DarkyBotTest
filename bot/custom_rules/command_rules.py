@@ -43,24 +43,3 @@ class FromChat(BaseRule):
             return True
         
         return False
-    
-class AssocRule(BaseRule):
-
-    def __init__(self, assocs: "Assoc") -> None:
-        '''
-        Проверка ассоциации команды
-        '''
-        super().__init__(
-            on_event_types = [BotEventType.MESSAGE_NEW],
-            _assocs = assocs
-        )
-        self._assocs: "Assoc"
-
-    async def check(self, event: dict) -> bool:
-
-        message = await self._assocs.check(event)
-
-        if message != False:
-            event["object"]["message"]["text"] = message
-
-        return True
