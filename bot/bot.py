@@ -138,7 +138,7 @@ async def requests_handled_increment(event: dict):
 
 @bot.on_event.message_new(((TwiMLRule(value=["<rp> <id>"], ignore_case=True) & MentionRule()) | 
                            (TwiMLRule(value=["<rp>"], ignore_case=True) & (ReplyRule() | ForwardRule()))) &
-                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(value = "rp", value = True))
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "rp", value = True))
 async def rp_handler(event: dict, rp: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await rps.do(event["object"]["message"]["peer_id"],
@@ -174,22 +174,22 @@ async def bot_greets(event: dict):
 ''' ---------TRIGGERS--------- '''
 
 @bot.on_event.message_new(ContainsRule(triggers = ["дурки", "дорки", "дорке", "дуркя", "dorky", "doorky", "dorke", "doorke"], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(key = "triggers", value = True)))))
 async def trigger1(event: dict):
     return dorky_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['прив', 'привет', 'приветствую', 'здравствуйте', 'преет', 'преть', 'приветик', 'приветики', 'здрасте', 'хай', 'хелло', 'добрый день', 'добрый вечер'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(key = "triggers", value = True)))))
 async def trigger2(event: dict):
     return hello_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['утра', 'утречка', 'утро', 'доброе утро', 'проснулся', 'проснулась', 'добре', 'проснувся', 'проснувась', 'поспал', 'спал'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(key = "triggers", value = True)))))
 async def trigger3(event: dict):
     return morning_trigger.react()
 
 @bot.on_event.message_new(ContainsRule(triggers = ['спокойной', 'ночи', 'споки', 'споке', 'ночки', 'снов', 'спать', 'посплю'], ignore_case = True, need_list = False) &
-                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "triggers", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(key = "triggers", value = True)))))
 async def trigger4(event: dict):
     return sleep_trigger.react()
 
@@ -213,7 +213,7 @@ async def roll(event: dict, rolls: int = 1):
     return SimpleCommands.roll(rolls)
 
 @bot.on_event.message_new(LayoutRule() & 
-                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(value = "layout_autodetect", value = True)))))
+                          (~FromChat() | (FromChat() & (~IsChatRegistered() | IsChatRegistered() & CheckChatSettings(key = "layout_autodetect", value = True)))))
 async def autocorrection_layout(event: dict, changed_layout: str = None):
     return f"🧐 Возможно вы использовали неправильную раскладку клавиатуры\nЯ исправила текст за вас.\n\nИзмененный текст:\n{changed_layout}"
 
