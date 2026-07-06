@@ -35,7 +35,7 @@ class Middleware:
                 _from_id = event["object"]["message"]["from_id"]
                 _peer_id = event["object"]["message"]["peer_id"]
 
-                event["object"]["message"].setdefault("default_text") = event["object"]["message"]["text"]
+                event["object"]["message"].setdefault("default_text", event["object"]["message"]["text"])
 
                 event = await self._assocs.check(event)
             
