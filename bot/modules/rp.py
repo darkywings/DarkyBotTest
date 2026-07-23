@@ -28,7 +28,7 @@ class Rp:
         rps = await self._db.all_rp(event["object"]["message"]["peer_id"])
         return (
             "🧾 Список РП-команд в этом чате:\n" \
-            f"{"\n".join([f" 🔹 {rp["trigger"].capitalize()}" for rp in rps])}" \
+            f"{"\n".join([f" 🔹 {rp["trigger"].capitalize()}" for rp in rps])}\n" \
             f"❕ Всего РП-команд в этом чате: {len(rps)}\n"
         )
 
