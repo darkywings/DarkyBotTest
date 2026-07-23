@@ -129,6 +129,8 @@ class Chats:
             f" 🔹 Управление никнеймами: {_chat["manage_nicknames"]}\n" \
             f" 🔹 Триггеры: {_chat["triggers"]}\n" \
             f" 🔹 Автоисправление раскладки: {_chat["layout_autodetect"]}\n" \
+            f" 🔹 Использование РП-команд ботом: {_chat["random_rp"]}\n" \
+            f" 🔹 Генерация сообщений ботом: {_chat["random_messages"]}\n" \
             f" 🔹 Доступ к запрету сообщений: {_chat["who_can_mute"]}\n" \
             f" 🔹 Доступ к исключению пользователей: {_chat["who_can_kick"]}\n" \
             f" 🔹 Доступ к предупреждениям: {_chat["who_can_warn"]}\n" \
@@ -364,6 +366,8 @@ class Chats:
             "manage_nicknames",
             "triggers",
             "layout_autodetect",
+            "random_rp",
+            "random_messages",
             "who_can_mute",
             "who_can_kick",
             "who_can_warn",
@@ -381,7 +385,7 @@ class Chats:
             value = SettingsParamValidator.validate(value)
 
             if (
-                (key in ["update_notifications", "mention_in_greetings", "lvlups", "rp", "nicknames", "triggers", "layout_autodetect", "autokick", "verify.enabled", "verify.should_follow_groups", "verify.spam_detector", "verify.join_check"] and not isinstance(value, bool)) or
+                (key in ["update_notifications", "mention_in_greetings", "lvlups", "rp", "nicknames", "triggers", "layout_autodetect", "autokick", "verify.enabled", "verify.should_follow_groups", "verify.spam_detector", "verify.join_check", "random_rp", "random_messages"] and not isinstance(value, bool)) or
                 (key in ["manage_rp", "manage_nicknames", "who_can_mute", "who_can_kick", "who_can_warn", "who_can_ban"] and value not in ["all", "admins", "nobody"]) or
                 (key in ["warn_limit"] and (not isinstance(value, int) or (isinstance(value, int) and value not in range(0, 6)))) or
                 (key in ["warn_punishment"] and value not in ["ban", "kick", "mute", "none"]) or

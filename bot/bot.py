@@ -117,11 +117,13 @@ async def update_chat_settings(event: dict, key: str = None, value: str = None):
 
 ''' ---------ON EVERY MESSAGE EVENTS--------- '''
 
-@bot.on_event.message_new(FromChat() & ((IsChatRegistered() & CheckChatSettings(key = "messaging", value = True)) | TrueRule()))
+@bot.on_event.message_new(FromChat() & ((IsChatRegistered() & CheckChatSettings(key = "random_messages", value = True)) | TrueRule()))
 async def random_speak_handler(event: dict):
     return await witless.generate(event, size = "small")
 
-@bot.on_event.message_new(FromChat() & IsChatRegistered() & CheckChatSettings(key = "rp", value = True))
+@bot.on_event.message_new(FromChat() & IsChatRegistered() & 
+                          CheckChatSettings(key = "rp", value = True) & 
+                          CheckChatSettings(key = "random_rp", value = True))
 async def random_rp_handler(event: dict):
     return await rps.random_rp(event)
 

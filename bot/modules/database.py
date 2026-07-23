@@ -166,6 +166,8 @@ class DarkyDatabase:
             "   settings.manage_nicknames, " \
             "   settings.triggers, " \
             "   settings.layout_autodetect, " \
+            "   settings.random_rp, " \
+            "   settings.random_messages, " \
             "   settings.who_can_mute, " \
             "   settings.who_can_kick, " \
             "   settings.who_can_warn, " \
@@ -210,7 +212,7 @@ class DarkyDatabase:
             SELECT 
                 member.id, u.user_id, u.first_name, u.last_name, u.screen_name, 
                 member.nickname, 
-                member.warns, member.is_banned, 
+                member.warns, member.is_banned, member.is_left, 
                 (SELECT COUNT(*) + 1 FROM chat_members WHERE chat_id = c.id 
                 AND (level_xp > member.level_xp OR (level_xp = member.level_xp AND user_id < member.user_id)) 
                 AND is_banned = FALSE AND is_left = FALSE) AS top_place, 
