@@ -1,5 +1,10 @@
 from typing import TYPE_CHECKING
 import re
+import random
+
+from twilight_vk.utils.types.response import Response
+
+from utils.random import RandomUtils
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -17,13 +22,39 @@ class Rp:
         self._methods = methods
 
     async def show(self, event: dict, page: int):
-        pass
+        '''
+        Отображение списка установленных РП команд
+        '''
+        rps = await self._db.all_rp(event["object"]["message"]["peer_id"])
+        return (
+            "🧾 Список РП-команд в этом чате:\n" \
+            f"{[f" 🔹 {rp["trigger"]}\n" for rp in rps]}" \
+            f"❕ Всего РП-команд в этом чате: {len(rps)}\n"
+        )
 
     async def add(self, event: dict, trigger: str, reply_male: str, reply_female: str):
-        pass
+        '''
+        Добавление РП команды
+        '''
+        _chat_id = event["object"]["message"]["peer_id"]
+
+        rps = await self._db.all_rp(_chat_id)
+        if trigger in [rp["trigger"] for rp in rps]:
+            return "⚠️ Триггер для данной РП-команды уже занят, используйте другой"
+        
+        await self._db.add_rp(_chat_id, trigger, reply_male, reply_female)
+        return f"✅ РП-команда {trigger} была добавлена"
 
     async def delete(self, event: dict, trigger: str):
-        pass
+        '''
+        Удаление РП из базы данных
+        '''
+        if trigger in ["буп", "кусь", "лизь", "обнять", "ударить", "поцеловать"]:
+            return "⚠️ Данную РП-команду нельзя удалить, поскольку она является зарезервированной."
+        
+        await self._db.remove_rp(chat_id = event["object"]["message"]["peer_id"],
+                                 trigger = trigger)
+        return f"✅ РП-команда {trigger} была удалена"
 
     async def edit(self, event: dict, trigger: str, reply_male: str, reply_female: str):
         pass
@@ -77,8 +108,19 @@ class Rp:
 
         return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
     
-    async def random_rp(self):
+    async def random_rp(self, event: dict):
         '''
         Вызывает рандомное рп в рандомном чате
         '''
-        pass
+        if random.randint(0, 20) != 0:
+            return
+        
+        _chat_id = event["object"]["message"]["peer_id"]
+
+        rps = await self._db.all_rp(_chat_id)
+        members = await self._db.get_members(_chat_id)
+        response = await self.do(_chat_id, 
+                            -event.get("group_id"), 
+                            RandomUtils.choice([rp["trigger"] for rp in rps]), 
+                            RandomUtils.choice([user["user_id"] for user in members]))
+        return Response(peer_ids=_chat_id, message=response)

@@ -329,6 +329,21 @@ class Chats:
         '''
         pass
 
+    async def get_chat_top(self, event: dict, limit: int = 5):
+        '''
+        Возвращает топ чата из участников по их активности
+
+        :param limit: Максимальный размер списка (по умолчанию 5)
+        :type limit: int
+        '''
+        _peer_id = event["object"]["message"]["peer_id"]
+
+        top_members = await self._db.get_top_members(_peer_id)
+        return (
+            f"📊 Топ {limit} участников этой беседы:\n" \
+            f"{[f" 🔹 {member["position"]} {member["nickname"] or f"{member["first_name"]} {member["last_name"]}"} ({member["level_xp"]} exp.)\n" for member in top_members]}"
+        )
+
     async def update_chat(self, event: dict, key: str, value: str):
         '''
         Обновляет данные чата

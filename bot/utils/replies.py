@@ -186,3 +186,14 @@ class Replies:
             ]
         )
     )
+
+    DISABLED_BY_ADMIN = (
+        "❌ Данная команда была выключена администраторами беседы в настройках чата.\n",
+        None,
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.GET_HELP]
+            ]
+        )
+    )
