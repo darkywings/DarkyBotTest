@@ -344,7 +344,7 @@ class Chats:
         top_members = await self._db.get_top_members(_peer_id)
         return (
             f"📊 Топ {limit} участников этой беседы:\n" \
-            f"{"\n".join([f" 🔹 {member["position"]} {member["nickname"] or f"{member["first_name"]} {member["last_name"]}"} ({member["level_xp"]} exp.)" for member in top_members])}"
+            f"{"\n".join([f" 🔹 {member["position"]}. {member["nickname"] or f"{member["first_name"]} {member["last_name"]}"} ({member["level_xp"]} exp.)" for member in top_members])}"
         )
 
     async def update_chat(self, event: dict, key: str, value: str):
