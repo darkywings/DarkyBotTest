@@ -442,7 +442,8 @@ class DarkyDatabase:
         return members if members else False
 
     async def get_top_members(self,
-                              chat_id: int) -> "Record":
+                              chat_id: int,
+                              limit: int = 5) -> "Record":
         top_members = await self._db_client.fetch(
             "SELECT " \
             "   u.user_id, " \
@@ -457,7 +458,8 @@ class DarkyDatabase:
             "AND m.is_banned = FALSE " \
             "AND m.is_left = FALSE " \
             "ORDER BY level_xp DESC " \
-            "LIMIT 20",
-            chat_id
+            "LIMIT $2",
+            chat_id,
+            limit
         )
         return top_members if top_members else False

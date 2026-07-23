@@ -214,6 +214,7 @@ class Chats:
         response_text = (
             "📊 Статистика участника беседы:\n" \
             f" 🔹 ID пользователя: {_member["user_id"]}\n" \
+            f" 🔹 Состоит в беседе {~_member["is_left"]}\n"
             f" 🔹 Забанен: {_member["is_banned"]}\n" \
             f" 🔹 Никнейм: {_member["nickname"]}\n" \
             f" 🔹 Место в топе беседы: {_member["top_place"]} / {_member["total_top"]}\n" \
@@ -343,7 +344,7 @@ class Chats:
         top_members = await self._db.get_top_members(_peer_id)
         return (
             f"📊 Топ {limit} участников этой беседы:\n" \
-            f"{[f" 🔹 {member["position"]} {member["nickname"] or f"{member["first_name"]} {member["last_name"]}"} ({member["level_xp"]} exp.)\n" for member in top_members]}"
+            f"{"\n".join([f" 🔹 {member["position"]} {member["nickname"] or f"{member["first_name"]} {member["last_name"]}"} ({member["level_xp"]} exp.)" for member in top_members])}"
         )
 
     async def update_chat(self, event: dict, key: str, value: str):

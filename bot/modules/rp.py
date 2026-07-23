@@ -28,7 +28,7 @@ class Rp:
         rps = await self._db.all_rp(event["object"]["message"]["peer_id"])
         return (
             "🧾 Список РП-команд в этом чате:\n" \
-            f"{[f" 🔹 {rp["trigger"]}\n" for rp in rps]}" \
+            f"{"\n".join([f" 🔹 {rp["trigger"]}\n" for rp in rps])}" \
             f"❕ Всего РП-команд в этом чате: {len(rps)}\n"
         )
 
@@ -112,7 +112,7 @@ class Rp:
         '''
         Вызывает рандомное рп в рандомном чате
         '''
-        if random.randint(0, 20) != 0:
+        if random.randint(0, 50) != 0:
             return
         
         _chat_id = event["object"]["message"]["peer_id"]
