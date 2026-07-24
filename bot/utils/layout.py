@@ -128,13 +128,6 @@ class LayoutChanger:
 
         need_switch = best_switched > best_orig + 0.2 and best_orig < 0.6
 
-        # ---------- Защита от ложных срабатываний ----------
-        # Если текст уже похож на русский (score_ru >= 0.1) или английский (score_en >= 0.1) и совсем не похож на противоположный язык (score_en/score_ru == 0),
-        # Не переключаем раскладку
-        if ((_score_ru >= 0.1 and _score_en == 0) or (_score_en >= 0.1 and _score_ru == 0)):
-            need_switch = False
-        # ------------------------------------------------
-
         if not autocorrect:
             return need_switch
         
