@@ -22,7 +22,7 @@ class Witless:
         '''
         Генерирует текст на основе Witless
         '''
-        if on_self and random.randint(0, 10) != 0:
+        if on_self and random.randint(0, 20) != 0:
             return
 
         _peer_id = event["object"]["message"]["peer_id"]
