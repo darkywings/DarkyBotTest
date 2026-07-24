@@ -214,7 +214,7 @@ class Chats:
         response_text = (
             "📊 Статистика участника беседы:\n" \
             f" 🔹 ID пользователя: {_member["user_id"]}\n" \
-            f" 🔹 Состоит в беседе {~_member["is_left"]}\n"
+            f" 🔹 Состоит в беседе {False if _member["is_left"] else True}\n"
             f" 🔹 Забанен: {_member["is_banned"]}\n" \
             f" 🔹 Никнейм: {_member["nickname"]}\n" \
             f" 🔹 Место в топе беседы: {_member["top_place"]} / {_member["total_top"]}\n" \
