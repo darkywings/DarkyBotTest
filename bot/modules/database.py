@@ -410,9 +410,7 @@ class DarkyDatabase:
             "UPDATE chat_members " \
             "SET nickname = $3 " \
             "WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
-            "AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
-            "ON CONFLICT (chat_id, nickname) DO " \
-            "NOTHING;",
+            "AND user_id = (SELECT id FROM users WHERE user_id = $2);",
             chat_id, member_id, nickname
         )
 
