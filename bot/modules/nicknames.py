@@ -42,7 +42,7 @@ class Nicknames:
         _username = f"{_user["first_name"]} {_user["last_name"]}"
         _nicknames = await self._db.get_nicknames(_chat_id)
         
-        if _nickname in [_nick["nickname"] for _nick in _nicknames]:
+        if _nicknames and _nickname in [_nick["nickname"] for _nick in _nicknames]:
             return Replies.NICKNAME_USED_BY_OTHER
         
         await self._db.set_nickname(_chat_id, _member_id, _nickname)
