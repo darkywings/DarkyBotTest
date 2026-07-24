@@ -111,7 +111,7 @@ class LayoutChanger:
         :type autocorrect: bool
         '''
 
-        if not text or len(text.strip()) < 3:
+        if not text or len(text.split(" ")) < 2:
             return False
         
         _score_ru = await self._lang_likeness(text, 'ru')
