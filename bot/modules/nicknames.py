@@ -32,7 +32,6 @@ class Nicknames:
         _member_id = user_id
         if _member_id is None:
             _member_id = event["object"]["message"]["from_id"]
-        _nickname = nickname.lower()
 
         _user = await self._db.get_user(_member_id)
         _member = await self._db.get_chat_member(_chat_id, _member_id)
@@ -42,10 +41,10 @@ class Nicknames:
         _username = f"{_user["first_name"]} {_user["last_name"]}"
         _nicknames = await self._db.get_nicknames(_chat_id)
         
-        if _nicknames and _nickname in [_nick["nickname"] for _nick in _nicknames]:
+        if _nicknames and nickname in [_nick["nickname"] for _nick in _nicknames]:
             return Replies.NICKNAME_USED_BY_OTHER
         
-        await self._db.set_nickname(_chat_id, _member_id, _nickname)
+        await self._db.set_nickname(_chat_id, _member_id, nickname)
         return f"✅ Никнейм \"{nickname}\" успешно привязан к пользователю {f"[id{_user["user_id"]}|{_username}]" if _user["mentions"] else _username}"
 
     async def delete(self,

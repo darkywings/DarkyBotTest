@@ -149,23 +149,23 @@ async def requests_handled_increment(event: dict):
 
 ''' ---------NICKNAMES--------- '''
 
-@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <nickname>"], ignore_case=True) & 
-                          ~TextRule(value=["$darky nickname reset"], ignore_case=True) & 
+@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <nickname>"]) & 
+                          ~TextRule(value=["$darky nickname reset"]) & 
                           ~ReplyRule() & ~ForwardRule() & ~MentionRule() & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
 async def nickname_set_handler(event: dict, nickname: str = None):
     return await nicknames.set(event, None, nickname)
 
-@bot.on_event.message_new(TextRule(value=["$darky nickname reset"], ignore_case=True) & 
+@bot.on_event.message_new(TextRule(value=["$darky nickname reset"]) & 
                           ~ReplyRule() & ~ForwardRule() & ~MentionRule() & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
 async def nickname_reset_handler(event: dict):
     return await nicknames.delete(event, None)
 
 #TODO: changing other's nicknames
-@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True) & MentionRule()) | 
-                           (TwiMLRule(value=["$darky nickname <nickname>"], ignore_case=True) & 
-                            ~TextRule(value=["$darky nickname reset"], ignore_case=True) & (ReplyRule() | ForwardRule()))) & 
+@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname <id> = <nickname>"]) & MentionRule()) | 
+                           (TwiMLRule(value=["$darky nickname <nickname>"]) & 
+                            ~TextRule(value=["$darky nickname reset"]) & (ReplyRule() | ForwardRule()))) & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True) & 
                           ((CheckChatSettings(key = "manage_nicknames", value = "all")) | 
                            (CheckChatSettings(key = "manage_nicknames", value = "admins") & (AdminRule() | IsBotAdmin())) | 
@@ -174,8 +174,8 @@ async def nickname_set_to_other_handler(event: dict, nickname: str = None, id: s
     member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
     return await nicknames.set(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward), nickname)
 
-@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname reset <id>"], ignore_case=True) & MentionRule()) | 
-                           (TextRule(value=["$darky nickname reset"], ignore_case=True) & (ReplyRule() | ForwardRule()))) & 
+@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname reset <id>"]) & MentionRule()) | 
+                           (TextRule(value=["$darky nickname reset"]) & (ReplyRule() | ForwardRule()))) & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True) & 
                           ((CheckChatSettings(key = "manage_nicknames", value = "all")) | 
                            (CheckChatSettings(key = "manage_nicknames", value = "admins") & (AdminRule() | IsBotAdmin())) | 
