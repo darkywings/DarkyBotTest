@@ -28,6 +28,9 @@ class Nicknames:
         if len(nickname.strip()) > 25:
             return Replies.NICKNAME_TOO_LONG
         
+        if nickname.startswith("[id"):
+            nickname = nickname.rstrip(']').split('|')[-1]
+        
         _chat_id = event["object"]["message"]["peer_id"]
         _member_id = user_id
         if _member_id is None:
@@ -40,9 +43,13 @@ class Nicknames:
 
         _username = f"{_user["first_name"]} {_user["last_name"]}"
         _nicknames = await self._db.get_nicknames(_chat_id)
+
+        for _invalid_char in ["[", "]", "$", "|"]:
+            if _invalid_char in nickname:
+                return Replies.NICKNAME_INVALID_CHARS
         
         if _nicknames and nickname in [_nick["nickname"] for _nick in _nicknames]:
-            return Replies.NICKNAME_USED_BY_OTHER
+            return Replies.NICKNAME_TAKEN
         
         await self._db.set_nickname(_chat_id, _member_id, nickname)
         return f"✅ Никнейм \"{nickname}\" успешно привязан к пользователю {f"[id{_user["user_id"]}|{_username}]" if _user["mentions"] else _username}"
