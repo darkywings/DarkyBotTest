@@ -491,7 +491,7 @@ async def access_denied_reply(event: dict, **kwargs):
                            (TwiMLRule(value=["$darky nickname <nickname>"]) & 
                             ~TextRule(value=["$darky nickname reset"]) & (ReplyRule() | ForwardRule()))) & 
                           FromChat() & FromUser() & IsChatRegistered() & 
-                          CheckChatSettings(key = "nicknames", value = False))
+                          CheckChatSettings(key = "manage_nicknames", value = "nobody"))
 async def disabled_by_admin_reply(event: dict, **kwargs):
     return Replies.DISABLED_BY_ADMIN[0], Replies.DISABLED_BY_ADMIN[2]
 
