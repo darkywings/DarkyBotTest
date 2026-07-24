@@ -487,9 +487,9 @@ async def access_denied_reply(event: dict, **kwargs):
                           ~TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True) & 
                           FromChat() & FromUser() & IsChatRegistered() & 
                           CheckChatSettings(key = "nicknames", value = False))
-@bot.on_event.message_new((TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) | 
-                          TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True)) & 
-                          (MentionRule() | ReplyRule() | ForwardRule()) & 
+@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname <id> = <nickname>"]) & MentionRule()) | 
+                           (TwiMLRule(value=["$darky nickname <nickname>"]) & 
+                            ~TextRule(value=["$darky nickname reset"]) & (ReplyRule() | ForwardRule()))) & 
                           FromChat() & FromUser() & IsChatRegistered() & 
                           CheckChatSettings(key = "nicknames", value = False))
 async def disabled_by_admin_reply(event: dict, **kwargs):
