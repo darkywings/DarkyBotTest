@@ -5,6 +5,7 @@ import random
 from twilight_vk.utils.types.response import Response
 
 from utils.random import RandomUtils
+from utils.replies import Replies
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -77,7 +78,11 @@ class Rp:
             return False
 
         _result = _member["nickname"] or f"{_user["first_name"]} {_user["last_name"]}"
-        return _result if _user["mentions"] == False else f"[id{_user["user_id"]}|{_result}]", _user["sex"]
+        return {
+            "who_can_rp": _user["who_can_rp_me"],
+            "output": _result if _user["mentions"] == False else f"[id{_user["user_id"]}|{_result}]",
+            "sex": _user["sex"]
+        }
     
     def _get_output(self, reply: str, user1: str, user2: str) -> str:
         '''
@@ -100,13 +105,22 @@ class Rp:
         if not rp_reply:
             return
 
-        user1, user1sex = await self._prepare_user(peer_id, from_id)
-        user2, user2sex = await self._prepare_user(peer_id, to_id)
+        user1: dict = await self._prepare_user(peer_id, from_id)
+        user2: dict = await self._prepare_user(peer_id, to_id)
+
+        if user2["who_can_rp"] == "only_bot" and from_id > 0:
+            return Replies.RP_DENIED_FOR_USERS
+        
+        if user2["who_can_rp"] == "only_users" and from_id < 0:
+            return Replies.RP_DENIED_FOR_BOTS
+        
+        if user2["who_can_rp"] == "nobody":
+            return Replies.RP_DENIED_FOR_ALL
 
         if not user2:
-            return "⚠️ Я не смогла найти данного пользователя в этом чате, вероятно он ни разу не состоял в этой беседе или не активил"
+            return Replies.RP_USER_NOT_FOUND
 
-        return self._get_output(rp_reply["reply_female"] if user1sex == "female" else rp_reply["reply_male"], user1, user2)
+        return self._get_output(rp_reply["reply_female"] if user1["sex"] == "female" else rp_reply["reply_male"], user1["output"], user2["output"])
     
     async def random_rp(self, event: dict):
         '''
@@ -123,4 +137,10 @@ class Rp:
                             -event.get("group_id"), 
                             RandomUtils.choice([rp["trigger"] for rp in rps]), 
                             RandomUtils.choice([user["user_id"] for user in members]))
-        return Response(peer_ids=_chat_id, message=response)
+        if response not in [
+            Replies.RP_DENIED_FOR_USERS,
+            Replies.RP_DENIED_FOR_BOTS,
+            Replies.RP_DENIED_FOR_ALL,
+            Replies.RP_USER_NOT_FOUND
+        ]:
+            return Response(peer_ids=_chat_id, message=response)
