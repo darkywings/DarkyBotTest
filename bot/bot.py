@@ -151,7 +151,7 @@ async def requests_handled_increment(event: dict):
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky nickname <nickname>"]) & 
                           ~TextRule(value=["$darky nickname reset"]) & 
-                          ~ReplyRule() & ~ForwardRule() & ~MentionRule() & 
+                          ~ReplyRule() & ~ForwardRule() & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
 async def nickname_set_handler(event: dict, nickname: str = None):
     return await nicknames.set(event, None, nickname)
@@ -483,8 +483,14 @@ async def access_denied_reply(event: dict, **kwargs):
                           FromChat() & FromUser() & IsChatRegistered() & 
                           (CheckChatSettings(key = "rp", value = False) | CheckChatSettings(key = "manage_rp", value = "nobody")))
 @bot.on_event.message_new(TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) & 
+                          ~TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True) & 
                           FromChat() & FromUser() & IsChatRegistered() & 
-                          (CheckChatSettings(key = "nicknames", value = False) | CheckChatSettings(key = "manage_nicknames", value = "nobody")))
+                          CheckChatSettings(key = "nicknames", value = False))
+@bot.on_event.message_new((TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) | 
+                          TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True)) & 
+                          (MentionRule() | ReplyRule() | ForwardRule()) & 
+                          FromChat() & FromUser() & IsChatRegistered() & 
+                          CheckChatSettings(key = "nicknames", value = False))
 async def disabled_by_admin_reply(event: dict, **kwargs):
     return Replies.DISABLED_BY_ADMIN[0], Replies.DISABLED_BY_ADMIN[2]
 
