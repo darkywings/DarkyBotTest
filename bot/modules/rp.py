@@ -43,6 +43,9 @@ class Rp:
         if trigger in [rp["trigger"] for rp in rps]:
             return "⚠️ Триггер для данной РП-команды уже занят, используйте другой"
         
+        if len(rps) >= 50:
+            return "❗️ Вы достигли лимита в 50 РП-команд для одного чата"
+        
         await self._db.add_rp(_chat_id, trigger, reply_male, reply_female)
         return f"✅ РП-команда {trigger} была добавлена"
 
