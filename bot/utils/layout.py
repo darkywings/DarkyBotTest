@@ -111,7 +111,7 @@ class LayoutChanger:
         :type autocorrect: bool
         '''
 
-        if not text or len(text.split(" ")) < 2:
+        if not text or len(text.strip()) < 3:
             return False
         
         _score_ru = await self._lang_likeness(text, 'ru')
@@ -131,7 +131,7 @@ class LayoutChanger:
         # ---------- Защита от ложных срабатываний ----------
         # Если текст уже похож на русский (score_ru >= 0.1) или английский (score_en >= 0.1) и совсем не похож на противоположный язык (score_en/score_ru == 0),
         # Не переключаем раскладку
-        if (_score_ru >= 0.1 and _score_en == 0) or (_score_en >= 0.1 and _score_ru == 0):
+        if ((_score_ru >= 0.1 and _score_en == 0) or (_score_en >= 0.1 and _score_ru == 0)) and best_switched < 0.4:
             need_switch = False
         # ------------------------------------------------
 
