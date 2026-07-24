@@ -126,26 +126,14 @@ class LayoutChanger:
         best_orig = max(_score_ru, _score_en)
         best_switched = max(_switched_score_ru, _switched_score_en)
 
-        # ---------- Новая защита ----------
-        # Если текст уже похож на русский (score_ru >= 0.1) и совсем не похож на английский (score_en == 0),
-        # то это, скорее всего, русское слово – не переключаем.
-        if _score_ru >= 0.1 and _score_en == 0:
-            return text if autocorrect else False
-        # ---------------------------------
+        need_switch = best_switched > best_orig + 0.2 and best_orig < 0.6
 
-        # Остальные эвристики (короткие слова без гласных и т.п.)
-        def has_no_vowels(t, lang):
-            vowels = self.VOWELS_RU if lang == 'ru' else self.VOWELS_EN
-            letters = [ch for ch in t.lower() if ch.isalpha()]
-            return not any(ch in vowels for ch in letters)
-
-        short = len(text.strip()) < 7
-        special = (has_no_vowels(text, 'en') and not has_no_vowels(_switched_ru, 'ru')) or \
-                (has_no_vowels(text, 'ru') and not has_no_vowels(_switched_en, 'en'))
-
-        threshold = 0.1 if short else 0.2
-
-        need_switch = (best_switched > best_orig + threshold and best_orig < 0.6) or special
+        # ---------- Защита от ложных срабатываний ----------
+        # Если текст уже похож на русский (score_ru >= 0.1) или английский (score_en >= 0.1) и совсем не похож на противоположный язык (score_en/score_ru == 0),
+        # Не переключаем раскладку
+        if (_score_ru >= 0.1 and _score_en == 0) or (_score_en >= 0.1 and _score_ru == 0):
+            need_switch = False
+        # ------------------------------------------------
 
         if not autocorrect:
             return need_switch
