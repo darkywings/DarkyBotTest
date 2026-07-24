@@ -30,6 +30,12 @@ class Buttons:
         color = KeyboardColor.SECONDARY
     )
 
+    ERROR_REPORT = CallbackActionKeyboardButton(
+        label = "Сообщить разработчику",
+        payload = "{\"darky_button\":\"error_report\"}",
+        color = KeyboardColor.NEGATIVE
+    )
+
 class Replies:
 
     BOT_GREETING = (
@@ -95,9 +101,14 @@ class Replies:
     )
 
     UNKNOWN_ERROR = (
-        "❌ Произошла неизвестная ошибка O~O",
+        "❌ Произошла неожиданная ошибка в коде O~O",
         None,
-        None
+        KeyboardMarkup(
+            inline=True,
+            buttons=[
+                [Buttons.ERROR_REPORT]
+            ]
+        )
     )
 
     NOT_WORK_HERE = (
