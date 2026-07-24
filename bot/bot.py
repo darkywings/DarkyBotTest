@@ -151,6 +151,7 @@ async def requests_handled_increment(event: dict):
 
 @bot.on_event.message_new(TwiMLRule(value=["$darky nickname <nickname>"]) & 
                           ~TextRule(value=["$darky nickname reset"]) & 
+                          ~TwiMLRule(value=["$darky nickname <id> = <nickname>"]) & 
                           ~ReplyRule() & ~ForwardRule() & 
                           FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
 async def nickname_set_handler(event: dict, nickname: str = None):
