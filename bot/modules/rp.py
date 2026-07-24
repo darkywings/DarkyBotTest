@@ -124,7 +124,7 @@ class Rp:
             return Replies.RP_DENIED_FOR_ALL
 
         if not user2:
-            return Replies.RP_USER_NOT_FOUND
+            return Replies.USER_NOT_FOUND
 
         return self._get_output(rp_reply["reply_female"] if user1["sex"] == "female" else rp_reply["reply_male"], user1["output"], user2["output"])
     
@@ -147,6 +147,6 @@ class Rp:
             Replies.RP_DENIED_FOR_USERS,
             Replies.RP_DENIED_FOR_BOTS,
             Replies.RP_DENIED_FOR_ALL,
-            Replies.RP_USER_NOT_FOUND
+            Replies.USER_NOT_FOUND
         ]:
             return Response(peer_ids=_chat_id, message=response)

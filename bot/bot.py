@@ -28,6 +28,7 @@ from modules.users import Users
 from modules.chats import Chats
 from modules.triggers import *
 from modules.rp import Rp
+from modules.nicknames import Nicknames
 from modules.middlewares import Middleware
 from modules.simplebot import SimpleCommands
 from modules.witless import Witless
@@ -52,6 +53,7 @@ witless = Witless()
 assocs = Assoc(_db)
 middleware = Middleware(_db, bot.methods, assocs)
 rps = Rp(_db, bot.methods)
+nicknames = Nicknames(_db)
 dorky_trigger = DorkyTrigger()
 hello_trigger = HelloTrigger()
 morning_trigger = MorningTrigger()
@@ -143,6 +145,44 @@ async def update_user_timestamp(event: dict):
 @bot.on_event.message_new()
 async def requests_handled_increment(event: dict):
     await _db.add_request_handled()
+
+
+''' ---------NICKNAMES--------- '''
+
+@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <nickname>"], ignore_case=True) & 
+                          ~TextRule(value=["$darky nickname reset"], ignore_case=True) & 
+                          ~ReplyRule() & ~ForwardRule() & ~MentionRule() & 
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
+async def nickname_set_handler(event: dict, nickname: str = None):
+    return await nicknames.set(event, None, nickname)
+
+@bot.on_event.message_new(TextRule(value=["$darky nickname reset"], ignore_case=True) & 
+                          ~ReplyRule() & ~ForwardRule() & ~MentionRule() & 
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True))
+async def nickname_reset_handler(event: dict):
+    return await nicknames.delete(event, None)
+
+#TODO: changing other's nicknames
+@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname <id> = <nickname>"], ignore_case=True) & MentionRule()) | 
+                           (TwiMLRule(value=["$darky nickname <nickname>"], ignore_case=True) & 
+                            ~TextRule(value=["$darky nickname reset"], ignore_case=True) & (ReplyRule() | ForwardRule()))) & 
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True) & 
+                          ((CheckChatSettings(key = "manage_nicknames", value = "all")) | 
+                           (CheckChatSettings(key = "manage_nicknames", value = "admins") & (AdminRule() | IsBotAdmin())) | 
+                           (CheckChatSettings(key = "manage_nicknames", value = "nobody") & FalseRule())))
+async def nickname_set_to_other_handler(event: dict, nickname: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
+    member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
+    return await nicknames.set(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward), nickname)
+
+@bot.on_event.message_new(((TwiMLRule(value=["$darky nickname reset <id>"], ignore_case=True) & MentionRule()) | 
+                           (TextRule(value=["$darky nickname reset"], ignore_case=True) & (ReplyRule() | ForwardRule()))) & 
+                          FromChat() & FromUser() & IsChatRegistered() & CheckChatSettings(key = "nicknames", value = True) & 
+                          ((CheckChatSettings(key = "manage_nicknames", value = "all")) | 
+                           (CheckChatSettings(key = "manage_nicknames", value = "admins") & (AdminRule() | IsBotAdmin())) | 
+                           (CheckChatSettings(key = "manage_nicknames", value = "nobody") & FalseRule())))
+async def nickname_set_to_other_handler(event: dict, nickname: str = None, id: str = None, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
+    member_id = (-mentions[0]["id"] if mentions[0]["type"] == "club" else mentions[0]["id"]) if mentions is not None and len(mentions) > 0 else False
+    return await nicknames.delete(event, member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
 
 
 ''' ---------RP--------- '''
@@ -377,6 +417,7 @@ async def access_denied_button(event: dict):
                           ~TextRule(value=["$darky rp list"], ignore_case=True))
 @bot.on_event.message_new(TwiMLRule(value=["$darky top <params>"], ignore_case=True) & 
                           ~TwiMLRule(value=["$darky top <limit:int>"], ignore_case=True))
+@bot.on_event.message_new(TextRule(value=["$darky nickname"], ignore_case=True))
 async def wrong_usage_handle(event: dict, **kwargs):
     return Replies.WRONG_USAGE[0], Replies.WRONG_USAGE[2]
 
@@ -390,6 +431,8 @@ async def wrong_usage_handle(event: dict, **kwargs):
 @bot.on_event.message_new((TwiMLRule(value=["$darky rp <params>"], ignore_case=True)) & 
                           ~FromChat())
 @bot.on_event.message_new((TwiMLRule(value=["$darky top <params>"], ignore_case=True)) & 
+                          ~FromChat())
+@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) & 
                           ~FromChat())
 async def not_from_chat_handle(event: dict, **kwargs):
     return Replies.NOT_WORK_HERE[0], Replies.NOT_WORK_HERE[2]
@@ -405,6 +448,8 @@ async def not_from_chat_handle(event: dict, **kwargs):
 @bot.on_event.message_new((TwiMLRule(value=["$darky rp <params>"], ignore_case=True)) & 
                           FromChat() & ~IsChatRegistered())
 @bot.on_event.message_new((TwiMLRule(value=["$darky top <params>"], ignore_case=True)) & 
+                          FromChat() & ~IsChatRegistered())
+@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) & 
                           FromChat() & ~IsChatRegistered())
 async def not_registered_chat_handle(event: dict, **kwargs):
     return Replies.CHAT_IS_NOT_REGISTERED[0], Replies.CHAT_IS_NOT_REGISTERED[2]
@@ -437,6 +482,9 @@ async def access_denied_reply(event: dict, **kwargs):
 @bot.on_event.message_new((TwiMLRule(value=["$darky rp <params>"], ignore_case=True)) & 
                           FromChat() & FromUser() & IsChatRegistered() & 
                           (CheckChatSettings(key = "rp", value = False) | CheckChatSettings(key = "manage_rp", value = "nobody")))
+@bot.on_event.message_new(TwiMLRule(value=["$darky nickname <params>"], ignore_case=True) & 
+                          FromChat() & FromUser() & IsChatRegistered() & 
+                          (CheckChatSettings(key = "nicknames", value = False) | CheckChatSettings(key = "manage_nicknames", value = "nobody")))
 async def disabled_by_admin_reply(event: dict, **kwargs):
     return Replies.DISABLED_BY_ADMIN[0], Replies.DISABLED_BY_ADMIN[2]
 
