@@ -122,7 +122,7 @@ async def update_chat_settings(event: dict, key: str = None, value: str = None):
 @bot.on_event.message_new(FromChat() & ((IsChatRegistered() & CheckChatSettings(key = "random_messages", value = True)) | TrueRule()))
 async def random_speak_handler(event: dict):
     return await witless.random_speak(peer_id = event["object"]["message"]["peer_id"],
-                                      context = event["object"]["message"]["text"])
+                                      context = event["object"]["message"]["text"].lower())
 
 @bot.on_event.message_new(FromChat() & IsChatRegistered() & 
                           CheckChatSettings(key = "rp", value = True) & 
