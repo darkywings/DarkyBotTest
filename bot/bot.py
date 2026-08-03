@@ -124,6 +124,20 @@ async def random_speak_handler(event: dict):
     return await witless.random_speak(peer_id = event["object"]["message"]["peer_id"],
                                       context = event["object"]["message"]["text"].lower())
 
+@bot.on_event.message_new(FromChat() & ((IsChatRegistered() & CheckChatSettings(key = "random_messages", value = True)) | TrueRule()) & 
+                          (ReplyRule() | ForwardRule() | MentionRule()))
+async def random_speak_on_mention_handler(event: dict, mentions: dict = None, have_reply: bool = None, have_forward: bool = None):
+    if mentions is not None and have_reply is None and have_forward is None:
+        for mention in mentions:
+            if mention["type"] != "club" or mention["id"] != event["group_id"]:
+                return
+    elif have_reply or have_forward:
+        if extractor.extract_userid_from_reply(event, have_reply, have_forward) != -event["group_id"]:
+            return
+    return await witless.random_speak(peer_id = event["object"]["message"]["peer_id"],
+                                      context = event["object"]["message"]["text"].lower(),
+                                      speak_chance_mul=1)
+
 @bot.on_event.message_new(FromChat() & IsChatRegistered() & 
                           CheckChatSettings(key = "rp", value = True) & 
                           CheckChatSettings(key = "random_rp", value = True))

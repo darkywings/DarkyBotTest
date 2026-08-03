@@ -43,11 +43,11 @@ class Witless:
             keyboard = Replies.WITLESS_GENERATE_FAIL[2] if result_message == Replies.WITLESS_GENERATE_FAIL[0] else None
         )
 
-    async def random_speak(self, peer_id: int = None, context: str = None) -> Response:
+    async def random_speak(self, peer_id: int = None, context: str = None, speak_chance_mul: int = 15) -> Response:
         '''
         Рандомная генерация сообщений
         '''
-        if random.randint(0, 15) != 0:
+        if random.randint(0, speak_chance_mul) != 0:
             return
         
         if peer_id is None:
