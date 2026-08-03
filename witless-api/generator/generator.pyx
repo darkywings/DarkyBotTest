@@ -96,7 +96,7 @@ def generate(list samples, int tries_count, int size, str context=None):
                     return str_result
             elif size == 4: # маленький, но без нижнего лимита
                 if len(result) <= 3:
-                return str_result
+                    return str_result
             else:
                 raise ValueError("Size must be 0, 1, 2 or 3")
 
