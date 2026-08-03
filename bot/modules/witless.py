@@ -57,7 +57,7 @@ class Witless:
 
         result_message = await self._generate(
             peer_id = peer_id,
-            size = "small",
+            size = "smallest",
             context = context
         )
 

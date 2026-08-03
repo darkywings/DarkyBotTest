@@ -10,6 +10,9 @@ def convert_size(size: str):
 
     elif size in ["lg", "large", "большое", "длинное"]:
         return 3
+    
+    elif size in ["smallest"]:
+        return 4
 
     else:
         raise ValueError(f"Unknown size {size}")
