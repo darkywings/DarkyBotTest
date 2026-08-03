@@ -75,7 +75,11 @@ class Rp:
             _group = await self._methods.groups.getById(group_ids = user_id)
             _group = _group["response"]["groups"][0]
 
-            return f"[club{_group["id"]}|{_group["name"]}]", "male"
+            return {
+                "who_can_rp": "all",
+                "output": f"[club{_group["id"]}|{_group["name"]}]",
+                "sex": "female"
+            }
 
         _user = await self._db.get_user(user_id)
         _member = await self._db.get_chat_member(peer_id, user_id)
@@ -128,7 +132,7 @@ class Rp:
 
         return self._get_output(rp_reply["reply_female"] if user1["sex"] == "female" else rp_reply["reply_male"], user1["output"], user2["output"])
     
-    async def random_rp(self, event: dict):
+    async def random_rp(self, event):
         '''
         Вызывает рандомное рп в рандомном чате
         '''
