@@ -4,7 +4,7 @@ cdef str _start = "___start___"
 cdef str _end = "___end___"
 
 
-def generate(list samples, int tries_count, int size, str context=None, bint unique=True):
+def generate(list samples, int tries_count, int size, str context=None, bint unique=True, bint allow_cross_end=False):
     if not samples:
         return None
 
@@ -22,18 +22,31 @@ def generate(list samples, int tries_count, int size, str context=None, bint uni
     for sample in samples:
         words = sample.split(" ")
         frames.append(_start)
-        for word in words:
-            frames.append(word)
+        frames.extend(words)
         frames.append(_end)
 
+    # Добавляем переходы для обычных слов и для _start
     for i in range(len(frames)):
         if frames[i] != _end:
-            try:
-                frame_map[frames[i]].append(frames[i + 1])
-            except KeyError:
-                frame_map[frames[i]] = [frames[i + 1]]
-            if frames[i] == _start:
-                start_frames.append(frames[i + 1])
+            key = frames[i]
+            val = frames[i + 1]
+            if key in frame_map:
+                frame_map[key].append(val)
+            else:
+                frame_map[key] = [val]
+            if key == _start:
+                start_frames.append(val)
+
+    if allow_cross_end:
+        # Находим все позиции _end, кроме последней, и добавляем переход к первому слову следующего сообщения
+        # Для этого проходим по samples с индексом
+        for idx in range(len(samples) - 1):
+            # Первое слово следующего сообщения
+            next_first_word = samples[idx + 1].split(" ")[0]
+            if _end in frame_map:
+                frame_map[_end].append(next_first_word)
+            else:
+                frame_map[_end] = [next_first_word]
 
     # Обработка контекста: если он невалидный, игнорируем его
     cdef list context_words = None
