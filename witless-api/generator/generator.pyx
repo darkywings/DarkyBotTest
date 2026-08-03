@@ -1,113 +1,119 @@
-from random import choice
+from random import choice, random
 
 cdef str _start = "___start___"
 cdef str _end = "___end___"
 
 
-def generate(list samples, int tries_count, int size, str context=None, bint unique=True, bint allow_cross_end=False):
+def generate(list samples, int tries_count, int size,
+             context=None, float continue_probability=0.5):
     if not samples:
         return None
 
-    cdef list frames = []
-    cdef list start_frames = []
-    cdef dict frame_map = {}
-    cdef list words
-    cdef list result
-    cdef str str_result
-    cdef str next_frame
-    cdef str sample
-    cdef int i
+    # Построение модели
+    frame_map = {}
+    start_frames = []
+    msg_words = [s.split() for s in samples if s.strip()]
+    if not msg_words:
+        return None
 
-    # Построение марковской цепи
-    for sample in samples:
-        words = sample.split(" ")
-        frames.append(_start)
-        frames.extend(words)
-        frames.append(_end)
+    for i, words in enumerate(msg_words):
+        frame_map.setdefault(_start, []).append(words[0])
+        start_frames.append(words[0])
+        for j in range(len(words) - 1):
+            frame_map.setdefault(words[j], []).append(words[j + 1])
+        frame_map.setdefault(words[-1], []).append(_end)
+        if i < len(msg_words) - 1:
+            frame_map.setdefault(_end, []).append(msg_words[i + 1][0])
 
-    # Добавляем переходы для обычных слов и для _start
-    for i in range(len(frames)):
-        if frames[i] != _end:
-            key = frames[i]
-            val = frames[i + 1]
-            if key in frame_map:
-                frame_map[key].append(val)
+    for _ in range(tries_count):
+        # Начальное слово
+        if context is not None:
+            if isinstance(context, str):
+                ctx_msgs = [context]
             else:
-                frame_map[key] = [val]
-            if key == _start:
-                start_frames.append(val)
-
-    if allow_cross_end:
-        # Находим все позиции _end, кроме последней, и добавляем переход к первому слову следующего сообщения
-        # Для этого проходим по samples с индексом
-        for idx in range(len(samples) - 1):
-            # Первое слово следующего сообщения
-            next_first_word = samples[idx + 1].split(" ")[0]
-            if _end in frame_map:
-                frame_map[_end].append(next_first_word)
-            else:
-                frame_map[_end] = [next_first_word]
-
-    # Обработка контекста: если он невалидный, игнорируем его
-    cdef list context_words = None
-    if context is not None:
-        context_words = context.split(" ")
-        # Проверяем валидность
-        valid = True
-        if _end in context_words:
-            valid = False
+                ctx_msgs = list(context)
+            if not ctx_msgs:
+                continue
+            last_words = ctx_msgs[-1].split()
+            if not last_words:
+                continue
+            start_word = last_words[-1]
+            if start_word not in frame_map:
+                continue
         else:
-            for w in context_words[:-1]:
-                if w not in frame_map:
-                    valid = False
-                    break
-            if valid and (not context_words or context_words[-1] not in frame_map):
-                valid = False
-        if not valid:
-            # Контекст невалидный – сбрасываем, будем генерировать с нуля
-            context_words = None
+            start_word = choice(start_frames)
 
-    # Максимальная длина для предотвращения бесконечного цикла
-    max_len = 100
+        current_msg = []
+        all_msgs = []
+        total_words = 0
+        current_word = start_word
+        if context is None:
+            current_msg.append(start_word)
+            total_words += 1
 
-    for i in range(tries_count):
-        if context_words is None:
-            result = [choice(start_frames)]
-        else:
-            result = context_words.copy()
+        # Генерация с ограничением: максимум 2 сообщения, если context задан
+        max_msgs = 2 if context is not None else 5
+        msg_count = 0
 
-        added = False
-        idx = 0
-        while idx < len(result) and len(result) <= max_len:
-            frame = result[idx]
-            next_frame = choice(frame_map[frame])
-            if next_frame == _end:
+        while True:
+            if current_word not in frame_map:
                 break
-            else:
-                result.append(next_frame)
-                added = True
-            idx += 1
 
-        # Если контекст был задан, но не добавлено ни одного слова – попытка не засчитывается
-        if context is not None and context_words is not None and not added:
+            next_word = choice(frame_map[current_word])
+
+            if next_word == _end:
+                if current_msg:
+                    all_msgs.append(" ".join(current_msg))
+                    current_msg = []
+                    msg_count += 1
+                if msg_count >= max_msgs:
+                    break
+                if random() < continue_probability:
+                    # Выбираем следующее начало
+                    if _end in frame_map:
+                        next_start = choice(frame_map[_end])
+                    else:
+                        next_start = choice(start_frames)
+                    current_msg.append(next_start)
+                    total_words += 1
+                    current_word = next_start
+                else:
+                    break
+            else:
+                current_msg.append(next_word)
+                total_words += 1
+                current_word = next_word
+                if total_words >= 100:
+                    break
+
+        if current_msg:
+            all_msgs.append(" ".join(current_msg))
+            msg_count += 1
+
+        if not all_msgs:
             continue
 
-        str_result = " ".join(result)
+        # Проверка размера
+        if size == 0:
+            if total_words > 100:
+                continue
+        elif size == 1:
+            if not (2 <= total_words <= 3):
+                continue
+        elif size == 2:
+            if not (4 <= total_words <= 7):
+                continue
+        elif size == 3:
+            if not (8 <= total_words <= 100):
+                continue
+        else:
+            raise ValueError("Size must be 0, 1, 2 or 3")
 
-        if (unique and str_result not in samples) or (not unique):
-            if size == 0:  # любой
-                if len(result) <= 100:
-                    return str_result
-            elif size == 1:  # малый
-                if 2 <= len(result) <= 3:
-                    return str_result
-            elif size == 2:  # средний
-                if 4 <= len(result) <= 7:
-                    return str_result
-            elif size == 3:  # большой
-                if 8 <= len(result) <= 100:
-                    return str_result
-            else:
-                raise ValueError("Size must be 0, 1, 2 or 3")
+        # Проверка дубликатов (только если context не задан)
+        if context is None:
+            if len(all_msgs) == 1 and all_msgs[0] in samples:
+                continue
+
+        return "\n".join(all_msgs)
 
     return None
