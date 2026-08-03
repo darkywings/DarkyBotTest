@@ -1,6 +1,6 @@
 from aiofile import AIOFile
 from os import remove
-from re import findall
+import re
 from api import util
 from os.path import getsize
 from os import listdir
@@ -58,7 +58,7 @@ async def censor_result(result: str):
         "everyone",
     ]
     links = util.remove_duplicates(
-        findall(r"[^ (){\}\[\]\'\";]+\.[^ (){\}\[\]\'\";]+", result)
+        re.findall(r"[^ (){\}\[\]\'\";]+\.[^ (){\}\[\]\'\";]+", result)
     )
 
     for link in links:
@@ -90,6 +90,16 @@ async def parse_raw(raw: str):
                 start = i + 1
 
     return [await unescape_string(message) for message in result]
+
+async def remove_context(raw: str, context: str = None):
+    '''Ну чисто иногда бот продолжает контекст без его повторения'''
+    if context is None:
+        return raw
+    
+    if randint(0, 5) != 0:
+        return re.sub(context, "", raw, flags = re.IGNORECASE)
+    
+    return raw
 
 
 class MessagesStorage:

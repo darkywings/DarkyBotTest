@@ -34,6 +34,7 @@ async def generate(data: dict):
         samples=messages, tries_count=25, size=api.util.convert_size(size), context=context
     )
     if result:
+        result = await api.remove_context(result, context)
         result = await api.censor_result(result)
         result = await api.improve_result(result)
         return {"success": True, "result": result}
