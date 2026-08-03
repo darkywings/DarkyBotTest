@@ -27,12 +27,13 @@ async def generate(data: dict):
     size = data["size"]
     context = data["context"] if "context" in data.keys() else None
     unique = data["unique"] if "unique" in data.keys() else True
+    cross_end = data["cross_end"] if "cross_end" in data.keys() else False
 
     storage = api.MessagesStorage(peer_id)
     messages = await storage.get()
 
     result = generator.generate(
-        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context, unique=unique
+        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context, unique=unique, allow_cross_end=cross_end
     )
     if result:
         result = await api.censor_result(result)
