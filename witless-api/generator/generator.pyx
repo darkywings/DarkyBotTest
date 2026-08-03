@@ -81,7 +81,7 @@ def generate(list samples, int tries_count, int size, str context=None):
 
         str_result = " ".join(result)
 
-        if randint(0, 5) > 2:
+        if context is not None and randint(0, 5) > 2:
             str_result = "".join(str_result[len(context):])
 
         if str_result not in samples:
