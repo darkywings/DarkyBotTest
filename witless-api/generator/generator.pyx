@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, randint
 
 cdef str _start = "___start___"
 cdef str _end = "___end___"
@@ -80,6 +80,9 @@ def generate(list samples, int tries_count, int size, str context=None):
             continue
 
         str_result = " ".join(result)
+
+        if randint(0, 5) > 2:
+            str_result = "".join(str_result[len(context):])
 
         if str_result not in samples:
             if size == 0:  # любой

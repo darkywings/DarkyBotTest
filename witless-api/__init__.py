@@ -94,16 +94,6 @@ async def parse_raw(raw: str):
 
     return [await unescape_string(message) for message in result]
 
-async def remove_context(raw: str, context: str = None):
-    '''Ну чисто иногда бот продолжает контекст без его повторения'''
-    if context is None:
-        return raw
-    
-    if randint(0, 5) > 2 and len(raw) > len(context):
-        return "".join(raw[len(context):])
-    
-    return raw
-
 
 class MessagesStorage:
     def __init__(self, peer_id: int):
