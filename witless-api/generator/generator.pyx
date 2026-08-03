@@ -4,7 +4,7 @@ cdef str _start = "___start___"
 cdef str _end = "___end___"
 
 
-def generate(list samples, int tries_count, int size, str context=None):
+def generate(list samples, int tries_count, int size, str context=None, bint unique=True):
     if not samples:
         return None
 
@@ -81,7 +81,7 @@ def generate(list samples, int tries_count, int size, str context=None):
 
         str_result = " ".join(result)
 
-        if str_result not in samples:
+        if (unique and str_result not in samples) or (not unique):
             if size == 0:  # любой
                 if len(result) <= 100:
                     return str_result

@@ -26,12 +26,13 @@ async def generate(data: dict):
     peer_id = data["peer_id"]
     size = data["size"]
     context = data["context"] if "context" in data.keys() else None
+    unique = data["unique"] if "unique" in data.keys() else True
 
     storage = api.MessagesStorage(peer_id)
     messages = await storage.get()
 
     result = generator.generate(
-        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context
+        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context, unique=unique
     )
     if result:
         result = await api.censor_result(result)
