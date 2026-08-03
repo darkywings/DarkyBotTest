@@ -11,6 +11,7 @@ from utils.replies import Replies
 dotenv.load_dotenv()
 logger = logging.getLogger('witless')
 
+WITLESS_HOST = os.getenv("WITLESS_HOST", "witless-api")
 WITLESS_PORT = os.getenv("WITLESS_PORT", 8000)
 
 class Witless:
@@ -18,38 +19,18 @@ class Witless:
     def __init__(self):
         self.http = Http()
 
-    async def generate(self, event: dict, size: str = "any", on_self: bool = True) -> str:
+    async def speak(self, event: dict, size: str = "any") -> Response:
         '''
-        Генерирует текст на основе Witless
+        Интерфейс для генерации через $darky speak
         '''
-        if on_self and random.randint(0, 20) != 0:
-            return
-
         _peer_id = event["object"]["message"]["peer_id"]
         _conversation_message_id = event["object"]["message"]["conversation_message_id"]
 
-        logger.debug(f"Generating on peer_id: {_peer_id}...")
-        response = await self.http.get(
-            url = f"http://witless-api:{WITLESS_PORT}/generate",
-            json = {"peer_id": _peer_id, "size": size},
-            raw = False
+        result_message = await self._generate(
+            peer_id = _peer_id,
+            size = size,
+            context = None
         )
-        
-        if "success" in response.keys() and response["success"]:
-            _result = response["result"]
-            logger.debug(f"Generated message on peer_id: {_peer_id} = {_result}")
-
-            if on_self: 
-                return Response(
-                    peer_ids = _peer_id,
-                    message = _result
-                )
-            
-            return _result
-        
-        logger.debug(f"Failed to generate message on peer_id: {_peer_id}")
-
-        if on_self: return
 
         return Response(
             peer_ids = _peer_id,
@@ -58,9 +39,58 @@ class Witless:
                 "peer_id": _peer_id,
                 "conversation_message_ids": _conversation_message_id
             },
-            message = Replies.WITLESS_GENERATE_FAIL[0],
-            keyboard = Replies.WITLESS_GENERATE_FAIL[2]
+            message = result_message,
+            keyboard = Replies.WITLESS_GENERATE_FAIL[2] if result_message == Replies.WITLESS_GENERATE_FAIL[0] else None
         )
+
+    async def random_speak(self, peer_id: int = None, context: str = None) -> Response:
+        '''
+        Рандомная генерация сообщений
+        '''
+        if random.randint(0, 20) != 0:
+            return
+        
+        if peer_id is None:
+            # TODO: get randomized peer_id
+            # TODO: get last message from that peer
+            peer_id = 0
+
+        result_message = await self._generate(
+            peer_id = peer_id,
+            size = "small",
+            context = context
+        )
+
+        if result_message != Replies.WITLESS_GENERATE_FAIL[0]:
+            return Response(
+                peer_ids = peer_id,
+                message = result_message,
+            )
+        
+        return
+
+    async def _generate(self, 
+                        peer_id: int,
+                        size: str = "any",
+                        context: str = None) -> str:
+        '''
+        Получает сгенерированный текст с backend
+        '''
+        logger.debug(f"Generating on peer_id: {peer_id}...")
+        response = await self.http.get(
+            url = f"http://{WITLESS_HOST}:{WITLESS_PORT}/generate",
+            json = {"peer_id": peer_id, "size": size, "context": context},
+            raw = False
+        )
+
+        if "success" in response.keys() and response["success"]:
+            result = response["result"]
+            logger.debug(f"Generated message on peer_id: {peer_id} = {result}")
+
+            return result
+        
+        logger.debug(f"Failed to generate message on peer_id: {peer_id}")
+        return Replies.WITLESS_GENERATE_FAIL[0]
     
     async def bugurt(self, event: dict) -> str:
         '''
@@ -73,13 +103,15 @@ class Witless:
 
         logger.debug(f"Generating bugurt for peer_id: {_peer_id}...")
 
+        context = None
         for i in range(random.randint(3, 10)):
             response = await self.http.get(
-                url = f"http://witless-api:{WITLESS_PORT}/generate",
-                json = {"peer_id": _peer_id, "size": "md"},
+                url = f"http://{WITLESS_HOST}:{WITLESS_PORT}/generate",
+                json = {"peer_id": _peer_id, "size": "md", "context": context},
                 raw = False
             )
             if "success" in response.keys() and response["success"]:
+                context = response["result"]
                 _parts.append(response["result"].upper())
                 continue
             
@@ -109,7 +141,7 @@ class Witless:
         logger.debug(f"Asked info for {_peer_id}")
 
         response = await self.http.get(
-            url = f"http://witless-api:{WITLESS_PORT}/count",
+            url = f"http://{WITLESS_HOST}:{WITLESS_PORT}/count",
             json = {"peer_id": _peer_id},
             raw = False
         )
@@ -135,7 +167,7 @@ class Witless:
         logger.debug(f"Asked for wipe data for {peer_id}")
 
         response = await self.http.get(
-            url = f"http://witless-api:{WITLESS_PORT}/wipe",
+            url = f"http://{WITLESS_HOST}:{WITLESS_PORT}/wipe",
             json = {"peer_id": peer_id},
             raw = False
         )
@@ -159,7 +191,7 @@ class Witless:
             logger.debug(f"Pushing data for {_peer_id}...")
 
             await self.http.get(
-                url = f"http://witless-api:{WITLESS_PORT}/push",
+                url = f"http://{WITLESS_HOST}:{WITLESS_PORT}/push",
                 json = {"peer_id": _peer_id, "message": _text.lower()}
             )
 

@@ -25,12 +25,13 @@ async def update_messages_wrapper():
 async def generate(data: dict):
     peer_id = data["peer_id"]
     size = data["size"]
+    context = data["context"] if "context" in data.keys() else None
 
     storage = api.MessagesStorage(peer_id)
     messages = await storage.get()
 
     result = generator.generate(
-        samples=messages, tries_count=25, size=api.util.convert_size(size)
+        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context
     )
     if result:
         result = await api.censor_result(result)

@@ -54,6 +54,7 @@ services:
       - POSTGRES_BOT_USER=${DB_USER}
       - POSTGRES_BOT_PASSWORD=${DB_PASSWORD}
       - POSTGRES_BOT_DB=${DB_NAME}
+      - WITLESS_HOST=witless-api
     restart: on-failure
     volumes:
       - ./bot:/app

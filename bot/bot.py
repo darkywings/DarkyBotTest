@@ -121,7 +121,9 @@ async def update_chat_settings(event: dict, key: str = None, value: str = None):
 
 @bot.on_event.message_new(FromChat() & ((IsChatRegistered() & CheckChatSettings(key = "random_messages", value = True)) | TrueRule()))
 async def random_speak_handler(event: dict):
-    return await witless.generate(event, size = "small")
+    return await witless.random_speak(peer_id = event["object"]["message"]["peer_id"],
+                                      size = "small",
+                                      context = event["object"]["message"]["text"])
 
 @bot.on_event.message_new(FromChat() & IsChatRegistered() & 
                           CheckChatSettings(key = "rp", value = True) & 
@@ -324,7 +326,7 @@ async def speak_handler_push(event: dict):
 @bot.on_event.message_new((TextRule(value=["$darky speak"], ignore_case=True) | TwiMLRule(value=["$darky speak <size:word>"], ignore_case=True)))
 async def speak_handler(event: dict, size: str = "any"):
     if size in ["small", "medium", "large", "any"]:
-        return await witless.generate(event, size=size, on_self = False)
+        return await witless.speak(event, size=size)
 
 @bot.on_event.message_new(TextRule(value=["$darky bugurt"], ignore_case=True))
 async def bugurt_handler(event: dict):
