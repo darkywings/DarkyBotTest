@@ -31,7 +31,7 @@ async def generate(data: dict):
     messages = await storage.get()
 
     result = generator.generate(
-        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context
+        samples=messages, tries_count=25, size=api.util.convert_size(size), context=context, context_prob=0.8
     )
     if result:
         result = await api.censor_result(result)
