@@ -8,6 +8,9 @@ from random import randint
 
 
 async def improve_result(result: str):
+
+    result = result.strip()
+
     rnd = randint(0, 4)
     if rnd == 0:  # ну чиста для прекола иногда бот пишет постироничнее....
         return result
@@ -96,8 +99,8 @@ async def remove_context(raw: str, context: str = None):
     if context is None:
         return raw
     
-    if randint(0, 5) != 0 and len(raw) > len(context):
-        return " ".join(raw[len(context):])
+    if randint(0, 5) > 2 and len(raw) > len(context):
+        return "".join(raw[len(context):])
     
     return raw
 
