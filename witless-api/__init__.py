@@ -96,8 +96,8 @@ async def remove_context(raw: str, context: str = None):
     if context is None:
         return raw
     
-    if randint(0, 5) != 0:
-        return re.sub(context, "", raw, flags = re.IGNORECASE)
+    if randint(0, 5) != 0 and len(raw) > len(context):
+        return " ".join(raw[len(context):])
     
     return raw
 

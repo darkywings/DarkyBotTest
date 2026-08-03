@@ -47,7 +47,7 @@ class Witless:
         '''
         Рандомная генерация сообщений
         '''
-        if random.randint(0, 20) != 0:
+        if random.randint(0, 15) != 0:
             return
         
         if peer_id is None:
