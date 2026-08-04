@@ -66,7 +66,7 @@ class Rp:
     async def edit(self, event: dict, trigger: str, reply_male: str, reply_female: str):
         pass
 
-    async def _prepare_user(self, peer_id: int, user_id: int) -> str:
+    async def _prepare_user(self, peer_id: int, user_id: int, group_id: int) -> str:
         '''
         Готовит пользователя для отображения в РП команде (из его ID делает строку вида Имя Фамилия или Никнейм, с упоминанием или без)
         '''
@@ -78,7 +78,7 @@ class Rp:
             return {
                 "who_can_rp": "all",
                 "output": f"[club{_group["id"]}|{_group["name"]}]",
-                "sex": "female"
+                "sex": "female" if _group["id"] == group_id else "male"
             }
 
         _user = await self._db.get_user(user_id)
@@ -106,7 +106,7 @@ class Rp:
 
         return reply
 
-    async def do(self, peer_id: int, from_id: int, rp: str, to_id: int):
+    async def do(self, peer_id: int, from_id: int, rp: str, to_id: int, group_id: int):
         '''
         Идентифицирует РП и формирует ответ в соответствии с настройками
         '''
@@ -115,8 +115,8 @@ class Rp:
         if not rp_reply:
             return
 
-        user1: dict = await self._prepare_user(peer_id, from_id)
-        user2: dict = await self._prepare_user(peer_id, to_id)
+        user1: dict = await self._prepare_user(peer_id, from_id, group_id)
+        user2: dict = await self._prepare_user(peer_id, to_id, group_id)
 
         if user2["who_can_rp"] == "only_bot" and from_id > 0:
             return Replies.RP_DENIED_FOR_USERS
@@ -132,25 +132,28 @@ class Rp:
 
         return self._get_output(rp_reply["reply_female"] if user1["sex"] == "female" else rp_reply["reply_male"], user1["output"], user2["output"])
     
-    async def random_rp(self, event):
+    async def random_rp(self, group_id: int, peer_id: int = None):
         '''
         Вызывает рандомное рп в рандомном чате
         '''
         if random.randint(0, 50) != 0:
             return
         
-        _chat_id = event["object"]["message"]["peer_id"]
+        if peer_id is None:
+            # TODO: random peer_id
+            peer_id = 0
 
-        rps = await self._db.all_rp(_chat_id)
-        members = await self._db.get_members(_chat_id)
-        response = await self.do(_chat_id, 
-                            -event.get("group_id"), 
+        rps = await self._db.all_rp(peer_id)
+        members = await self._db.get_members(peer_id)
+        response = await self.do(peer_id, 
+                            -group_id, 
                             RandomUtils.choice([rp["trigger"] for rp in rps]), 
-                            RandomUtils.choice([user["user_id"] for user in members]))
+                            RandomUtils.choice([user["user_id"] for user in members]),
+                            group_id)
         if response not in [
             Replies.RP_DENIED_FOR_USERS,
             Replies.RP_DENIED_FOR_BOTS,
             Replies.RP_DENIED_FOR_ALL,
             Replies.USER_NOT_FOUND
         ]:
-            return Response(peer_ids=_chat_id, message=response)
+            return Response(peer_ids=peer_id, message=response)

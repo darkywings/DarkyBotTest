@@ -142,7 +142,8 @@ async def random_speak_on_mention_handler(event: dict, mentions: dict = None, ha
                           CheckChatSettings(key = "rp", value = True) & 
                           CheckChatSettings(key = "random_rp", value = True))
 async def random_rp_handler(event: dict):
-    return await rps.random_rp(event)
+    return await rps.random_rp(peer_id = event["object"]["message"]["peer_id"],
+                               group_id = event["group_id"])
 
 @bot.on_event.message_new(FromChat() & IsChatRegistered())
 async def update_chat_timestamp(event: dict):
@@ -211,7 +212,8 @@ async def rp_handler(event: dict, rp: str = None, id: str = None, mentions: dict
     return await rps.do(event["object"]["message"]["peer_id"],
                         event["object"]["message"]["from_id"],
                         rp,
-                        member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward))
+                        member_id or extractor.extract_userid_from_reply(event, have_reply, have_forward),
+                        event["group_id"])
 
 @bot.on_event.message_new((TextRule(value=["$darky rp list"], ignore_case=True) | 
                            TwiMLRule(value=["$darky rp list <page:int>"], ignore_case=True)) &
