@@ -461,3 +461,70 @@ class DarkyDatabase:
             limit
         )
         return top_members if top_members else False
+    
+    async def add_warn(self,
+                       chat_id: int,
+                       member_id: int) -> "Record":
+        return await self._db_client.fetchrow(
+            "WITH current AS (" \
+            "   SELECT " \
+            "       cm.warns, " \
+            "       cm.is_left, " \
+            "       s.warn_limit, " \
+            "       s.warn_punishment, " \
+            "       cm.chat_id, " \
+            "       cm.user_id " \
+            "   FROM chat_members cm " \
+            "   JOIN chats c ON c.id = cm.chat_id " \
+            "   JOIN chat_settings s ON s.id = c.settings_id " \
+            "   WHERE c.chat_id = $1 " \
+            "   AND cm.user_id = (SELECT id FROM users WHERE user_id = $2)" \
+            "), " \
+            "updated AS (" \
+            "   UPDATE chat_members " \
+            "   SET warns = warns + 1 " \
+            "   WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "   AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "   AND warns < (SELECT warn_limit FROM chat_settings WHERE id = (SELECT settings_id FROM chats WHERE chat_id = $1)) " \
+            "   RETURNING warns" \
+            ") " \
+            "SELECT " \
+            "   c.is_left AS not_in_chat, " \
+            "   u.warns, " \
+            "   c.warn_limit, " \
+            "   c.warn_punishment, " \
+            "   (u.warns IS NOT NULL AND u.warns = c.warn_limit) AS limit_reached, " \
+            "   (c.warns = c.warn_limit) AS already_at_limit" \
+            "FROM current c " \
+            "LEFT JOIN updated u ON true;",
+            chat_id, member_id
+        )
+    
+    async def remove_warns(self,
+                          chat_id: int,
+                          member_id: int) -> "Record":
+        return await self._db_client.fetchrow(
+            "WITH current AS (" \
+            "   SELECT " \
+            "       warns " \
+            "       is_left, " \
+            "   FROM chat_members " \
+            "   WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "   AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "), " \
+            "WITH updated AS (" \
+            "   UPDATE chat_members " \
+            "   SET warns = 0 " \
+            "   WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "   AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "   AND warns > 0 " \
+            "   RETURNING warns" \
+            ") " \
+            "SELECT " \
+            "   c.is_left AS not_in_chat, " \
+            "   (u.warns IS NOT NULL AND c.warns = u.warns) AS already_zero, " \
+            "   (u.warns IS NOT NULL AND c.warns <> u.warns) AS just_removed " \
+            "FROM current c " \
+            "LEFT JOIN updated u ON true;",
+            chat_id, member_id
+        )

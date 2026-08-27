@@ -12,6 +12,7 @@ from twilight_vk.utils.types.response import Response
 from utils import bad_words_detector
 from utils.rank_renderer import RankCard
 from validators import SettingsParamValidator
+from utils.replies import Replies
 
 if TYPE_CHECKING:
     from twilight_vk.framework.methods import VkMethods
@@ -400,11 +401,96 @@ class Chats:
             if "verify" in key:
                 key = key.split(".")[1]
                 await self._db.update_verify_settings(_chat_id, key, value)
-                return (f"✅ Настройки системы DarkyVerify чата изменены\n" \
+                return (f"{"⚠️ Параметр mute недоступен по техническим причинам и будет проигнорирован\n" if value == "mute" else ""}" \
+                        f"✅ Настройки системы DarkyVerify чата изменены\n" \
                         f"❕ Значение параметра \"{key}\" установлено на \"{value}\"")
             
             await self._db.update_chat_settings(_chat_id, key, value)
-            return (f"✅ Настройки чата изменены\n" \
-                        f"❕ Значение параметра \"{key}\" установлено на \"{value}\"")
+            return (f"{"⚠️ Параметр mute недоступен по техническим причинам и будет проигнорирован\n" if value == "mute" else ""}" \
+                    f"✅ Настройки чата изменены\n" \
+                    f"❕ Значение параметра \"{key}\" установлено на \"{value}\"")
 
         return "❌ Такого параметра не существует, либо он меняется не этим путем"
+    
+    async def warn(self, event: dict, member_id: int) -> str:
+
+        if member_id < 0:
+            return Replies.CANT_DO_FOR_GROUPS
+
+        _chat_id = event["object"]["peer_id"]
+        warns = await self._db.add_warn(_chat_id, member_id)
+        
+        if not warns:
+            return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2] 
+        
+        if warns["not_in_chat"]:
+            return Replies.USER_NOT_FOUND
+        
+        if warns["already_at_limit"]:
+            return "❌ У пользователя уже максимальное количество предупреждений, ему нельзя выдать еще больше предупреждений"
+
+        if warns["limit_reached"]:
+            
+            match warns["warn_punishment"]:
+                case "none":
+                    pass
+                case "mute":
+                    await self.mute(event, member_id)
+                case "kick":
+                    await self.kick(event, member_id)
+                case "ban":
+                    await self.ban(event, member_id)
+            
+            return (
+                f"❗️ Пользователь достиг лимита предупреждений и в отношении него было использовано наказание: {warns["warn_punishment"]}"
+                .replace("none", "❌ Не установлено ❌")
+                .replace("mute", "❕ Запрет на сообщения ❕")
+                .replace("kick", "❕ Исключение ❕")
+                .replace("ban", "❗️ Бан ❗️")
+            )
+        
+        return (
+            f"❗️ [Пользователю|id{member_id}] выдано предупреждение ({warns["warns"]}/{warns["warn_limit"]}\n" \
+            f"По достижении максимального количества по отношению к нему будет применено наказание: {warns["warn_punishment"]}"
+            .replace("none", "❌ Не установлено ❌")
+            .replace("mute", "❕ Запрет на сообщения ❕")
+            .replace("kick", "❕ Исключение ❕")
+            .replace("ban", "❗️ Бан ❗️")
+        )
+
+    async def unwarn(self, event: dict, member_id: int) -> str:
+        
+        if member_id < 0:
+            return Replies.CANT_DO_FOR_GROUPS
+        
+        _chat_id = event["object"]["peer_id"]
+        warns = await self._db.remove_warns(_chat_id, member_id)
+
+        if warns["not_in_chat"]:
+            return Replies.USER_NOT_FOUND
+
+        if not warns:
+            return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2] 
+        
+        if warns["already_zero"]:
+            return "❌ У пользователя уже нет предупреждений, я не могу снять еще больше предупреждений"
+        
+        if warns["just_removed"]:
+            return "✅ Все предупреждения пользователя были сняты"
+        
+        return "❗️ RESPONSE_INVALID db.remove_warns()"
+    
+    async def mute(self, event: dict, member_id: int, length: int = 0) -> str:
+        pass
+
+    async def unmute(self, event: dict, member_id: int) -> str:
+        pass
+
+    async def kick(self, event: dict, member_id: int) -> str:
+        pass
+
+    async def ban(self, event: dict, member_id: int, reason: str = None, length: int = 0) -> str:
+        pass
+
+    async def unban(self, event: dict, member_id: int) -> str:
+        pass
