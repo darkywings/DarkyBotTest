@@ -413,11 +413,13 @@ class Chats:
         return "❌ Такого параметра не существует, либо он меняется не этим путем"
     
     async def warn(self, event: dict, member_id: int) -> str:
-
+        '''
+        Выдает предупреждение пользователю в чате
+        '''
         if member_id < 0:
             return Replies.CANT_DO_FOR_GROUPS
 
-        _chat_id = event["object"]["peer_id"]
+        _chat_id = event["object"]["message"]["peer_id"]
         warns = await self._db.add_warn(_chat_id, member_id)
         
         if not warns:
@@ -459,11 +461,13 @@ class Chats:
         )
 
     async def unwarn(self, event: dict, member_id: int) -> str:
-        
+        '''
+        Снимает ВСЕ предупреждения у пользователя в чате
+        '''
         if member_id < 0:
             return Replies.CANT_DO_FOR_GROUPS
         
-        _chat_id = event["object"]["peer_id"]
+        _chat_id = event["object"]["message"]["peer_id"]
         warns = await self._db.remove_warns(_chat_id, member_id)
 
         if warns["not_in_chat"]:
@@ -487,10 +491,64 @@ class Chats:
         pass
 
     async def kick(self, event: dict, member_id: int) -> str:
-        pass
+        '''
+        Исключает пользователя из беседы если он не администратор и еще находится в чате
+        '''
+        # TODO: member admin check
 
-    async def ban(self, event: dict, member_id: int, reason: str = None, length: int = 0) -> str:
-        pass
+        if member_id == -event.get("group_id"):
+            return Replies.CANT_DO_FOR_BOT
+        
+        _chat_id = event["object"]["message"]["peer_id"]
+        chat_members = await self._methods.messages.getConversationMembers(_chat_id)
+
+        for member in chat_members:
+
+            _member_id = member.get("member_id")
+            _is_admin = member.get("is_admin", False)
+
+            if _member_id == member_id and _is_admin:
+                return Replies.SELECTED_MEMBER_IS_ADMIN
+            
+            if _member_id == member_id and not _is_admin:
+                await self._methods.messages.removeChatUser(_chat_id, member_id)
+                return f"✅ Пользователь был исключен из беседы"
+        
+        return Replies.USER_IS_NOT_IN_CHAT
+
+    async def ban(self, event: dict, member_id: int, reason: str = None) -> str:
+        '''
+        Исключает и помечает пользователя как заблокированного если он не администратор и еще находится в чате
+
+        :param reason: Причина блокировки, которая будет писаться пользователю в ЛС если сообщения разрешены, а также в самом чате уже после исключения
+        '''
+        if member_id < 0:
+            return Replies.CANT_DO_FOR_GROUPS
+
+        _chat_id = event["object"]["message"]["peer_id"]
+        kick_result = await self.kick(event, member_id)
+        
+        if kick_result in [
+            Replies.SELECTED_MEMBER_IS_ADMIN
+        ]:
+            return kick_result
+        
+        updated = await self._db.toggle_as_banned(_chat_id, member_id)
+        if updated["is_banned"] == True:
+            return f"✅ Пользователь был заблокирован в данной беседе{f"\n❗️ Причина блокировки: {reason}" if reason is not None else ""}"
+        
+        return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2]
 
     async def unban(self, event: dict, member_id: int) -> str:
-        pass
+        '''
+        Снимает метку заблокированного пользователя в чате
+        '''
+        if member_id < 0:
+            return Replies.CANT_DO_FOR_GROUPS
+        
+        _chat_id = event["object"]["message"]["peer_id"]
+        updated = await self._db.toggle_as_banned(_chat_id, member_id)
+        if updated["is_banned"] == False:
+            return f"✅ Пользователь был разблокирован"
+    
+        return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2]

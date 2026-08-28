@@ -528,3 +528,31 @@ class DarkyDatabase:
             "LEFT JOIN updated u ON true;",
             chat_id, member_id
         )
+    
+    async def toggle_as_left(self,
+                             chat_id: int,
+                             member_id: int) -> "Record":
+        return await self._db_client.fetchrow(
+            "WITH updated AS (" \
+            "   UPDATE chat_members " \
+            "   SET is_left = NOT is_left" \
+            "   WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "   AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "   RETURNING is_left" \
+            "SELECT is_left FROM updated;",
+            chat_id, member_id
+        )
+
+    async def toggle_as_banned(self,
+                             chat_id: int,
+                             member_id: int) -> "Record":
+        return await self._db_client.fetchrow(
+            "WITH updated AS (" \
+            "   UPDATE chat_members " \
+            "   SET is_banned = NOT is_banned" \
+            "   WHERE chat_id = (SELECT id FROM chats WHERE chat_id = $1) " \
+            "   AND user_id = (SELECT id FROM users WHERE user_id = $2) " \
+            "   RETURNING is_banned" \
+            "SELECT is_banned FROM updated;",
+            chat_id, member_id
+        )
