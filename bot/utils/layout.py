@@ -18,7 +18,7 @@ class LayoutChanger:
             'th', 'he', 'in', 'er', 'an', 're', 'nd', 'at', 'on', 'nt', 'ha', 'es', 'st', 'en', 'ed',
             'to', 'it', 'ou', 'ea', 'hi', 'is', 'or', 'ti', 'as', 'te', 'et', 'ng', 'of', 'al', 'de',
             'se', 'le', 'sa', 'si', 'ar', 've', 'ra', 'ld', 'ur', 'ro', 'pe', 'ne', 'me', 'll', 'co',
-            'ta', 'di', 'la', 'li', 'io', 'ap', 'bi'
+            'ta', 'di', 'la', 'li', 'io', 'ap', 'bi', 'https:'
         }
         self.LAYOUT = {
             'q': 'й', 'w': 'ц', 'e': 'у', 'r': 'к', 't': 'е', 'y': 'н', 'u': 'г', 'i': 'ш', 'o': 'щ', 'p': 'з',
