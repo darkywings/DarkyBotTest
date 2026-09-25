@@ -494,8 +494,6 @@ class Chats:
         '''
         Исключает пользователя из беседы если он не администратор и еще находится в чате
         '''
-        # TODO: member admin check
-
         if member_id == -event.get("group_id"):
             return Replies.CANT_DO_FOR_BOT
         
@@ -512,8 +510,10 @@ class Chats:
             
             if _member_id == member_id and not _is_admin:
                 await self._methods.messages.removeChatUser(_chat_id, member_id)
+                # TODO: keyboard button
                 return f"✅ Пользователь был исключен из беседы"
         
+        # TODO: keyboard button
         return Replies.USER_IS_NOT_IN_CHAT
 
     async def ban(self, event: dict, member_id: int, reason: str = None) -> str:
@@ -533,11 +533,29 @@ class Chats:
         ]:
             return kick_result
         
+        member = await self._db.get_chat_member(_chat_id, member_id)
+        if member["is_banned"]:
+            # TODO: keyboard button
+            return Replies.ALREADY_BANNED
         updated = await self._db.toggle_as_banned(_chat_id, member_id)
         if updated["is_banned"] == True:
+            await self._methods.messages.send(
+                user_id = member_id,
+                message = f"❗️ Вы были заблокированы в беседе: CHAT_TITLE{f"\n❗️ Причина блокировки: {reason}" if reason is not None else ""}"
+            )
             return f"✅ Пользователь был заблокирован в данной беседе{f"\n❗️ Причина блокировки: {reason}" if reason is not None else ""}"
         
+        # TODO: keyboard button
         return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2]
+    
+    async def kick_on_ban(self, event: dict) -> str:
+        '''
+        Исключает забаненного пользователя
+        '''
+        if event["user_data"]["is_banned"]:
+            self.kick(event, event["object"]["message"]["from_id"])
+            # TODO: keyboard button
+            return "❗️ Пользователь был исключен, поскольку является забаненным в этом чате"
 
     async def unban(self, event: dict, member_id: int) -> str:
         '''
@@ -551,4 +569,5 @@ class Chats:
         if updated["is_banned"] == False:
             return f"✅ Пользователь был разблокирован"
     
+        # TODO: keyboard button
         return Replies.UNKNOWN_ERROR[0], Replies.UNKNOWN_ERROR[2]
